@@ -1466,42 +1466,48 @@ window.onload=function(){
       return;
     }
 
-    // ── Check for ?m=linkId&u=adminUid (member direct link — no Firebase Auth needed) ──
-    const _urlParams = new URLSearchParams(window.location.search);
-    const p = _urlParams.get('m');
-    const uFromUrl = _urlParams.get('u'); // ← Admin UID from link (works on ANY device)
-    if(p){
-      // FIX: Use 'u' from URL first (works on new devices), fallback to localStorage
-      const savedAdminUid = uFromUrl || localStorage.getItem('bp-admin-uid');
-      if(savedAdminUid){
-        currentUid = savedAdminUid;
-        // Save for future use on this device
-        localStorage.setItem('bp-admin-uid', savedAdminUid);
-        await loadMembersForLogin();
-        const m=membersCache.find(x=>x.linkId===p);
-        if(m){
-          hide('appLoading');show('loginScreen');
-          $id('ltab-admin').style.display='none';
-          $id('loginTabsBar').style.display='none';
+    // ── Check for ?m=linkId&u=adminUID (member direct link) ──
+    const _sp = new URLSearchParams(window.location.search);
+    const _linkId = _sp.get('m');
+    const _uFromUrl = _sp.get('u'); // Admin UID from the shared link
+    if(_linkId){
+      // Use 'u' from URL first (works on any device/incognito), then localStorage
+      const _adminUid = _uFromUrl || localStorage.getItem('bp-admin-uid');
+      if(_adminUid){
+        currentUid = _adminUid;
+        localStorage.setItem('bp-admin-uid', _adminUid); // Save for this session
+        try{
+          await loadMembersForLogin();
+        }catch(e){ console.error('loadMembersForLogin error:', e); }
+        const _mByLink = membersCache.find(x=>x.linkId===_linkId);
+        if(_mByLink){
+          // Store linkId→memberId for use during login
+          window._staffLinkMemberId = _mByLink.id;
+          window._staffLinkUserId = _mByLink.userId||'';
+          hide('appLoading'); show('loginScreen');
+          const ta=$id('ltab-admin'); if(ta) ta.style.display='none';
+          const tb=$id('loginTabsBar'); if(tb) tb.style.display='none';
           switchLoginTab('member');
           const sel=$id('memberSelect');
-          if(sel){sel.innerHTML=`<option value="${m.id}">${m.name}</option>`;sel.value=m.id;sel.style.display='none';}
-          let nameLabel=$id('memberNameLabel');
-          if(!nameLabel){nameLabel=document.createElement('div');nameLabel.id='memberNameLabel';nameLabel.style.cssText='font-size:16px;font-weight:800;color:var(--text);padding:10px 0 4px;';const uidIn=$id('memberUserIdIn');if(uidIn)uidIn.parentNode.insertBefore(nameLabel,uidIn);}
-          nameLabel.textContent='👤 '+m.name;
-          const uidIn=$id('memberUserIdIn');if(uidIn&&m.userId)uidIn.value=m.userId;
+          if(sel){sel.innerHTML=`<option value="${_mByLink.id}">${_mByLink.name}</option>`;sel.value=_mByLink.id;sel.style.display='none';}
+          let nl=$id('memberNameLabel');
+          if(!nl){nl=document.createElement('div');nl.id='memberNameLabel';nl.style.cssText='font-size:16px;font-weight:800;color:var(--text);padding:10px 0 4px;';const ui=$id('memberUserIdIn');if(ui)ui.parentNode.insertBefore(nl,ui);}
+          nl.textContent='👤 '+_mByLink.name;
+          const ui=$id('memberUserIdIn');
+          if(ui) ui.value=_mByLink.userId||'';
           return;
         } else {
-          // linkId not found — show normal login with member tab
-          hide('appLoading');show('loginScreen');
+          // linkId not in cache — show staff login with error
+          hide('appLoading'); show('loginScreen');
           switchLoginTab('member');
+          setTimeout(()=>toast('Link invalid. Admin se naya link lo.','w'),600);
           return;
         }
       } else {
-        // No admin UID at all — show error on login
-        hide('appLoading');show('loginScreen');
+        // No admin UID anywhere — can't load members
+        hide('appLoading'); show('loginScreen');
         switchLoginTab('member');
-        setTimeout(()=>toast('Link invalid ya expired. Admin se naya link lo.','w'),500);
+        setTimeout(()=>toast('Link ka ?u= parameter missing. Admin se naya link lo.','w'),600);
         return;
       }
     }
@@ -1526,21 +1532,23 @@ window.onload=function(){
         hide('appLoading');
         show('loginScreen');
       } else {
-        // Not signed in via Firebase — check for saved member session
+        // Not signed in via Firebase — check for member session (same tab reload)
         const _mSess = sessionStorage.getItem('bp-member-session');
         if(_mSess){
           try{
             const ms = JSON.parse(_mSess);
-            // Session valid for 1 hour
+            // Valid for 1 hour
             if(ms && ms.adminUid && (Date.now()-ms.ts) < 3600000){
               currentUid = ms.adminUid;
               localStorage.setItem('bp-admin-uid', ms.adminUid);
-              currentUser = {type:'member', id:ms.id, name:ms.name, group:ms.group};
-              currentMemberId = ms.id;
-              // Load members cache then restore
+              currentUser={type:'member',id:ms.id,name:ms.name,group:ms.group};
+              currentMemberId=ms.id;
               await loadMembersForLogin();
               const mObj = membersCache.find(x=>x.id===ms.id);
               if(mObj){
+                // Update session timestamp
+                ms.ts=Date.now();
+                sessionStorage.setItem('bp-member-session',JSON.stringify(ms));
                 hide('appLoading');
                 launchMember(mObj);
                 return;
@@ -1563,9 +1571,9 @@ async function initFB(cfg){
     else fbApp=firebase.apps[0];
     db=firebase.firestore();
     auth=firebase.auth();
-    // SESSION persistence: Firebase logs out when browser tab closes
+    // LOCAL persistence: Admin stays logged in across tabs/windows
     try{
-      await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     }catch(e){ console.warn('Persistence set failed:', e); }
     auth.settings = auth.settings || {};
     return true;
@@ -2094,28 +2102,55 @@ function onMemberSelect(){const v=gv('memberSelect');$id('memberPwGroup').style.
 async function doMemberLogin(){
   const userId=gv('memberUserIdIn').trim();
   const pw=gv('memberPwIn');
-  if(!userId){toast(t('enter_userid')||'Enter User ID','e');return;}
-  if(!pw){toast(t('enter_password')||'Enter password','e');return;}
-  // Find member by userId field (not by dropdown selection)
+  if(!userId){toast(t_('enter_userid')||'Enter User ID','e');return;}
+  if(!pw){toast(t_('enter_password')||'Enter password','e');return;}
+
+  // ── Ensure currentUid is set ──
   if(!currentUid){
-    const savedUid=localStorage.getItem('bp-admin-uid');
-    if(savedUid) currentUid=savedUid;
-    else{toast(t_('admin_not_setup')||'Admin has not set up yet. Get a link from your Admin.','w');return;}
+    const savedUid = localStorage.getItem('bp-admin-uid');
+    if(savedUid){ currentUid=savedUid; }
+    else{ toast(t_('admin_not_setup')||'Admin has not set up yet. Get a link from your Admin.','w'); return; }
   }
-  // Reload members if cache empty
-  if(!membersCache.length) await loadMembersForLogin();
-  const m=membersCache.find(x=>x.userId===userId);
-  if(!m){toast(t_('invalid_userid')||'Invalid User ID — check with your Admin','e');return;}
-  if(pw!==m.password){toast(t_('wrong_password')||'Wrong password!','e');return;}
+
+  // ── Ensure members cache is loaded ──
+  if(!membersCache.length){
+    try{ await loadMembersForLogin(); }
+    catch(e){ toast('Could not load staff list. Check internet.','e'); return; }
+  }
+
+  // ── Find member: by userId field ──
+  let m = membersCache.find(x=>x.userId===userId);
+
+  // ── Fallback: if came via staff link, also try by stored linkId member ──
+  if(!m && window._staffLinkMemberId){
+    const mByLink = membersCache.find(x=>x.id===window._staffLinkMemberId);
+    if(mByLink && mByLink.userId===userId) m=mByLink;
+  }
+
+  if(!m){
+    // Last resort: reload members and try again (handles timing issues)
+    try{
+      await loadMembersForLogin();
+      m = membersCache.find(x=>x.userId===userId);
+    }catch(e){}
+  }
+
+  if(!m){ toast(t_('invalid_userid')||'Invalid User ID — check with your Admin','e'); return; }
+  if(pw!==m.password){ toast(t_('wrong_password')||'Wrong password!','e'); return; }
+
   currentUser={type:'member',id:m.id,name:m.name,group:m.group};
   currentMemberId=m.id;
-  // Save member session to sessionStorage (clears on tab/browser close)
+  window._staffLinkMemberId=null; // Clear after use
+  window._staffLinkUserId=null;
+
+  // Save member session (survives same-tab reload but not new tab)
   try{
     sessionStorage.setItem('bp-member-session', JSON.stringify({
       id:m.id, name:m.name, group:m.group, userId:m.userId,
-      linkId:m.linkId||'', adminUid:currentUid, ts:Date.now()
+      adminUid:currentUid, ts:Date.now()
     }));
   }catch(e){}
+
   launchMember(m);
 }
 
@@ -2165,6 +2200,7 @@ async function doMemberChangePw(){
   btn.textContent='🔑 Change Password';btn.disabled=false;
 }
 async function doLogout(){
+  window.onbeforeunload = null; // Prevent double-logout on page close
   currentUser=null;currentMemberId=null;currentFirebaseUser=null;currentUid=null;
   // Clear real-time listeners and cache
   if(window._memberEntriesUnsub){window._memberEntriesUnsub();window._memberEntriesUnsub=null;}
@@ -2183,10 +2219,9 @@ async function doLogout(){
   currentUid=null;currentFirebaseUser=null;
   localStorage.removeItem('bp-admin-uid');
   localStorage.removeItem('bp-admin-userid');
-  // Clear member session
-  try{ sessionStorage.removeItem('bp-member-session'); }catch(e){}
-  // Stop inactivity timer
-  stopInactivityWatch();
+  try{sessionStorage.removeItem('bp-member-session');}catch(e){}
+  window._staffLinkMemberId=null;
+  window._staffLinkUserId=null;
   show('loginScreen');toast(t_('logged_out'),'i');
 }
 function switchLoginTab(tab){$id('adminLoginForm').style.display=tab==='admin'?'block':'none';$id('memberLoginForm').style.display=tab==='member'?'block':'none';$id('ltab-admin').classList.toggle('active',tab==='admin');$id('ltab-member').classList.toggle('active',tab==='member');}
@@ -2209,8 +2244,12 @@ function launchAdmin(s){
   if(uidEl) uidEl.textContent=s.userId||localStorage.getItem('bp-admin-userid')||'—';
   // Init passkey UI
   setTimeout(initPasskeyUI, 400);
-  // Start 1-hour inactivity auto-logout
-  startInactivityWatch();
+  // Page/tab close = sign out Firebase (so new tab requires login)
+  window.onbeforeunload = function(){
+    try{ firebase.auth().signOut(); }catch(e){}
+    localStorage.removeItem('bp-admin-uid');
+    localStorage.removeItem('bp-admin-userid');
+  };
 }
 function launchMember(m){
   hide('loginScreen');show('memberApp');
@@ -2225,8 +2264,6 @@ function launchMember(m){
   const en=$id('mni-entries'); if(en) en.classList.add('active');
   populateCatSelect('mCat','income');
   loadMemberData(m.id);
-  // Start 1-hour inactivity auto-logout
-  startInactivityWatch();
 }
 
 // ==================== ADMIN DATA ====================
@@ -4541,42 +4578,29 @@ if('serviceWorker' in navigator){
   });
 }
 
-// ══════════════════════════════════════════════════════
-// AUTO-LOGOUT SYSTEM
-// 1 hour inactivity → auto logout
-// Works for both Admin and Member sessions
-// ══════════════════════════════════════════════════════
-const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour in ms
-let _inactivityTimer = null;
-let _inactivityActive = false;
-
-function _resetInactivityTimer(){
-  if(!_inactivityActive) return;
-  clearTimeout(_inactivityTimer);
-  _inactivityTimer = setTimeout(()=>{
-    // Only logout if user is actually logged in
-    const isAdminIn = document.getElementById('adminApp') && 
-                      document.getElementById('adminApp').style.display !== 'none';
-    const isMemberIn = document.getElementById('memberApp') && 
-                       document.getElementById('memberApp').style.display !== 'none';
-    if(isAdminIn || isMemberIn){
-      toast('1 ghante se koi activity nahi — auto logout ho raha hai...','w');
-      setTimeout(()=>{ doLogout(); }, 1500);
-    }
+// ═══════════════════════════════════════════════
+// AUTO-LOGOUT: 1 hour inactivity
+// ═══════════════════════════════════════════════
+const INACTIVITY_LIMIT = 60*60*1000; // 1 hour
+let _inactTimer=null, _inactActive=false;
+function _resetInact(){
+  if(!_inactActive) return;
+  clearTimeout(_inactTimer);
+  _inactTimer=setTimeout(()=>{
+    const aOn=$id('adminApp')&&$id('adminApp').style.display!=='none';
+    const mOn=$id('memberApp')&&$id('memberApp').style.display!=='none';
+    if(aOn||mOn){ toast('1 ghante se koi activity nahi — logout ho raha hai...','w'); setTimeout(doLogout,1800); }
   }, INACTIVITY_LIMIT);
 }
-
 function startInactivityWatch(){
-  _inactivityActive = true;
-  const events = ['mousemove','mousedown','keypress','keydown','touchstart','touchmove','scroll','click'];
-  events.forEach(ev => document.addEventListener(ev, _resetInactivityTimer, {passive:true}));
-  _resetInactivityTimer(); // Start the timer immediately
+  _inactActive=true;
+  ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(ev=>
+    document.addEventListener(ev,_resetInact,{passive:true}));
+  _resetInact();
 }
-
 function stopInactivityWatch(){
-  _inactivityActive = false;
-  clearTimeout(_inactivityTimer);
-  _inactivityTimer = null;
+  _inactActive=false;
+  clearTimeout(_inactTimer);
 }
 
 </script>
