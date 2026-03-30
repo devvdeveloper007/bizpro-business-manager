@@ -2105,53 +2105,99 @@ async function doMemberLogin(){
   if(!userId){toast(t_('enter_userid')||'Enter User ID','e');return;}
   if(!pw){toast(t_('enter_password')||'Enter password','e');return;}
 
-  // ── Ensure currentUid is set ──
-  if(!currentUid){
-    const savedUid = localStorage.getItem('bp-admin-uid');
-    if(savedUid){ currentUid=savedUid; }
-    else{ toast(t_('admin_not_setup')||'Admin has not set up yet. Get a link from your Admin.','w'); return; }
-  }
+  const btn=$id('memberLoginBtn');
+  const origText=btn.innerHTML;
+  btn.innerHTML='⏳ Logging in...';btn.disabled=true;
 
-  // ── Ensure members cache is loaded ──
-  if(!membersCache.length){
-    try{ await loadMembersForLogin(); }
-    catch(e){ toast('Could not load staff list. Check internet.','e'); return; }
-  }
-
-  // ── Find member: by userId field ──
-  let m = membersCache.find(x=>x.userId===userId);
-
-  // ── Fallback: if came via staff link, also try by stored linkId member ──
-  if(!m && window._staffLinkMemberId){
-    const mByLink = membersCache.find(x=>x.id===window._staffLinkMemberId);
-    if(mByLink && mByLink.userId===userId) m=mByLink;
-  }
-
-  if(!m){
-    // Last resort: reload members and try again (handles timing issues)
-    try{
-      await loadMembersForLogin();
-      m = membersCache.find(x=>x.userId===userId);
-    }catch(e){}
-  }
-
-  if(!m){ toast(t_('invalid_userid')||'Invalid User ID — check with your Admin','e'); return; }
-  if(pw!==m.password){ toast(t_('wrong_password')||'Wrong password!','e'); return; }
-
-  currentUser={type:'member',id:m.id,name:m.name,group:m.group};
-  currentMemberId=m.id;
-  window._staffLinkMemberId=null; // Clear after use
-  window._staffLinkUserId=null;
-
-  // Save member session (survives same-tab reload but not new tab)
   try{
-    sessionStorage.setItem('bp-member-session', JSON.stringify({
-      id:m.id, name:m.name, group:m.group, userId:m.userId,
-      adminUid:currentUid, ts:Date.now()
-    }));
-  }catch(e){}
+    let m = null;
 
-  launchMember(m);
+    // ── Step 1: Try local cache first (fast path — same device as admin) ──
+    if(currentUid && membersCache.length){
+      m = membersCache.find(x=>x.userId===userId);
+    }
+
+    // ── Step 2: Try localStorage saved adminUid ──
+    if(!m){
+      const savedUid = localStorage.getItem('bp-admin-uid');
+      if(savedUid && savedUid !== currentUid){
+        currentUid = savedUid;
+        try{
+          await loadMembersForLogin();
+          m = membersCache.find(x=>x.userId===userId);
+        }catch(e){ console.error('loadMembers error:', e); }
+      }
+    }
+
+    // ── Step 3: GLOBAL SEARCH — Different device, no admin UID saved ──
+    // Search across ALL admins' members using collectionGroup
+    if(!m){
+      try{
+        // collectionGroup searches 'members' subcollection across ALL users
+        const globalSnap = await db.collectionGroup('members')
+          .where('userId','==',userId)
+          .limit(1)
+          .get();
+
+        if(!globalSnap.empty){
+          const memberDoc = globalSnap.docs[0];
+          const memberData = memberDoc.data();
+          // Extract adminUid from path: users/{adminUid}/members/{memberId}
+          const pathParts = memberDoc.ref.path.split('/');
+          const adminUid = pathParts[1]; // users/[THIS]/members/[id]
+
+          // Set currentUid to this admin's UID
+          currentUid = adminUid;
+          localStorage.setItem('bp-admin-uid', adminUid);
+
+          // Build member object
+          m = { id: memberDoc.id, ...memberData };
+
+          // Reload full members cache for this admin
+          try{ await loadMembersForLogin(); }catch(e){}
+        }
+      }catch(e){
+        console.error('Global member search error:', e);
+        // If collectionGroup fails (rules issue), show helpful message
+        if(e.code === 'permission-denied'){
+          toast('Staff login: Admin se link maango ya same device pe try karo.','w');
+          btn.innerHTML=origText;btn.disabled=false;return;
+        }
+      }
+    }
+
+    // ── Step 4: If still no match, show clear error ──
+    if(!m){
+      toast(t_('member_not_found')||'Invalid User ID — check with your Admin','e');
+      btn.innerHTML=origText;btn.disabled=false;return;
+    }
+
+    if(pw!==m.password){
+      toast(t_('member_wrong_pw')||'Wrong password!','e');
+      btn.innerHTML=origText;btn.disabled=false;return;
+    }
+
+    currentUser={type:'member',id:m.id,name:m.name,group:m.group};
+    currentMemberId=m.id;
+    window._staffLinkMemberId=null;
+    window._staffLinkUserId=null;
+
+    // Save member session
+    try{
+      sessionStorage.setItem('bp-member-session', JSON.stringify({
+        id:m.id, name:m.name, group:m.group, userId:m.userId,
+        adminUid:currentUid, ts:Date.now()
+      }));
+    }catch(e){}
+
+    btn.innerHTML=origText;btn.disabled=false;
+    launchMember(m);
+
+  }catch(e){
+    console.error('Member login error:', e);
+    toast('Login error: '+e.message,'e');
+    btn.innerHTML=origText;btn.disabled=false;
+  }
 }
 
 // ── Staff: Toggle Change Password section ──
@@ -2471,7 +2517,30 @@ async function renderGrpbLedger(){
 }
 
 // ==================== MY PRIVATE LEDGER ====================
-async function addFolder(){const n=prompt('Folder name:');if(!n||!n.trim())return;await uCol('folders').add({name:n.trim(),order:folderCache.length+1,createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast('Folder created!','s');}
+async function addFolder(){
+  const n=prompt('Folder name:');
+  if(!n||!n.trim())return;
+  const docRef = await uCol('folders').add({
+    name:n.trim(),
+    order:folderCache.length+1,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('Folder created! ✅','s');
+  // Auto-select the new folder so user can immediately add entries
+  // Wait a moment for onSnapshot to update folderCache, then select
+  setTimeout(()=>{
+    const newFolder = folderCache.find(f=>f.id===docRef.id);
+    if(newFolder){
+      selectFolder(docRef.id);
+    } else {
+      // If onSnapshot hasn't fired yet, manually add to cache and select
+      folderCache.push({id:docRef.id, name:n.trim(), order:folderCache.length});
+      selectFolder(docRef.id);
+    }
+    // Also set today's date in the entry form
+    setToday('myaccDate');
+  }, 600);
+}
 
 function buildFolderTabs(){
   const bar=$id('folderTabsBar');
@@ -2484,7 +2553,11 @@ function selectFolder(fId){
   activeFolderId=fId;const f=folderCache.find(x=>x.id===fId);if(!f)return;
   $id('activeFolderName').textContent=f.name;$id('myaccLedgerTitle').textContent=f.name;
   show('myaccContent');hide('myaccEmpty');buildFolderTabs();
-  populateCatSelect('myaccCat',myaccType);buildDateBar('myaccDateBar',myaccDF,renderMyacc);renderMyacc();
+  populateCatSelect('myaccCat',myaccType);
+  buildDateBar('myaccDateBar',myaccDF,renderMyacc);
+  // Always set today's date when folder is selected
+  setToday('myaccDate');
+  renderMyacc();
 }
 
 async function renameActiveFolder(){if(!activeFolderId)return;const f=folderCache.find(x=>x.id===activeFolderId);const n=prompt('New name:',f?.name||'');if(!n||!n.trim())return;await uCol('folders').doc(activeFolderId).update({name:n.trim()});toast('Renamed!','s');}
@@ -2507,7 +2580,8 @@ function selectMyaccType(type,btn){
 async function saveMyaccEntry(){
   if(!activeFolderId){toast('Select a folder first','e');return;}
   const amt=parseFloat(gv('myaccAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
-  await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:gv('myaccDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  const entryDate = gv('myaccDate') || todayStr();
+  await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:entryDate,deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   clearFields(['myaccAmt','myaccDesc']);toast('Entry saved!','s');renderMyacc();
 }
 
