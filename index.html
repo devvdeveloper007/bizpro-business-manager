@@ -1466,12 +1466,17 @@ window.onload=function(){
       return;
     }
 
-    // ── Check for ?m=linkId (member direct link — no Firebase Auth needed) ──
-    const p=new URLSearchParams(window.location.search).get('m');
+    // ── Check for ?m=linkId&u=adminUid (member direct link — no Firebase Auth needed) ──
+    const _urlParams = new URLSearchParams(window.location.search);
+    const p = _urlParams.get('m');
+    const uFromUrl = _urlParams.get('u'); // ← Admin UID from link (works on ANY device)
     if(p){
-      const savedAdminUid = localStorage.getItem('bp-admin-uid');
+      // FIX: Use 'u' from URL first (works on new devices), fallback to localStorage
+      const savedAdminUid = uFromUrl || localStorage.getItem('bp-admin-uid');
       if(savedAdminUid){
         currentUid = savedAdminUid;
+        // Save for future use on this device
+        localStorage.setItem('bp-admin-uid', savedAdminUid);
         await loadMembersForLogin();
         const m=membersCache.find(x=>x.linkId===p);
         if(m){
@@ -1486,7 +1491,18 @@ window.onload=function(){
           nameLabel.textContent='👤 '+m.name;
           const uidIn=$id('memberUserIdIn');if(uidIn&&m.userId)uidIn.value=m.userId;
           return;
+        } else {
+          // linkId not found — show normal login with member tab
+          hide('appLoading');show('loginScreen');
+          switchLoginTab('member');
+          return;
         }
+      } else {
+        // No admin UID at all — show error on login
+        hide('appLoading');show('loginScreen');
+        switchLoginTab('member');
+        setTimeout(()=>toast('Link invalid ya expired. Admin se naya link lo.','w'),500);
+        return;
       }
     }
 
@@ -1510,7 +1526,29 @@ window.onload=function(){
         hide('appLoading');
         show('loginScreen');
       } else {
-        // Not signed in
+        // Not signed in via Firebase — check for saved member session
+        const _mSess = sessionStorage.getItem('bp-member-session');
+        if(_mSess){
+          try{
+            const ms = JSON.parse(_mSess);
+            // Session valid for 1 hour
+            if(ms && ms.adminUid && (Date.now()-ms.ts) < 3600000){
+              currentUid = ms.adminUid;
+              localStorage.setItem('bp-admin-uid', ms.adminUid);
+              currentUser = {type:'member', id:ms.id, name:ms.name, group:ms.group};
+              currentMemberId = ms.id;
+              // Load members cache then restore
+              await loadMembersForLogin();
+              const mObj = membersCache.find(x=>x.id===ms.id);
+              if(mObj){
+                hide('appLoading');
+                launchMember(mObj);
+                return;
+              }
+            }
+          }catch(e){}
+          sessionStorage.removeItem('bp-member-session');
+        }
         hide('appLoading');
         show('loginScreen');
         setTimeout(initPasskeyUI, 300);
@@ -1525,7 +1563,10 @@ async function initFB(cfg){
     else fbApp=firebase.apps[0];
     db=firebase.firestore();
     auth=firebase.auth();
-    // Disable email verification requirement
+    // SESSION persistence: Firebase logs out when browser tab closes
+    try{
+      await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    }catch(e){ console.warn('Persistence set failed:', e); }
     auth.settings = auth.settings || {};
     return true;
   }catch(e){console.error(e);return false;}
@@ -2068,6 +2109,13 @@ async function doMemberLogin(){
   if(pw!==m.password){toast(t_('wrong_password')||'Wrong password!','e');return;}
   currentUser={type:'member',id:m.id,name:m.name,group:m.group};
   currentMemberId=m.id;
+  // Save member session to sessionStorage (clears on tab/browser close)
+  try{
+    sessionStorage.setItem('bp-member-session', JSON.stringify({
+      id:m.id, name:m.name, group:m.group, userId:m.userId,
+      linkId:m.linkId||'', adminUid:currentUid, ts:Date.now()
+    }));
+  }catch(e){}
   launchMember(m);
 }
 
@@ -2135,6 +2183,10 @@ async function doLogout(){
   currentUid=null;currentFirebaseUser=null;
   localStorage.removeItem('bp-admin-uid');
   localStorage.removeItem('bp-admin-userid');
+  // Clear member session
+  try{ sessionStorage.removeItem('bp-member-session'); }catch(e){}
+  // Stop inactivity timer
+  stopInactivityWatch();
   show('loginScreen');toast(t_('logged_out'),'i');
 }
 function switchLoginTab(tab){$id('adminLoginForm').style.display=tab==='admin'?'block':'none';$id('memberLoginForm').style.display=tab==='member'?'block':'none';$id('ltab-admin').classList.toggle('active',tab==='admin');$id('ltab-member').classList.toggle('active',tab==='member');}
@@ -2157,6 +2209,8 @@ function launchAdmin(s){
   if(uidEl) uidEl.textContent=s.userId||localStorage.getItem('bp-admin-userid')||'—';
   // Init passkey UI
   setTimeout(initPasskeyUI, 400);
+  // Start 1-hour inactivity auto-logout
+  startInactivityWatch();
 }
 function launchMember(m){
   hide('loginScreen');show('memberApp');
@@ -2171,6 +2225,8 @@ function launchMember(m){
   const en=$id('mni-entries'); if(en) en.classList.add('active');
   populateCatSelect('mCat','income');
   loadMemberData(m.id);
+  // Start 1-hour inactivity auto-logout
+  startInactivityWatch();
 }
 
 // ==================== ADMIN DATA ====================
@@ -4483,6 +4539,44 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
   });
+}
+
+// ══════════════════════════════════════════════════════
+// AUTO-LOGOUT SYSTEM
+// 1 hour inactivity → auto logout
+// Works for both Admin and Member sessions
+// ══════════════════════════════════════════════════════
+const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour in ms
+let _inactivityTimer = null;
+let _inactivityActive = false;
+
+function _resetInactivityTimer(){
+  if(!_inactivityActive) return;
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(()=>{
+    // Only logout if user is actually logged in
+    const isAdminIn = document.getElementById('adminApp') && 
+                      document.getElementById('adminApp').style.display !== 'none';
+    const isMemberIn = document.getElementById('memberApp') && 
+                       document.getElementById('memberApp').style.display !== 'none';
+    if(isAdminIn || isMemberIn){
+      toast('1 ghante se koi activity nahi — auto logout ho raha hai...','w');
+      setTimeout(()=>{ doLogout(); }, 1500);
+    }
+  }, INACTIVITY_LIMIT);
+}
+
+function startInactivityWatch(){
+  _inactivityActive = true;
+  const events = ['mousemove','mousedown','keypress','keydown','touchstart','touchmove','scroll','click'];
+  events.forEach(ev => document.addEventListener(ev, _resetInactivityTimer, {passive:true}));
+  _resetInactivityTimer(); // Start the timer immediately
+}
+
+function stopInactivityWatch(){
+  _inactivityActive = false;
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = null;
 }
 
 </script>
