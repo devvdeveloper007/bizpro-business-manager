@@ -2177,6 +2177,11 @@ async function doMemberLogin(){
       btn.innerHTML=origText;btn.disabled=false;return;
     }
 
+    console.log('✅ Password verified for member:', m.name);
+    console.log('📍 Setting currentUid:', currentUid);
+    console.log('📍 Setting currentMemberId:', m.id);
+    console.log('👤 Member details:', {name: m.name, group: m.group, userId: m.userId});
+
     currentUser={type:'member',id:m.id,name:m.name,group:m.group};
     currentMemberId=m.id;
     window._staffLinkMemberId=null;
@@ -2188,10 +2193,16 @@ async function doMemberLogin(){
         id:m.id, name:m.name, group:m.group, userId:m.userId,
         adminUid:currentUid, ts:Date.now()
       }));
-    }catch(e){}
+      console.log('💾 Session saved to sessionStorage');
+    }catch(e){
+      console.error('❌ Failed to save session:', e);
+    }
 
     btn.innerHTML=origText;btn.disabled=false;
-    launchMember(m);
+    
+    console.log('🚀 Launching member app...');
+    await launchMember(m);
+    console.log('✅ Member login complete');
 
   }catch(e){
     console.error('Member login error:', e);
@@ -2297,7 +2308,7 @@ function launchAdmin(s){
     localStorage.removeItem('bp-admin-userid');
   };
 }
-function launchMember(m){
+async function launchMember(m){
   hide('loginScreen');show('memberApp');
   $id('mAppName').textContent=m.name;
   $id('mAppGroup').textContent='Staff';
@@ -2309,6 +2320,18 @@ function launchMember(m){
   const ep=$id('mpg-entries'); if(ep) ep.classList.add('active');
   const en=$id('mni-entries'); if(en) en.classList.add('active');
   populateCatSelect('mCat','income');
+  
+  // ── CRITICAL FIX: Ensure membersCache is loaded (different device login) ──
+  if(!membersCache || !membersCache.length){
+    console.log('🔄 membersCache empty, reloading...');
+    try{
+      await loadMembersForLogin();
+      console.log('✅ membersCache loaded:', membersCache.length, 'members');
+    }catch(e){
+      console.error('❌ Failed to load membersCache:', e);
+    }
+  }
+  
   loadMemberData(m.id);
 }
 
@@ -2425,11 +2448,90 @@ async function saveGrpaEntry(){
 }
 
 async function saveMemberEntry(){
-  const amt=parseFloat(gv('mAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
-  const m=membersCache.find(x=>x.id===currentMemberId);if(!m){toast('Not found','e');return;}
+  // ── CRITICAL FIX: Validate currentUid and member data ──
+  if(!currentUid){
+    console.error('❌ saveMemberEntry: currentUid is missing');
+    toast('Session error. Please re-login.','e');
+    return;
+  }
+  if(!currentMemberId){
+    console.error('❌ saveMemberEntry: currentMemberId is missing');
+    toast('Member session error. Please re-login.','e');
+    return;
+  }
+  
+  const amt=parseFloat(gv('mAmt'));
+  if(!amt||amt<=0){toast('Enter amount','e');return;}
+  
+  const m=membersCache.find(x=>x.id===currentMemberId);
+  if(!m){
+    console.error('❌ saveMemberEntry: Member not found in cache. currentMemberId:', currentMemberId);
+    console.log('📦 membersCache:', membersCache);
+    
+    // Try reloading membersCache
+    try{
+      console.log('🔄 Reloading membersCache...');
+      await loadMembersForLogin();
+      const m2=membersCache.find(x=>x.id===currentMemberId);
+      if(!m2){
+        toast('Member data not found. Please re-login.','e');
+        return;
+      }
+      // Continue with m2
+      const col='private_entries';
+      console.log('💾 Saving to:', 'users/'+currentUid+'/'+col);
+      await uCol(col).add({
+        memberId:currentMemberId,
+        memberName:m2.name,
+        group:m2.group,
+        type:memberType,
+        amount:amt,
+        category:gv('mCat'),
+        description:gv('mDesc'),
+        date:gv('mDate')||todayStr(),
+        deleted:false,
+        clientCreatedAt:new Date().toISOString(),
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('✅ Entry saved successfully');
+      clearFields(['mAmt','mDesc']);
+      toast('Entry saved!','s');
+      renderMemberDash();
+      renderMemberLedger();
+      return;
+    }catch(e){
+      console.error('❌ Reload failed:', e);
+      toast('Save error: '+e.message,'e');
+      return;
+    }
+  }
+  
   const col='private_entries';
-  await uCol(col).add({memberId:currentMemberId,memberName:m.name,group:m.group,type:memberType,amount:amt,category:gv('mCat'),description:gv('mDesc'),date:gv('mDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  clearFields(['mAmt','mDesc']);toast('Entry saved!','s');renderMemberDash();renderMemberLedger();
+  console.log('💾 Saving to:', 'users/'+currentUid+'/'+col, '| Member:', m.name);
+  
+  try{
+    await uCol(col).add({
+      memberId:currentMemberId,
+      memberName:m.name,
+      group:m.group,
+      type:memberType,
+      amount:amt,
+      category:gv('mCat'),
+      description:gv('mDesc'),
+      date:gv('mDate')||todayStr(),
+      deleted:false,
+      clientCreatedAt:new Date().toISOString(),
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Entry saved successfully');
+    clearFields(['mAmt','mDesc']);
+    toast('Entry saved!','s');
+    renderMemberDash();
+    renderMemberLedger();
+  }catch(e){
+    console.error('❌ Save error:', e);
+    toast('Save error: '+e.message,'e');
+  }
 }
 
 async function delEntry(col,docId){
@@ -3298,22 +3400,38 @@ function saveMemberNote(){saveNote(currentMemberId);}
 
 // ==================== MEMBER APP ====================
 function loadMemberData(mId){
+  console.log('🔄 loadMemberData called for memberId:', mId);
+  console.log('📍 currentUid:', currentUid);
+  console.log('📦 membersCache length:', membersCache ? membersCache.length : 0);
+  
   currentMemberId=mId;
   const m=membersCache.find(x=>x.id===mId)||{group:'B'};
+  
+  if(!m.name){
+    console.warn('⚠️ Member not found in cache. Using default group B');
+  } else {
+    console.log('✅ Member found:', m.name, '| Group:', m.group);
+  }
+  
   const col='private_entries';
 
   // ── Real-time listener for entries (fixes admin-delete sync) ──
   // When admin deletes an entry — member page updates instantly
   if(window._memberEntriesUnsub) window._memberEntriesUnsub(); // purana listener hatao
+  
+  console.log('🔔 Setting up onSnapshot listener for:', 'users/'+currentUid+'/'+col);
+  
   window._memberEntriesUnsub = uCol(col)
     .where('memberId','==',mId)
     .where('deleted','==',false)
     .onSnapshot(snap=>{
       window._memberEntriesCache=snap.docs.map(d=>({_id:d.id,...d.data()}));
+      console.log('📊 Entries updated:', window._memberEntriesCache.length, 'entries');
       renderMemberDash();
       renderMemberLedger();
     }, err=>{
-      console.error('Member entries listener error:', err);
+      console.error('❌ Member entries listener error:', err);
+      toast('Data sync error: '+err.message,'e');
     });
 
   uCol('todos').where('userId','==',mId).onSnapshot(snap=>{window._memberTodos=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberTodos();});
@@ -3321,6 +3439,8 @@ function loadMemberData(mId){
   uCol('notes').where('userId','==',mId).onSnapshot(snap=>{window._memberNotes=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberNotes();});
   buildDateBar('mLedgerDateBar',mLedgerDF,renderMemberLedger);
   buildDateBar('mDashDateBar',mDashDF,renderMemberDash);
+  
+  console.log('✅ loadMemberData setup complete');
 }
 
 async function renderMemberDash(){
