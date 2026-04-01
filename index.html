@@ -1404,12 +1404,16 @@ function toggleLedgerSort(){
   document.querySelectorAll('[id$="SortBtn"]').forEach(b=>{ b.innerHTML=lbl; });
   // Re-render all active ledgers
   try{renderGrpaEntries();}catch(e){}
-  try{renderGrpbLedger();}catch(e){}
   try{renderMyacc();}catch(e){}
   try{renderStaffLedger();}catch(e){}
   try{renderMemberDash();}catch(e){}
   try{renderMemberLedger();}catch(e){}
-  try{loadDashRecent(_dashDF?.mode||'today');}catch(e){}
+  try{renderTodos();}catch(e){}
+  try{renderReminders();}catch(e){}
+  try{renderNotes();}catch(e){}
+  try{renderMemberTodos();}catch(e){}
+  try{renderMemberReminders();}catch(e){}
+  try{renderMemberNotes();}catch(e){}
 }
 let memberTabFilter='all',currentMemberId=null,memberType='income',myaccType='income';
 let editNoteId=null,mEditNoteId=null,_confirmCb=null;
@@ -1450,28 +1454,6 @@ function waitForFirebase(cb, attempts=0){
 
 let auth = null; // Firebase Auth instance
 let currentFirebaseUser = null;
-
-// ==================== THEME ====================
-function updateThemeBtns(){
-  const t=document.documentElement.getAttribute('data-theme')||'dark';
-  const isDark=t==='dark';
-  const icon=isDark?'🌙':'☀️';
-  ['themeBtn','mThemeBtn','themeLoginBtn','themeSettingBtn'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){
-      el.innerHTML=icon;
-      if(id==='themeSettingBtn') el.innerHTML=(isDark?'🌙 Dark Mode':'☀️ Light Mode');
-    }
-  });
-}
-
-function toggleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme')||'dark';
-  const next=cur==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('bp-theme',next);
-  updateThemeBtns();
-}
 
 window.onload=function(){
   const t=localStorage.getItem('bp-theme')||'dark';
@@ -1747,86 +1729,77 @@ async function doAdminLogin(){
   if(!pw){toast(t_('enter_password'),'e');return;}
 
   const btn=$id('adminLoginBtn');
-  btn.textContent=t_('logging_in')||'Logging in...';btn.disabled=true;
+  btn.textContent=t_('logging_in')||'Logging in...';
+  btn.disabled=true;
   const warnEl=$id('loginAttemptWarn');
   if(warnEl)warnEl.style.display='none';
 
   const hiddenEmail = userId + '@bizpro-internal.app';
 
   try{
-    // Step 1: Check Firestore first (source of truth for password)
-    const accSnap = await db.collection('adminAccounts')
-      .where('userId','==',userId)
-      .where('type','==','admin')
-      .limit(1).get();
-
-    if(accSnap.empty){
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('userid_not_found')||'User ID not found');}
-      btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
-    }
-
-    const accData = accSnap.docs[0].data();
-    const accUid = accSnap.docs[0].id;
-
-    // Step 2: Verify password against Firestore (always up to date)
-    if(pw !== accData.adminPassword){
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('wrong_password')||'Wrong password!');}
-      btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
-    }
-
-    // Step 3: Sign in to Firebase Auth (for Firestore security rules)
-    try{
-      const cred = await auth.signInWithEmailAndPassword(hiddenEmail, pw);
-      currentFirebaseUser = cred.user;
-      currentUid = cred.user.uid;
-    }catch(authErr){
-      if(authErr.code==='auth/wrong-password' || authErr.code==='auth/invalid-credential'){
-        // Firebase Auth password out of sync — re-sync it
-        // This can happen if user changed password via Settings page
-        // We verified Firestore password is correct above
-        // Sign in with old password is not possible — use passwordless approach:
-        // Just use the Firestore UID directly (accUid = Firebase UID)
-        currentUid = accUid;
-        // Try to restore auth session via currentUser if available
-        if(auth.currentUser && auth.currentUser.uid === accUid){
-          currentFirebaseUser = auth.currentUser;
-        } else {
-          currentFirebaseUser = null; // Will use open Firestore rules
-        }
-      } else if(authErr.code==='auth/user-not-found'){
-        if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('userid_not_found')||'User ID not found');}
-        btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
-      } else if(authErr.code==='auth/too-many-requests'){
-        if(warnEl){warnEl.style.display='block';warnEl.innerHTML='⚠️ Too many attempts! Please wait.';}
-        btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
-      } else {
-        currentUid = accUid; // Use Firestore UID as fallback
-      }
-    }
-
-    if(!currentUid) currentUid = accUid;
+    // Firebase Auth sign in with hidden email
+    const cred = await auth.signInWithEmailAndPassword(hiddenEmail, pw);
+    currentFirebaseUser = cred.user;
+    currentUid = cred.user.uid;
     localStorage.setItem('bp-admin-uid', currentUid);
     localStorage.setItem('bp-admin-userid', userId);
 
-    // Load admin config
-    let cfg = accData;
-    try{
-      const cfgDoc = await uCol('settings').doc('config').get();
-      if(cfgDoc.exists) cfg = {...accData, ...cfgDoc.data()};
-    }catch(e){ console.warn('cfg load:', e); }
-
-    currentUser = {type:'admin', name: cfg.adminName||'Admin'};
+    // Load admin config from Firestore
+    const cfgDoc = await uCol('settings').doc('config').get();
+    const data = cfgDoc.exists ? cfgDoc.data() : {adminName:'Admin', userId};
+    currentUser = {type:'admin', name: data.adminName||'Admin'};
     btn.textContent='🔓 Login as Admin';btn.disabled=false;
-    launchAdmin(cfg);
+    launchAdmin(data);
 
   }catch(e){
+    // Handle pending password reset (forgot password flow)
+    if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'){
+      // Check if there's a pending reset
+      try{
+        const accSnap = await db.collection('adminAccounts')
+          .where('userId','==',userId).limit(1).get();
+        if(!accSnap.empty){
+          const accData = accSnap.docs[0].data();
+          if(accData.pendingReset && accData.pendingNewPassword === pw){
+            // User used the new password after recovery reset
+            // Re-create Firebase Auth account with new password
+            const hiddenEmailNew = userId+'@bizpro-internal.app';
+            try{
+              // Delete old auth user first — we can't without being logged in
+              // But we can create a new one if old is gone, or sign in directly
+              // Try sign in with new password (maybe auth pw was already updated)
+              const newCred = await auth.signInWithEmailAndPassword(hiddenEmailNew, pw);
+              // Success with new password
+              currentFirebaseUser=newCred.user;currentUid=newCred.user.uid;
+              // Clear pending reset
+              await db.collection('adminAccounts').doc(newCred.user.uid).update({pendingReset:firebase.firestore.FieldValue.delete(),pendingNewPassword:firebase.firestore.FieldValue.delete()});
+              localStorage.setItem('bp-admin-uid',currentUid);localStorage.setItem('bp-admin-userid',userId);
+              const cfgDoc=await uCol('settings').doc('config').get();
+              const data=cfgDoc.exists?cfgDoc.data():{adminName:'Admin',userId};
+              currentUser={type:'admin',name:data.adminName||'Admin'};
+              btn.textContent='🔓 Login as Admin';btn.disabled=false;
+              launchAdmin(data);return;
+            }catch(retryErr){
+              // Auth account mismatch — need admin intervention
+              if(warnEl){warnEl.style.display='block';warnEl.innerHTML='⚠️ Password reset in progress. Please contact admin or wait 24 hours.';}
+              btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
+            }
+          }
+        }
+      }catch(lookupErr){}
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('wrong_password')||'Wrong password!');}
+    } else if(e.code==='auth/user-not-found'||e.code==='auth/invalid-email'){
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('userid_not_found')||'User ID not found');}
+    } else if(e.code==='auth/too-many-requests'){
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='⚠️ Too many attempts! Please wait a few minutes.';}
+    } else {
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+e.message;}
+    }
     btn.textContent='🔓 Login as Admin';btn.disabled=false;
-    if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+e.message;}
-    console.error('Login error:',e);
   }
 }
 
-
+// ── ADMIN FORGOT — Step 1: Verify User ID + Recovery Password ──
 async function doAdminVerifyRecovery(){
   const userId = (gv('forgotUserId')||'').trim().toLowerCase();
   const recovPw = gv('forgotRecovery');
@@ -1866,35 +1839,6 @@ async function doAdminVerifyRecovery(){
 
   }catch(e){ toast(t_('error_prefix')+e.message,'e'); }
   btn.textContent='🔍 Verify & Continue';btn.disabled=false;
-}
-
-function switchAdminTab(tab){
-  // Show/hide login sub-panels
-  const login=$id('adminAuthLogin');
-  const reg=$id('adminAuthRegister');
-  const forgot=$id('adminAuthForgot');
-  if(login)  login.style.display  = (tab==='login')   ? 'block' : 'none';
-  if(reg)    reg.style.display    = (tab==='register') ? 'block' : 'none';
-  if(forgot) forgot.style.display = (tab==='forgot')   ? 'block' : 'none';
-  // Update tab button active states
-  ['login','register','forgot'].forEach(t=>{
-    const btn=$id('atab-'+t);
-    if(btn) btn.classList.toggle('active', t===tab);
-  });
-  // Reset forgot form when leaving it
-  if(tab!=='forgot'){
-    const fs=$id('forgotVerifyStatus');if(fs)fs.style.display='none';
-    const fn=$id('forgotNewPwSection');if(fn)fn.style.display='none';
-    const fb=$id('forgotVerifyBtn');if(fb){fb.style.display='flex';fb.textContent='🔍 Verify & Continue';}
-    window._forgotUid=null;window._forgotUserId=null;window._forgotHiddenEmail=null;
-  }
-  // Reset login warnings
-  const warn=$id('loginAttemptWarn');if(warn)warn.style.display='none';
-  // Reset register suggestions
-  if(tab!=='register'){
-    const us=$id('userIdStatus');if(us)us.textContent='';
-    const sg=$id('userIdSuggestions');if(sg)sg.style.display='none';
-  }
 }
 
 function _showForgotStatus(type, msg){
@@ -2850,7 +2794,8 @@ async function loadDashRecent(period,btn){
   if(!entries.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty" style="padding:28px"><div class="ei">📋</div><h3>No entries for this period</h3></div></td></tr>';return;}
   tbody.innerHTML=entries.slice(0,20).map(e=>`<tr>
     <td style="white-space:nowrap">${fmtDT(e.date, e.createdAt, e.clientCreatedAt)}</td>
-    <td><small style="color:var(--muted);font-weight:700">${e.memberName||'Admin'}</small></td>
+    <td><span class="tag" style="background:rgba(88,166,255,.15);color:var(--blue)">A</span></td>
+    <td><small style="color:var(--muted)">${e.memberName||'—'}</small></td>
     <td>${typeTag(e.type)}</td>
     <td><small style="color:var(--muted)">${e.category||''}</small></td>
     <td>${e.description||'—'}</td>
@@ -3446,62 +3391,298 @@ async function saveAdminName(){
 }
 async function saveAdminPw(){
   const p=gv('setAdminPw');
-  if(!p||p.length<4){toast('Min 4 chars required','e');return;}
+  if(!p||p.length<4){toast('Min 4 chars','e');return;}
 
-  const btn=document.querySelector('#pg-settings [onclick="saveAdminPw()"]');
-  if(btn){btn.textContent='Saving...';btn.disabled=true;}
+  // Update Firestore first
+  await uCol('settings').doc('config').update({adminPassword:p});
+  if(currentUid) try{await db.collection('adminAccounts').doc(currentUid).update({adminPassword:p});}catch(e){}
 
-  try{
-    // Step 1: Update Firestore (our primary auth store)
-    await uCol('settings').doc('config').update({adminPassword:p});
-    if(currentUid){
-      await db.collection('adminAccounts').doc(currentUid).update({adminPassword:p});
-    }
-
-    // Step 2: Try to update Firebase Auth password
-    if(currentFirebaseUser){
-      try{
-        await currentFirebaseUser.updatePassword(p);
-      }catch(authErr){
-        if(authErr.code==='auth/requires-recent-login'){
-          // Need re-auth — use current stored password
-          const accDoc = await db.collection('adminAccounts').doc(currentUid).get();
-          const hiddenEmail = accDoc.data()?.hiddenEmail || (localStorage.getItem('bp-admin-userid')+'@bizpro-internal.app');
-          // Can't re-auth without old password being typed — skip Firebase Auth update
-          // Firestore update is sufficient for our login system
-          console.warn('Firebase Auth update skipped — Firestore updated (sufficient for login)');
+  // Update Firebase Auth password (re-auth needed)
+  if(currentFirebaseUser){
+    try{
+      await currentFirebaseUser.updatePassword(p);
+    }catch(authErr){
+      if(authErr.code === 'auth/requires-recent-login'){
+        // Re-auth needed — get current password from Firestore
+        const accDoc = await db.collection('adminAccounts').doc(currentUid).get();
+        const oldPw = accDoc.data()?.adminPassword;
+        const email = accDoc.data()?.hiddenEmail;
+        if(oldPw && email){
+          try{
+            const cred = firebase.auth.EmailAuthProvider.credential(email, oldPw);
+            await currentFirebaseUser.reauthenticateWithCredential(cred);
+            await currentFirebaseUser.updatePassword(p);
+          }catch(e){ console.warn('Re-auth failed for pw update:', e); }
         }
       }
     }
-
-    $id('setAdminPw').value='';
-    toast('✅ Password updated successfully!','s');
-  }catch(e){
-    toast('Error: '+e.message,'e');
-    console.error('saveAdminPw error:',e);
   }
-  if(btn){btn.textContent='Update';btn.disabled=false;}
-}
 
+  const saved=localStorage.getItem('bp-admin-data');
+  if(saved){try{const d=JSON.parse(saved);d.adminPassword=p;localStorage.setItem('bp-admin-data',JSON.stringify(d));}catch(e){}}
+  $id('setAdminPw').value='';
+  toast(t_('saved')||'Password updated! ✅','s');
+}
 
 async function saveRecoveryPw(){
   const p=gv('setRecoveryPw');
   if(!p||p.length<4){toast('Enter recovery password (min 4 chars)','e');return;}
+  await uCol('settings').doc('config').update({recoveryPassword:p});
+  // Also update adminAccounts so forgot password flow works
+  if(currentUid){
+    try{await db.collection('adminAccounts').doc(currentUid).update({recoveryPassword:p});}catch(e){}
+  }
+  $id('setRecoveryPw').value='';
+  toast('Recovery password saved! 🔐 Note it down safely.','s');
+}
 
-  try{
-    // Update in BOTH places so forgot password flow works
-    await uCol('settings').doc('config').update({recoveryPassword:p});
-    if(currentUid){
-      await db.collection('adminAccounts').doc(currentUid).update({recoveryPassword:p});
+// ==================== DATE FILTER ====================
+function buildDateBar(barId,dfObj,onChangeFn){
+  const bar=$id(barId);if(!bar)return;
+  barFilters[barId]=barFilters[barId]||{...dfObj};const bf=barFilters[barId];
+  bar.innerHTML=`<div class="df-bar-tabs"><button class="df-tab ${bf.mode==='today'?'active':''}" onclick="setDF('${barId}','today')">Today</button><button class="df-tab ${bf.mode==='week'?'active':''}" onclick="setDF('${barId}','week')">This Week</button><button class="df-tab ${bf.mode==='month'?'active':''}" onclick="setDF('${barId}','month')">This Month</button><button class="df-tab ${bf.mode==='all'?'active':''}" onclick="setDF('${barId}','all')">All Time</button><button class="df-tab ${bf.mode==='custom'?'active':''}" onclick="setDF('${barId}','custom')">&#x1F4C5; Custom</button></div><div class="df-date-wrap"><button class="df-arrow" onclick="shiftDF('${barId}',-1)">&#x25C0;</button><input type="date" class="df-inp" id="${barId}-from" value="${bf.from||todayStr()}" onchange="onDFChange('${barId}')"><span style="color:var(--muted);font-size:11px;flex-shrink:0">to</span><input type="date" class="df-inp" id="${barId}-to" value="${bf.to||todayStr()}" onchange="onDFChange('${barId}')"><button class="df-arrow" onclick="shiftDF('${barId}',1)">&#x25B6;</button></div>`;
+  bar._cb=onChangeFn;
+}
+
+function setDF(barId,mode){
+  if(!barFilters[barId])barFilters[barId]={mode:'all'};const bf=barFilters[barId];bf.mode=mode;
+  const now=new Date(),ts=todayStr();
+  if(mode==='today'){bf.from=ts;bf.to=ts;}else if(mode==='week'){bf.from=new Date(now-6*86400000).toISOString().split('T')[0];bf.to=ts;}else if(mode==='month'){bf.from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];bf.to=ts;}else if(mode==='all'){bf.from='2020-01-01';bf.to='2099-12-31';}
+  const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe&&mode!=='custom')fe.value=bf.from||ts;if(te&&mode!=='custom')te.value=bf.to||ts;
+  // Fix: update active button classes
+  const bar=$id(barId);if(bar){const modes=['today','week','month','all','custom'];bar.querySelectorAll('.df-tab').forEach((b,i)=>{b.classList.toggle('active',modes[i]===mode);});}
+  syncDF(barId);if(bar&&bar._cb)bar._cb();
+}
+function onDFChange(barId){if(!barFilters[barId])barFilters[barId]={mode:'custom'};barFilters[barId].mode='custom';barFilters[barId].from=$id(barId+'-from')?.value||todayStr();barFilters[barId].to=$id(barId+'-to')?.value||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();}
+function shiftDF(barId,dir){
+  const bf=barFilters[barId]||{mode:'all'};
+  if(bf.mode==='today'||bf.mode==='all'||bf.mode==='custom'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir);const t=new Date(bf.to||todayStr());t.setDate(t.getDate()+dir);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];bf.mode='custom';}
+  else if(bf.mode==='week'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir*7);const t=new Date(f);t.setDate(t.getDate()+6);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];}
+  else if(bf.mode==='month'){const d=new Date(bf.from||todayStr());d.setMonth(d.getMonth()+dir);bf.from=new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0];bf.to=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split('T')[0];}
+  barFilters[barId]=bf;const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe)fe.value=bf.from||todayStr();if(te)te.value=bf.to||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();
+}
+function syncDF(barId){const bf=barFilters[barId]||{mode:'all'};if(barId==='grpaDateBar')Object.assign(grpaDF,bf);else if(barId==='myaccDateBar')Object.assign(myaccDF,bf);else if(barId==='grpbDateBar')Object.assign(grpbDF,bf);else if(barId==='mLedgerDateBar')Object.assign(mLedgerDF,bf);else if(barId==='membersDateBar')Object.assign(memberCardsDF,bf);else if(barId==='invDateBar')Object.assign(invDF,bf);else if(barId==='mDashDateBar')Object.assign(mDashDF,bf);else if(barId==='exportDateBar')Object.assign(exportDF,bf);else if(barId==='staffLedgerDateBar')Object.assign(_staffLedgerDF,bf);}
+function applyDF(entries,dfObj){if(!dfObj||dfObj.mode==='all')return entries;const f=dfObj.from||'2020-01-01',t=dfObj.to||'2099-12-31';return entries.filter(e=>e.date&&e.date>=f&&e.date<=t);}
+
+// ==================== NAVIGATION ====================
+function adminNav(page,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  const pg=$id('pg-'+page);if(pg)pg.classList.add('active');if(btn)btn.classList.add('active');
+  const titles={dashboard:'Dashboard',members:'Staff',grpb:'Staff',myacc:'My Private Ledger',inventory:'Inventory / Stock',todo:'To-Do Tasks',reminders:'Reminders',notebook:'Notebook',reports:'Reports',export:'Export Data',categories:'Categories',archive:'Deleted Archive',settings:'Settings'};
+  $id('adminPageTitle').textContent=titles[page]||page;closeSb();
+  if(page==='members'){$id('staffLedgerInline').style.display='none';_staffLedgerMemberId=null;buildDateBar('membersDateBar',memberCardsDF,renderMemberCards);renderMemberCards();return;}
+  if(page==='grpb'){renderGrpbCards();return;}
+  if(page==='myacc'){setToday('myaccDate');if(activeFolderId)selectFolder(activeFolderId);else{hide('myaccContent');show('myaccEmpty');}return;}
+  if(page==='todo'){setToday('todoDue');renderTodos();return;}
+  if(page==='reminders'){setToday('remDue');renderReminders();return;}
+  if(page==='notebook'){renderNotes();return;}
+  if(page==='reports'){loadReports('monthly',document.querySelector('#pg-reports .df-tab'));return;}
+  if(page==='categories'){renderCatChips();return;}
+  if(page==='export'){initExportPage();return;}
+  if(page==='inventory'){initInventoryPage();return;}
+  if(page==='archive'){renderArchive();return;}
+  if(page==='settings'){const sn=$id('setAdminName');if(sn)sn.value=$id('adminDisplayName').textContent;switchSettingsTab('general');return;}
+}
+function memberNav(page,btn){
+  document.querySelectorAll('#memberApp .pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mnav-item').forEach(b=>b.classList.remove('active'));
+  const pg=$id('mpg-'+page);if(pg)pg.classList.add('active');if(btn)btn.classList.add('active');
+  if(page==='entries'){populateCatSelect('mCat',memberType);buildDateBar('mLedgerDateBar',mLedgerDF,renderMemberLedger);renderMemberLedger();return;}
+  if(page==='dash'){buildDateBar('mDashDateBar',mDashDF,renderMemberDash);renderMemberDash();return;}
+  if(page==='mnotes'){renderMemberNotes();return;}
+}
+
+// ==================== THEME ====================
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('bp-theme',n);updateThemeBtns();}
+function updateThemeBtns(){const dk=document.documentElement.getAttribute('data-theme')==='dark';['themeBtn','themeLoginBtn','mThemeBtn'].forEach(id_=>{const b=$id(id_);if(b)b.textContent=dk?'🌙':'☀️';});const s=$id('themeSettingBtn');if(s)s.textContent=dk?'🌙 Dark Mode':'☀️ Light Mode';}
+
+// ==================== UI ====================
+function toggleSb(){$id('sb').classList.toggle('open');$id('sbOv').classList.toggle('open');}
+function closeSb(){$id('sb')?.classList.remove('open');$id('sbOv')?.classList.remove('open');}
+function openM(mId){const el=$id(mId);if(el)el.classList.add('open');}
+function closeM(mId){const el=$id(mId);if(el)el.classList.remove('open');}
+document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.modal-ov').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});});
+function confirm2(title,desc,cb){_confirmCb=cb;$id('confTitle').textContent=title;$id('confDesc').textContent=desc;$id('confOkBtn').onclick=()=>{closeM('mConfirm');if(_confirmCb){const fn=_confirmCb;_confirmCb=null;fn();}};openM('mConfirm');}
+
+let _toastTmr;
+function toast(msg,type='i'){const el=$id('toast');el.className='t'+type;el.textContent=msg;el.style.display='flex';clearTimeout(_toastTmr);_toastTmr=setTimeout(()=>el.style.display='none',3200);}
+function startClock(){function tick(){const n=new Date();$id('liveTime').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});$id('adminDate').textContent=n.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}tick();setInterval(tick,1000);}
+
+// ==================== HELPERS ====================
+function $id(s){return typeof s==='string'?document.getElementById(s):s;}
+
+// ── Stats hide/show toggle — checks both style and class ──
+function toggleStats(elId, btn){
+  const el=$id(elId); if(!el) return;
+  const isHidden = el.style.display==='none' || el.classList.contains('s-hidden');
+  el.classList.remove('s-hidden');
+  el.style.display = isHidden ? '' : 'none';
+  btn.innerHTML = isHidden ? '&#x25B2; Hide' : '&#x25BC; Show';
+}
+// ── Ledger body hide/show toggle ──
+function toggleLedgerSection(elId, btn){
+  const el=$id(elId); if(!el) return;
+  const isHidden = el.style.display==='none' || el.classList.contains('s-hidden');
+  el.classList.remove('s-hidden');
+  el.style.display = isHidden ? '' : 'none';
+  btn.innerHTML = isHidden ? '&#x25B2; Hide' : '&#x25BC; Show';
+}
+function gv(s){return $id(s)?.value?.trim()||'';}
+function hide(s){const el=$id(s);if(el)el.style.display='none';}
+function show(s){const el=$id(s);if(el)el.style.display='block';}
+function clearFields(arr){arr.forEach(s=>{const el=$id(s);if(el)el.value='';}); }
+function setToday(...ids){const t=todayStr();ids.forEach(s=>{const el=$id(s);if(el)el.value=t;});} // ← FIXED: always force today's date on every call
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmt(n){return(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function fmtD(d){if(!d)return '—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d;}}
+function fmtDT(d, ts, clientTs){
+  // d = date string 'YYYY-MM-DD', ts = Firestore timestamp, clientTs = ISO string
+  let dateStr=fmtD(d);
+  let timeStr='';
+  // Try clientCreatedAt first (most reliable for time)
+  const tryTs = clientTs || ts;
+  if(tryTs){
+    try{
+      let dt;
+      if(tryTs && typeof tryTs==='object' && tryTs.toDate) dt=tryTs.toDate();
+      else if(tryTs && typeof tryTs==='object' && tryTs.seconds) dt=new Date(tryTs.seconds*1000);
+      else if(typeof tryTs==='string') dt=new Date(tryTs);
+      if(dt && !isNaN(dt)) timeStr=dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});
+    }catch(e){}
+  }
+  if(!timeStr) return dateStr;
+  return dateStr+'<br><small style="color:var(--muted);font-size:10px;font-weight:600">⏱ '+timeStr+'</small>';
+}
+function genId(){return Math.random().toString(36).substring(2,10)+Date.now().toString(36);}
+function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{if(btn){const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,2000);}toast('Link copied!','s');});}
+function sum(arr,type){return arr.filter(e=>e.type===type).reduce((s,e)=>s+e.amount,0);}
+function amtCls(type){return type==='income'?'amt-pos':type==='personal_expense'?'amt-pe':'amt-neg';}
+function typeTag(type){const t={income:'<span class="tag tag-income">Income</span>',personal_expense:'<span class="tag tag-pe">Personal Exp.</span>',home_expense:'<span class="tag tag-he">Home Exp.</span>'};return t[type]||`<span class="tag" style="background:var(--s2)">${type}</span>`;}
+function statCards(items){return items.map(i=>`<div class="sc ${i.cls||'b'}" ${i.cb?`onclick="${i.cb}"`:''}><div class="sc-ico">${i.ico}</div><div class="sc-val" ${i.col?`style="color:${i.col}"`:''}>${i.val}</div><div class="sc-lbl">${i.lbl}</div></div>`).join('');}
+function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();toast('CSV Downloaded!','s');}
+
+// ==================== INVENTORY ====================
+let invDF={mode:'all'};
+
+function initInventoryPage(){
+  setToday('invDate');
+  buildDateBar('invDateBar',invDF,renderInventory);
+  // populate folder select
+  const fs=$id('invFolder');
+  if(fs){fs.innerHTML=folderCache.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
+  // set initial member list
+  updateInvMemberList('grpa');
+  // target change handler
+  $id('invTarget').onchange=function(){
+    const v=this.value;
+    $id('invFolderWrap').style.display=v==='myacc'?'block':'none';
+    $id('invMemberWrap').style.display=(v==='grpa'||v==='grpb')?'block':'none';
+    updateInvMemberList(v);
+  };
+  // populate item name datalist from saved inventory
+  populateInvItemList();
+  // Set default catalog mode
+  setInvMode('catalog',$id('invModeCatalog'));
+  renderInventory();
+}
+
+function updateInvMemberList(target){
+  const ms=$id('invMember');const lbl=$id('invMemberLabel');if(!ms)return;
+  if(target==='grpa'){
+    const ga=membersCache.filter(m=>m.group==='A');
+    ms.innerHTML=ga.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+    if(lbl)lbl.textContent='Select Staff Member';
+  }else if(target==='grpb'){
+    const gb=membersCache.filter(m=>m.group==='B');
+    ms.innerHTML=gb.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+    if(lbl)lbl.textContent='Select Staff Member';
+  }
+}
+
+// Store item catalog: {name -> {price, unit, sellPrice}}
+window._invCatalog={};
+
+function populateInvItemList(){
+  // Use real-time cache (_adminInventory updated by onSnapshot)
+  const items = window._adminInventory || [];
+  const catalog={};
+  items.forEach(data=>{
+    if(data.name){
+      if(!catalog[data.name]||data.price>0){
+        catalog[data.name]={price:data.price||0,unit:data.unit||'Pcs',sellPrice:data.sellPrice||0};
+      }
     }
-    $id('setRecoveryPw').value='';
-    toast('✅ Recovery password saved! 🔐 Keep it safe.','s');
-  }catch(e){
-    toast('Error: '+e.message,'e');
+  });
+  window._invCatalog=catalog;
+  const dl=$id('invItemList');if(!dl)return;
+  dl.innerHTML=Object.keys(catalog).sort().map(n=>`<option value="${n}" data-price="${catalog[n].price}" data-unit="${catalog[n].unit}">`).join('');
+}
+
+function onInvItemSelect(val){
+  if(!val)return;
+  const cat=window._invCatalog||{};
+  const item=cat[val.trim()];
+  if(item){
+    // Autofill price and unit
+    const priceEl=$id('invPrice');
+    const unitEl=$id('invUnit');
+    const sellEl=$id('invSellPrice');
+    if(priceEl&&item.price>0)priceEl.value=item.price;
+    if(unitEl&&item.unit){
+      // Set unit select
+      for(let i=0;i<unitEl.options.length;i++){
+        if(unitEl.options[i].value===item.unit){unitEl.selectedIndex=i;break;}
+      }
+    }
+    if(sellEl&&item.sellPrice>0)sellEl.value=item.sellPrice;
+    toast('Item found: ₹'+fmt(item.price)+'/'+item.unit,'i');
   }
 }
 
 
+// Inventory mode: 'catalog' = save only, 'purchase' = save + expense
+window._invMode='catalog';
+function setInvMode(mode,btn){
+  window._invMode=mode;
+  document.querySelectorAll('#pg-inventory .df-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const pf=$id('invPurchaseFields');
+  const info=$id('invModeInfo');
+  const saveBtn=$id('invSaveBtn');
+  if(mode==='catalog'){
+    if(pf)pf.style.display='none';
+    if(info){info.innerHTML='&#x1F4CB; <b>Catalog Mode:</b> Save item & price — no expense entry. Switch to Purchase mode to record expenses.';}
+    if(saveBtn)saveBtn.textContent='📋 Save to Catalog';
+  }else{
+    if(pf)pf.style.display='';
+    if(info){info.innerHTML='&#x1F6D2; <b>Purchase Mode:</b> Item added & expense auto-recorded in Home/Biz-Expense.';}
+    if(saveBtn)saveBtn.textContent='📦 Add Item & Record Expense';
+  }
+}
+
+function editInvCatalogItem(docId){
+  const item=(window._adminInventory||[]).find(x=>x._id===docId);
+  if(!item)return;
+  const nameEl=$id('invItemName');if(nameEl)nameEl.value=item.name||'';
+  const priceEl=$id('invPrice');if(priceEl)priceEl.value=item.price||0;
+  const sellEl=$id('invSellPrice');if(sellEl)sellEl.value=item.sellPrice||0;
+  const unitEl=$id('invUnit');if(unitEl)unitEl.value=item.unit||'Pcs';
+  setInvMode('catalog',$id('invModeCatalog'));
+  window._editingInvId=docId;
+  const saveBtn=$id('invSaveBtn');if(saveBtn){saveBtn.textContent='✏️ Update Item';saveBtn.style.background='var(--orange)';}
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('Editing: '+(item.name||''),' — save to update!','i');
+}
+
+function quickPurchaseItem(docId){
+  const item=(window._adminInventory||[]).find(x=>x._id===docId);
+  if(!item)return;
+  const nameEl=$id('invItemName');if(nameEl)nameEl.value=item.name||'';
+  const priceEl=$id('invPrice');if(priceEl)priceEl.value=item.price||0;
+  const unitEl=$id('invUnit');if(unitEl)unitEl.value=item.unit||'Pcs';
+  setInvMode('purchase',$id('invModePurchase'));
+  const qtyEl=$id('invQty');if(qtyEl){qtyEl.value='';qtyEl.focus();}
+  toast('Enter quantity for: '+(item.name||''),'i');
+}
 async function saveInventoryItem(){
   const name=($id('invItemName')?.value||'').trim();
   const price=parseFloat($id('invPrice')?.value||0);
