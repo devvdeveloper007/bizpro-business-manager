@@ -171,68 +171,40 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
-  .info-card .ic-icon { font-size: 22px; margin-bottom: 8px; }
-  .info-card .ic-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
-  .info-card .ic-value { font-size: 14px; font-weight: 700; color: var(--text); }
+  .ic-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
+  .ic-val { font-size: 14px; font-weight: 700; color: var(--text); }
   .new-tag {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: #fff; font-size: 9px; font-weight: 800;
-    padding: 1px 6px; border-radius: 6px;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    margin-left: 6px; vertical-align: middle;
+    background: linear-gradient(135deg, var(--green), #10b981);
+    color: #000; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+    display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; vertical-align: middle;
   }
-  .contact-block {
-    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,211,238,0.05));
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: 14px;
-    padding: 20px 24px;
-  }
+  a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+  a:hover { color: var(--cyan); text-decoration: underline; }
+  .contact-block { display: flex; flex-direction: column; gap: 12px; }
   .contact-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(30,45,69,0.8);
-    font-size: 14px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 14px;
   }
-  .contact-row:last-child { border-bottom: none; }
-  .contact-row .cr-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
-  .contact-row .cr-label { color: var(--muted); font-weight: 600; min-width: 100px; }
-  .contact-row a { color: var(--cyan); text-decoration: none; font-weight: 600; }
-  .contact-row a:hover { text-decoration: underline; }
-  .contact-row span.val { color: var(--text); font-weight: 700; }
+  .cr-icon { font-size: 20px; flex-shrink: 0; }
+  .cr-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); min-width: 80px; }
+  .cr-link, .val { font-size: 14px; font-weight: 600; color: var(--text); }
   .footer {
     text-align: center;
-    margin-top: 56px;
-    padding-top: 28px;
+    margin-top: 60px;
+    padding-top: 32px;
     border-top: 1px solid var(--border);
-    font-size: 13px; color: var(--muted);
-    position: relative;
   }
-  .footer::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 80px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  }
-  .footer a { color: var(--cyan); text-decoration: none; }
-  @media (max-width: 600px) {
-    .container { padding: 24px 16px 60px; }
-    .header { padding: 40px 0 36px; }
-    h1 { font-size: 22px; }
-    .logo-text { font-size: 26px; }
-    .section-body { padding: 16px; }
-    .info-grid { grid-template-columns: 1fr 1fr; }
-  }
+  .footer p { font-size: 13px; color: var(--muted); }
+  .footer a { color: var(--accent); font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="container">
-
-  <!-- HEADER -->
   <div class="header">
     <div class="logo-wrap">
       <div class="logo-icon">💼</div>
@@ -240,34 +212,29 @@
     </div>
     <h1>Privacy Policy</h1>
     <div class="badge-row">
-      <span class="badge green">✓ Last Updated: March 2026</span>
-      <span class="badge blue">v3.0 — Firebase Hosting Edition</span>
-      <span class="badge">Google Play Store</span>
+      <span class="badge green">Last Updated: March 2026</span>
+      <span class="badge blue">Version 3.0</span>
     </div>
   </div>
 
-  <!-- INTRO -->
   <div class="intro-box">
-    BizPro ("BizPro — Business Manager") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our app on <strong>Google Play Store</strong> and web. This policy reflects our <strong>Firebase Authentication system</strong>, <strong>User ID-based Staff login</strong>, <strong>Passkey / Biometric login</strong>, and <strong>multi-language support (21 languages including Gujarati &amp; Tamil)</strong> features as of March 2026.
+    Welcome to <strong>BizPro</strong> — your trusted multi-account business and home manager. This Privacy Policy explains how we collect, use, and protect your information when you use our web-based Progressive Web App (PWA) and any future mobile apps (Android). By using BizPro, you agree to the practices described here.
   </div>
 
   <!-- 1 -->
   <div class="section">
     <div class="section-header">
       <div class="section-num">1</div>
-      <div class="section-title">Information We Collect</div>
+      <div class="section-title">What Information We Collect</div>
     </div>
     <div class="section-body">
       <ul>
-        <li><strong>Account information:</strong> Admin User ID and encrypted password (stored via Firebase Authentication as a hidden email)</li>
-        <li><strong>Recovery password:</strong> A backup passphrase set by Admin, stored in Firestore under their private namespace — used only for password reset</li>
-        <li><strong>Staff credentials:</strong> Staff name, User ID, and password set by Admin — stored in Firestore under Admin's private namespace only</li>
-        <li><strong>Financial data:</strong> Income entries, expense entries, inventory items, purchase records you add — including date and timestamp</li>
-        <li><strong>Personal productivity data:</strong> Notes (Notebook), tasks (To-Do), reminders — stored with creation timestamp</li>
-        <li><strong>Passkey data:</strong> <span class="new-tag">NEW</span> If you enable Passkey/Biometric login, a credential ID is stored locally on your device and in Firestore. We do <strong>NOT</strong> store your fingerprint or face data — that stays on your device's secure enclave only</li>
-        <li><strong>Device info:</strong> Browser/device type collected when registering a Passkey (for reference only)</li>
-        <li><strong>Login history:</strong> Device type and browser name logged locally (localStorage) for the last 50 sessions — not sent to our servers</li>
-        <li><strong>Language preference:</strong> Your selected language stored locally (localStorage) — never sent to any server</li>
+        <li><strong>Admin account:</strong> User ID (chosen by you), password, recovery password, admin name — stored in Google Firestore</li>
+        <li><strong>Staff accounts:</strong> Names, User IDs, passwords, link IDs (for device-independent login) — stored in Firestore under your Admin namespace</li>
+        <li><strong>Business data:</strong> Income entries, expense entries, private ledger folders, to-dos, reminders, notes, inventory items, deleted archive — all stored in Firestore and linked to your unique Firebase UID</li>
+        <li><strong>Authentication:</strong> Firebase Auth uses hidden email addresses (e.g., bizproadm_RANDOM@bizproapp.web.app) mapped to your User ID — you never see or use this email directly</li>
+        <li><strong>Device info:</strong> <span class="new-tag">NEW</span> If you enable Passkey / Biometric login, we store only a Credential ID (a random string) to identify your device — we never receive your actual fingerprint or Face ID data</li>
+        <li><strong>Usage analytics:</strong> We currently do <strong style="color:#34d399">NOT</strong> collect any analytics, cookies, or tracking data — no Google Analytics, no third-party scripts</li>
       </ul>
     </div>
   </div>
@@ -280,14 +247,12 @@
     </div>
     <div class="section-body">
       <ul>
-        <li>To authenticate your identity via Firebase Authentication (User ID → hidden email backend)</li>
-        <li>To provide and operate all BizPro app features — ledger, inventory, reports, tools</li>
-        <li>To sync your data in real time across devices via Google Firebase Firestore</li>
-        <li>To display your financial reports, analytics, income/expense summaries</li>
-        <li>To enable Passkey / Biometric login on your registered device <span class="new-tag">NEW</span></li>
-        <li>To show timestamps on entries so Admin and Staff know exactly when each entry was made <span class="new-tag">NEW</span></li>
-        <li>We do <strong>NOT</strong> sell, trade, rent, or share your personal data with any third parties for marketing or advertising purposes</li>
-        <li>We do <strong>NOT</strong> serve ads inside BizPro — the app is completely ad-free</li>
+        <li><strong>Authentication:</strong> Verify your identity via Firebase Auth (Admin) or custom User ID system (Staff)</li>
+        <li><strong>Data sync:</strong> Store and sync all your business entries, staff data, and settings in real time across devices using Google Firestore</li>
+        <li><strong>Multi-user isolation:</strong> Ensure Admin and Staff data are properly isolated — Staff cannot see each other's entries or the Admin's private ledger</li>
+        <li><strong>Password recovery:</strong> Use your recovery password to reset your main Firebase Auth password if forgotten</li>
+        <li><strong>Passkey login:</strong> <span class="new-tag">NEW</span> Store Credential IDs to allow biometric login on supported devices</li>
+        <li><strong>Offline access:</strong> Cache static app files (HTML, icons) via Service Worker for offline functionality</li>
       </ul>
     </div>
   </div>
@@ -296,45 +261,12 @@
   <div class="section">
     <div class="section-header">
       <div class="section-num">3</div>
-      <div class="section-title">Data Storage &amp; Security</div>
+      <div class="section-title">How We Store Your Information</div>
     </div>
     <div class="section-body">
-      <div class="info-grid" style="margin-bottom:16px">
-        <div class="info-card">
-          <div class="ic-icon">📍</div>
-          <div class="ic-label">Data Location</div>
-          <div class="ic-value">Google Firebase (Cloud)</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-icon">🔒</div>
-          <div class="ic-label">Encryption</div>
-          <div class="ic-value">SSL/TLS for all transfers</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-icon">🔐</div>
-          <div class="ic-label">Auth Provider</div>
-          <div class="ic-value">Firebase Auth (Google)</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-icon">🛡️</div>
-          <div class="ic-label">Data Isolation</div>
-          <div class="ic-value">Per-UID private namespace</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-icon">🌐</div>
-          <div class="ic-label">Hosting</div>
-          <div class="ic-value">Firebase Hosting (Google)</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-icon">📦</div>
-          <div class="ic-label">Offline Cache</div>
-          <div class="ic-value">Service Worker (device only)</div>
-        </div>
-      </div>
       <ul>
-        <li><strong>User data isolation:</strong> Each Admin's data is stored under their unique Firebase UID — no cross-access between accounts is possible</li>
-        <li><strong>Firestore Security Rules:</strong> Only authenticated users can read/write their own data (<code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:12px">request.auth.uid == userId</code>)</li>
-        <li><strong>Passkey storage:</strong> Biometric data (fingerprint/face) NEVER leaves your device — only a random credential ID string is stored in Firestore</li>
+        <li><strong>Google Firestore:</strong> All your app data (entries, staff, settings, folders, inventory) is stored in Firestore — a NoSQL database hosted on Google Cloud Platform (GCP)</li>
+        <li><strong>Firebase Authentication:</strong> Admin passwords are encrypted and managed by Google Firebase Auth — we do not see or store plaintext Admin passwords</li>
         <li><strong>Staff passwords:</strong> Stored as plain text in Firestore accessible only to the Admin within their private namespace. We recommend strong, unique passwords</li>
         <li><strong>Offline data:</strong> Static app files (HTML, icons) are cached by the Service Worker on your device for offline access — no personal data is cached offline</li>
         <li><strong>Timestamps:</strong> <span class="new-tag">NEW</span> All entries now store a server-side Firebase timestamp and a client-side ISO timestamp for accurate time tracking</li>
@@ -385,7 +317,7 @@
     </div>
     <div class="section-body">
       <ul>
-        <li><strong>Admin login:</strong> Uses a User ID which is mapped to a hidden Firebase email (e.g. userid@bizpro-internal.app) — the email is never shown to the user. Passwords are encrypted and managed by Google Firebase Auth</li>
+        <li><strong>Admin login:</strong> Uses a User ID which is mapped to a hidden Firebase email (e.g. bizproadm_abc123@bizproapp.web.app) — the email is never shown to the user. Passwords are encrypted and managed by Google Firebase Auth</li>
         <li><strong>Recovery password:</strong> A backup passphrase stored in Firestore — used to reset the main password. Minimum 6 characters required</li>
         <li><strong>Staff login:</strong> Uses User ID + password system set by Admin — credentials stored in Firestore under Admin's private namespace</li>
         <li><strong>Password minimum:</strong> <span class="new-tag">NEW</span> All passwords (Admin + Staff) require a minimum of 6 characters for better security</li>
@@ -487,8 +419,8 @@
         </div>
         <div class="contact-row">
           <div class="cr-icon">🌐</div>
-          <div class="cr-label">Website</div>
-          <a href="https://bizpro-app.netlify.app" target="_blank">bizpro-app.netlify.app</a>
+          <div class="cr-label">Live URL</div>
+          <a href="https://bizpro-business-manager.web.app" target="_blank">bizpro-business-manager.web.app</a>
         </div>
         <div class="contact-row">
           <div class="cr-icon">🔥</div>
@@ -506,23 +438,20 @@
           <span class="val">BizPro — Smart Business &amp; Home Manager</span>
         </div>
         <div class="contact-row">
-          <div class="cr-icon">⏱️</div>
-          <div class="cr-label">Response</div>
-          <span class="val">Within 48 hours</span>
+          <div class="cr-icon">🆔</div>
+          <div class="cr-label">Package ID</div>
+          <span class="val">com.bizpro.businessmanager</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER -->
   <div class="footer">
-    <p style="margin-bottom:6px">© 2026 BizPro — Smart Business &amp; Home Manager. All rights reserved.</p>
-    <p>Developer: Devv Developer &nbsp;|&nbsp;
-      <a href="mailto:devv.developer007@gmail.com">devv.developer007@gmail.com</a>
-      &nbsp;|&nbsp; Project: BizPro-business manager
+    <p>
+      &copy; 2026 <strong>BizPro</strong> by Devv Developer. All rights reserved.<br>
+      Powered by <a href="https://firebase.google.com" target="_blank">Google Firebase</a>
     </p>
   </div>
-
 </div>
 </body>
 </html>
