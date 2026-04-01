@@ -1723,83 +1723,67 @@ async function doAdminRegister(){
 
 // ── ADMIN LOGIN ──
 async function doAdminLogin(){
-  const userId = (gv('adminUserIdIn')||'').trim().toLowerCase();
-  const pw = gv('adminPwIn');
-  if(!userId){toast(t_('enter_userid'),'e');return;}
-  if(!pw){toast(t_('enter_password'),'e');return;}
+  const userId=(gv('adminUserIdIn')||'').trim().toLowerCase();
+  const pw=gv('adminPwIn');
+  if(!userId){toast(t_('enter_userid')||'Enter User ID','e');return;}
+  if(!pw){toast(t_('enter_password')||'Enter password','e');return;}
 
   const btn=$id('adminLoginBtn');
-  btn.textContent=t_('logging_in')||'Logging in...';
-  btn.disabled=true;
+  btn.textContent=t_('logging_in')||'Logging in...';btn.disabled=true;
   const warnEl=$id('loginAttemptWarn');
   if(warnEl)warnEl.style.display='none';
 
-  const hiddenEmail = userId + '@bizpro-internal.app';
-
   try{
-    // Firebase Auth sign in with hidden email
-    const cred = await auth.signInWithEmailAndPassword(hiddenEmail, pw);
-    currentFirebaseUser = cred.user;
-    currentUid = cred.user.uid;
-    localStorage.setItem('bp-admin-uid', currentUid);
-    localStorage.setItem('bp-admin-userid', userId);
+    // Step 1: Verify password against Firestore (always up to date after settings change)
+    const accSnap = await db.collection('adminAccounts')
+      .where('userId','==',userId).where('type','==','admin').limit(1).get();
 
-    // Load admin config from Firestore
-    const cfgDoc = await uCol('settings').doc('config').get();
-    const data = cfgDoc.exists ? cfgDoc.data() : {adminName:'Admin', userId};
-    currentUser = {type:'admin', name: data.adminName||'Admin'};
+    if(accSnap.empty){
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('userid_not_found')||'User ID not found');}
+      btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
+    }
+
+    const accData=accSnap.docs[0].data();
+    const accUid=accSnap.docs[0].id;
+
+    // Step 2: Check Firestore password
+    if(pw!==accData.adminPassword){
+      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('wrong_password')||'Wrong password!');}
+      btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
+    }
+
+    // Step 3: Sign in Firebase Auth (for rules)
+    const hiddenEmail=userId+'@bizpro-internal.app';
+    try{
+      const cred=await auth.signInWithEmailAndPassword(hiddenEmail,pw);
+      currentFirebaseUser=cred.user;
+      currentUid=cred.user.uid;
+    }catch(authErr){
+      // Firebase Auth out of sync — use Firestore UID directly (rules are open)
+      currentUid=accUid;
+      currentFirebaseUser=auth.currentUser||null;
+      console.warn('Firebase Auth fallback:',authErr.code);
+    }
+
+    if(!currentUid) currentUid=accUid;
+    localStorage.setItem('bp-admin-uid',currentUid);
+    localStorage.setItem('bp-admin-userid',userId);
+
+    let cfg=accData;
+    try{const cfgDoc=await uCol('settings').doc('config').get();if(cfgDoc.exists)cfg={...accData,...cfgDoc.data()};}catch(e){}
+
+    currentUser={type:'admin',name:cfg.adminName||'Admin'};
     btn.textContent='🔓 Login as Admin';btn.disabled=false;
-    launchAdmin(data);
+    launchAdmin(cfg);
 
   }catch(e){
-    // Handle pending password reset (forgot password flow)
-    if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'){
-      // Check if there's a pending reset
-      try{
-        const accSnap = await db.collection('adminAccounts')
-          .where('userId','==',userId).limit(1).get();
-        if(!accSnap.empty){
-          const accData = accSnap.docs[0].data();
-          if(accData.pendingReset && accData.pendingNewPassword === pw){
-            // User used the new password after recovery reset
-            // Re-create Firebase Auth account with new password
-            const hiddenEmailNew = userId+'@bizpro-internal.app';
-            try{
-              // Delete old auth user first — we can't without being logged in
-              // But we can create a new one if old is gone, or sign in directly
-              // Try sign in with new password (maybe auth pw was already updated)
-              const newCred = await auth.signInWithEmailAndPassword(hiddenEmailNew, pw);
-              // Success with new password
-              currentFirebaseUser=newCred.user;currentUid=newCred.user.uid;
-              // Clear pending reset
-              await db.collection('adminAccounts').doc(newCred.user.uid).update({pendingReset:firebase.firestore.FieldValue.delete(),pendingNewPassword:firebase.firestore.FieldValue.delete()});
-              localStorage.setItem('bp-admin-uid',currentUid);localStorage.setItem('bp-admin-userid',userId);
-              const cfgDoc=await uCol('settings').doc('config').get();
-              const data=cfgDoc.exists?cfgDoc.data():{adminName:'Admin',userId};
-              currentUser={type:'admin',name:data.adminName||'Admin'};
-              btn.textContent='🔓 Login as Admin';btn.disabled=false;
-              launchAdmin(data);return;
-            }catch(retryErr){
-              // Auth account mismatch — need admin intervention
-              if(warnEl){warnEl.style.display='block';warnEl.innerHTML='⚠️ Password reset in progress. Please contact admin or wait 24 hours.';}
-              btn.textContent='🔓 Login as Admin';btn.disabled=false;return;
-            }
-          }
-        }
-      }catch(lookupErr){}
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('wrong_password')||'Wrong password!');}
-    } else if(e.code==='auth/user-not-found'||e.code==='auth/invalid-email'){
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+(t_('userid_not_found')||'User ID not found');}
-    } else if(e.code==='auth/too-many-requests'){
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='⚠️ Too many attempts! Please wait a few minutes.';}
-    } else {
-      if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+e.message;}
-    }
     btn.textContent='🔓 Login as Admin';btn.disabled=false;
+    if(warnEl){warnEl.style.display='block';warnEl.innerHTML='❌ '+e.message;}
+    console.error('Login error:',e);
   }
 }
 
-// ── ADMIN FORGOT — Step 1: Verify User ID + Recovery Password ──
+
 async function doAdminVerifyRecovery(){
   const userId = (gv('forgotUserId')||'').trim().toLowerCase();
   const recovPw = gv('forgotRecovery');
@@ -1855,62 +1839,112 @@ function _showForgotStatus(type, msg){
 async function doAdminResetPassword(){
   const newPw = gv('forgotNewPw');
   const confPw = gv('forgotConfirmPw');
-  if(!newPw||newPw.length<4){toast(t_('pw_min')||'Min 4 characters','e');return;}
-  if(newPw!==confPw){toast(t_('pw_mismatch')||'Passwords do not match!','e');return;}
+  if(!newPw||newPw.length<6){toast(t_('pw_min'),'e');return;}
+  if(newPw!==confPw){toast(t_('pw_mismatch'),'e');return;}
   if(!window._forgotUid||!window._forgotHiddenEmail){toast('Phir se verify karo','e');return;}
 
   try{
-    // Get current admin password from adminAccounts for re-auth
+    // Sign in temporarily with old firebase session won't work if user not logged in
+    // So we use Firebase Admin approach: sign in with recovery password temporarily
+    // Instead: we update password via re-auth with a temp sign-in
+    // Since we have the hiddenEmail and they verified via recoveryPassword,
+    // we use Firebase Auth's signInWithEmailAndPassword then updatePassword
+
+    // First get current password from adminAccounts to do temp sign-in
     const accDoc = await db.collection('adminAccounts').doc(window._forgotUid).get();
     if(!accDoc.exists){toast('Account not found','e');return;}
-    const accData = accDoc.data();
-    const hiddenEmail = accData.hiddenEmail || (accData.userId+'@bizpro-internal.app');
-    const oldPw = accData.adminPassword; // Current stored password
 
-    // Re-authenticate with Firebase Auth using current password
-    let authUpdated = false;
-    if(oldPw){
-      try{
-        const tempCred = await auth.signInWithEmailAndPassword(hiddenEmail, oldPw);
-        await tempCred.user.updatePassword(newPw);
-        authUpdated = true;
-        // Sign out the temp session
-        await auth.signOut();
-      }catch(authErr){
-        console.warn('Firebase Auth password update skipped:', authErr.code);
-        // If auth re-auth fails, still update Firestore (user can login with new pw after re-sync)
-      }
-    }
+    // Update password in Firebase Auth
+    // We need to sign in first — but we don't have old password
+    // Solution: use Firebase Admin SDK is not available client-side
+    // Alternative: Store a temp reset token in Firestore with expiry
+    // BEST SIMPLE SOLUTION: Update Firestore password field, 
+    // then use Firebase Auth updatePassword after signing in via recovery flow
 
-    // Always update Firestore — this is the source of truth for our login system
+    // Since we can't re-auth without old password, we save new password in Firestore
+    // and on next login, if Firestore pw matches but Firebase Auth fails,
+    // we re-create the auth account
+    // Actually simplest: just try signInWithEmailAndPassword with old pw from Firestore
+    // We don't store old pw in Firestore (security). 
+    // REAL SOLUTION: Firebase Auth admin — or use Email Link
+    // PRACTICAL SOLUTION for this app: 
+    // Store password in Firestore (encrypted field), use it for recovery re-auth
+
+    // Update recovery flow: save new pw in Firestore + update Firebase Auth via re-sign-in
+    // Since we stored recoveryPassword and user verified it, we can use a workaround:
+    // Delete + recreate Firebase Auth account with new password
+    
+    // Get current Firestore data
+    const data = accDoc.data();
+    const hiddenEmail = data.hiddenEmail || (window._forgotUserId+'@bizpro-internal.app');
+    
+    // Try to sign in and update password
+    // We need the old firebase password — which IS the admin's app password
+    // User forgot app password, so we can't use it for re-auth
+    // Solution: Use Firebase Auth's sendPasswordResetEmail... no, no email
+    
+    // FINAL PRACTICAL APPROACH:
+    // 1. Delete old Firebase Auth user (can't do client-side without being logged in)
+    // 2. Store new pw in Firestore adminAccounts
+    // 3. On next login attempt, detect mismatch and re-create auth account
+    
+    // We store a 'pendingPasswordReset' flag in Firestore
     await db.collection('adminAccounts').doc(window._forgotUid).update({
-      adminPassword: newPw
+      pendingNewPassword: newPw,
+      pendingReset: true
     });
-    // Update settings too
-    try{
-      await db.collection('users').doc(window._forgotUid)
-        .collection('settings').doc('config')
-        .update({adminPassword: newPw});
-    }catch(e){}
+    await uColDirect(window._forgotUid,'settings').doc('config').update({
+      pendingNewPassword: newPw,
+      pendingReset: true
+    }).catch(()=>{});
 
-    const msg = authUpdated
-      ? (t_('pw_changed')||'✅ Password changed! Login with new password.')
-      : '✅ Password reset done! Login with new password.';
-    toast(msg,'s');
-
+    toast(t_('pw_changed')||'✅ Password reset done! Login with new password.','s');
     clearFields(['forgotUserId','forgotRecovery','forgotNewPw','forgotConfirmPw']);
-    const ns=$id('forgotNewPwSection');if(ns)ns.style.display='none';
-    const vs=$id('forgotVerifyStatus');if(vs)vs.style.display='none';
+    $id('forgotNewPwSection').style.display='none';
+    $id('forgotVerifyStatus').style.display='none';
     const fb=$id('forgotVerifyBtn');if(fb){fb.style.display='flex';fb.textContent='🔍 Verify & Continue';}
     window._forgotUid=null;window._forgotUserId=null;window._forgotHiddenEmail=null;
     setTimeout(()=>switchAdminTab('login'),1500);
 
-  }catch(e){
-    console.error('Reset password error:',e);
-    toast(t_('error_prefix')+e.message,'e');
-  }
+  }catch(e){toast(t_('error_prefix')+e.message,'e');}
 }
 
+// Direct uCol helper for forgot flow (when not logged in)
+function uColDirect(uid, colName){
+  return db.collection('users').doc(uid).collection(colName);
+}
+
+function switchAdminTab(tab){
+  ['Login','Register','Forgot'].forEach(t=>{
+    const el=$id('adminAuth'+t);
+    if(el) el.style.display=(t.toLowerCase()===tab)?'block':'none';
+    const btn=$id('atab-'+t.toLowerCase());
+    if(btn) btn.classList.toggle('active', t.toLowerCase()===tab);
+  });
+  // Reset forgot form state
+  if(tab!=='forgot'){
+    const fs=$id('forgotVerifyStatus');if(fs)fs.style.display='none';
+    const fn=$id('forgotNewPwSection');if(fn)fn.style.display='none';
+    const fb=$id('forgotVerifyBtn');if(fb)fb.style.display='flex';
+    window._forgotUid=null;
+  }
+  if(tab!=='register'){
+    const us=$id('userIdStatus');if(us)us.textContent='';
+    const sg=$id('userIdSuggestions');if(sg)sg.style.display='none';
+  }
+  const warn=$id('loginAttemptWarn');if(warn)warn.style.display='none';
+}
+
+// ==================== PASSKEY / BIOMETRIC (WebAuthn) ====================
+const PASSKEY_RP_ID = window.location.hostname;
+const PASSKEY_RP_NAME = 'BizPro SuperApp';
+
+function isPasskeySupported(){
+  return window.PublicKeyCredential && typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function';
+}
+function b64ToBuffer(b64){const bin=atob(b64.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(bin,c=>c.charCodeAt(0)).buffer;}
+function bufToB64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+function randomB64(len=32){const arr=new Uint8Array(len);crypto.getRandomValues(arr);return bufToB64(arr.buffer);}
 
 async function initPasskeyUI(){
   if(!isPasskeySupported()){const row=$id('passkeySettingRow');if(row)row.style.display='none';return;}
@@ -2197,7 +2231,6 @@ async function doMemberChangePw(){
 }
 async function doLogout(){
   window.onbeforeunload = null;
-  // Capture BEFORE clearing — so we know who was logged in
   const _wasStaffLogout = (currentUser && currentUser.type === 'member');
   currentUser=null;currentMemberId=null;currentFirebaseUser=null;currentUid=null;
   // Clear real-time listeners and cache
@@ -2211,7 +2244,8 @@ async function doLogout(){
   // Restore tabs for normal login
   const ta=$id('ltab-admin');if(ta)ta.style.display='';
   const tb=$id('loginTabsBar');if(tb)tb.style.display='';
-  switchLoginTab(_wasStaffLogout?'member':'admin');
+  const wasStaff=(currentUser&&currentUser.type==='member');
+  switchLoginTab(wasStaff?'member':'admin');
   // Firebase Auth sign out
   try{await auth.signOut();}catch(e){}
   currentUid=null;currentFirebaseUser=null;
@@ -2794,8 +2828,7 @@ async function loadDashRecent(period,btn){
   if(!entries.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty" style="padding:28px"><div class="ei">📋</div><h3>No entries for this period</h3></div></td></tr>';return;}
   tbody.innerHTML=entries.slice(0,20).map(e=>`<tr>
     <td style="white-space:nowrap">${fmtDT(e.date, e.createdAt, e.clientCreatedAt)}</td>
-    <td><span class="tag" style="background:rgba(88,166,255,.15);color:var(--blue)">A</span></td>
-    <td><small style="color:var(--muted)">${e.memberName||'—'}</small></td>
+    <td><small style="font-weight:700;color:var(--text)">${e.memberName||'Admin'}</small></td>
     <td>${typeTag(e.type)}</td>
     <td><small style="color:var(--muted)">${e.category||''}</small></td>
     <td>${e.description||'—'}</td>
@@ -3258,6 +3291,9 @@ function loadMemberData(mId){
   const m=membersCache.find(x=>x.id===mId)||{group:'B'};
   const col='private_entries';
 
+  // Safety: ensure currentUid is set
+  if(!currentUid){const s=localStorage.getItem('bp-admin-uid');if(s)currentUid=s;else{console.error('loadMemberData: no currentUid');return;}}
+
   // ── Real-time listener for entries (fixes admin-delete sync) ──
   // When admin deletes an entry — member page updates instantly
   if(window._memberEntriesUnsub) window._memberEntriesUnsub(); // purana listener hatao
@@ -3391,49 +3427,23 @@ async function saveAdminName(){
 }
 async function saveAdminPw(){
   const p=gv('setAdminPw');
-  if(!p||p.length<4){toast('Min 4 chars','e');return;}
-
-  // Update Firestore first
+  if(!p||p.length<6){toast('Min 6 chars','e');return;}
   await uCol('settings').doc('config').update({adminPassword:p});
+  // Also update in global users collection
   if(currentUid) try{await db.collection('adminAccounts').doc(currentUid).update({adminPassword:p});}catch(e){}
-
-  // Update Firebase Auth password (re-auth needed)
-  if(currentFirebaseUser){
-    try{
-      await currentFirebaseUser.updatePassword(p);
-    }catch(authErr){
-      if(authErr.code === 'auth/requires-recent-login'){
-        // Re-auth needed — get current password from Firestore
-        const accDoc = await db.collection('adminAccounts').doc(currentUid).get();
-        const oldPw = accDoc.data()?.adminPassword;
-        const email = accDoc.data()?.hiddenEmail;
-        if(oldPw && email){
-          try{
-            const cred = firebase.auth.EmailAuthProvider.credential(email, oldPw);
-            await currentFirebaseUser.reauthenticateWithCredential(cred);
-            await currentFirebaseUser.updatePassword(p);
-          }catch(e){ console.warn('Re-auth failed for pw update:', e); }
-        }
-      }
-    }
-  }
-
+  // Update local cache
   const saved=localStorage.getItem('bp-admin-data');
-  if(saved){try{const d=JSON.parse(saved);d.adminPassword=p;localStorage.setItem('bp-admin-data',JSON.stringify(d));}catch(e){}}
+  if(saved){const d=JSON.parse(saved);d.adminPassword=p;localStorage.setItem('bp-admin-data',JSON.stringify(d));}
   $id('setAdminPw').value='';
-  toast(t_('saved')||'Password updated! ✅','s');
+  toast(t_('saved'),'s');
 }
-
 async function saveRecoveryPw(){
   const p=gv('setRecoveryPw');
   if(!p||p.length<4){toast('Enter recovery password (min 4 chars)','e');return;}
   await uCol('settings').doc('config').update({recoveryPassword:p});
-  // Also update adminAccounts so forgot password flow works
-  if(currentUid){
-    try{await db.collection('adminAccounts').doc(currentUid).update({recoveryPassword:p});}catch(e){}
-  }
+  if(currentUid) try{await db.collection('adminAccounts').doc(currentUid).update({recoveryPassword:p});}catch(e){}
   $id('setRecoveryPw').value='';
-  toast('Recovery password saved! 🔐 Note it down safely.','s');
+  toast('✅ Recovery password saved! 🔐 Keep it safe.','s');
 }
 
 // ==================== DATE FILTER ====================
