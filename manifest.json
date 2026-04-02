@@ -2,13 +2,13 @@
   "id": "com.bizpro.businessmanager",
   "name": "BizPro — Smart Business & Home Manager",
   "short_name": "BizPro",
-  "description": "Business, Home aur Student accounts ek jagah manage karo. Staff management, income/expense tracking, inventory, reports aur bahut kuch.",
+  "description": "Manage business, home, and student accounts in one place. Staff management, income/expense tracking, inventory, reports, and much more.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d1117",
   "theme_color": "#6366f1",
   "orientation": "portrait",
-  "lang": "hi",
+  "lang": "en",
   "categories": ["finance", "business", "productivity"],
   "icons": [
     {
@@ -27,13 +27,13 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ],
   "prefer_related_applications": false,
