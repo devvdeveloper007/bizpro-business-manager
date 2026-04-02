@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BizPro">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="description" content="Business, Home aur Student accounts ek jagah manage karo">
+<meta name="description" content="Business, Home and Student accounts in one place. Manage staff, track income/expense, inventory, reports and more.">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -430,13 +430,13 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div id="adminAuthLogin">
         <div class="fg">
           <label id="adminUserIdLabel">User ID</label>
-          <input type="text" id="adminUserIdIn" placeholder="Apna User ID daalo" autocomplete="off"
+          <input type="text" id="adminUserIdIn" placeholder="Enter your User ID" autocomplete="off"
             onkeydown="if(event.key==='Enter')$id('adminPwIn').focus()"
             style="font-weight:700;letter-spacing:1px">
         </div>
         <div class="fg">
           <label id="adminPwLabel">Password</label>
-          <input type="password" id="adminPwIn" placeholder="Apna password daalo"
+          <input type="password" id="adminPwIn" placeholder="Enter your password"
             onkeydown="if(event.key==='Enter')doAdminLogin()">
         </div>
         <div id="loginAttemptWarn" style="display:none;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:var(--rsm);padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--red);text-align:center"></div>
@@ -454,7 +454,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <span>Login with Fingerprint / Face ID</span>
           </button>
         </div>
-        <p style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">Naya account? <b>Register</b> tab par click karo ↑</p>
+        <p style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">New account? Click <b>Register</b> tab above ↑</p>
       </div>
 
       <!-- REGISTER FORM -->
@@ -478,16 +478,16 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <div class="fg">
           <label id="regPwLabel">Password <span style="color:var(--muted);font-weight:400;font-size:10px">(min 6 characters)</span></label>
-          <input type="password" id="regPw" placeholder="Strong password chuniye">
+          <input type="password" id="regPw" placeholder="Enter a strong password">
         </div>
         <div class="fg">
           <label id="regConfirmPwLabel">Confirm Password</label>
-          <input type="password" id="regPwConfirm" placeholder="Password dobara daalo">
+          <input type="password" id="regPwConfirm" placeholder="Re-enter password">
         </div>
         <div class="fg">
           <label id="regRecoveryLabel">Recovery Password</label>
           <input type="text" id="regRecoveryPw" placeholder="e.g. MySecret@2026!" autocomplete="off">
-          <div id="regRecoveryHint" style="font-size:11px;color:var(--muted);margin-top:4px">⚠️ Yeh yaad rakhein ya kahin safe likhein — yahi aapka backup hoga</div>
+          <div id="regRecoveryHint" style="font-size:11px;color:var(--muted);margin-top:4px">⚠️ Remember this or write it down safely — this is your backup</div>
         </div>
         <button class="btn btn-success btn-full" onclick="doAdminRegister()" id="regCreateBtn">🚀 <span id="regCreateBtnTxt">Create Account</span></button>
         <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="switchAdminTab('login')">&#x2190; Back to Login</button>
@@ -502,12 +502,12 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <div class="fg">
           <label>User ID</label>
-          <input type="text" id="forgotUserId" placeholder="Apna User ID daalo"
+          <input type="text" id="forgotUserId" placeholder="Enter your User ID"
             style="font-weight:700;letter-spacing:1px">
         </div>
         <div class="fg">
           <label>Recovery Password</label>
-          <input type="text" id="forgotRecovery" placeholder="Aapka recovery password"
+          <input type="text" id="forgotRecovery" placeholder="Your recovery password"
             autocomplete="off">
         </div>
         <div id="forgotVerifyStatus" style="display:none;padding:8px 12px;border-radius:var(--rsm);margin-bottom:10px;font-size:12px;font-weight:700"></div>
@@ -741,7 +741,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="cbox">
         <div class="cbox-hd">
           <div class="cbox-title" id="myaccLedgerTitle">Ledger</div>
-          <div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm btn-icon" id="myaccSortBtn" onclick="toggleLedgerSort()" title="Sort Order">&#x1F53D; New→Old</button>
+          <div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" id="myaccSortBtn" onclick="toggleLedgerSort()" title="Sort Order">&#x1F53D; New→Old</button>
             <select class="srch" id="myaccFilter" onchange="renderMyacc()">
               <option value="all">All Types</option><option value="income">Income</option><option value="personal_expense">Personal Exp.</option><option value="home_expense">Home Exp.</option>
             </select>
@@ -1041,7 +1041,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           <div class="set-row" id="passkeySettingRow">
             <div class="set-info">
               <h4>&#x1F511; Passkey / Biometric Login</h4>
-              <p id="passkeyStatusText">Fingerprint ya Face ID se fast login karo — password yaad nahi karna padega</p>
+              <p id="passkeyStatusText">Login quickly with Fingerprint or Face ID — no need to remember password</p>
             </div>
             <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
               <button class="btn btn-primary btn-sm" id="passkeyRegisterBtn" onclick="registerPasskey()">&#x1F4F1; Setup Passkey</button>
@@ -1613,7 +1613,7 @@ async function checkAdminUserIdAvailability(){
     try{
       const snap = await db.collection('adminAccounts').where('userId','==',uid).limit(1).get();
       if(!snap.empty){
-        statusEl.textContent = '❌ Yeh User ID already registered hai — dusra chuniye';
+        statusEl.textContent = '❌ This User ID is already registered — choose another';
         statusEl.style.color = 'var(--red)';
         // Generate suggestions
         const base = uid.replace(/[0-9]+$/,'');
@@ -1691,6 +1691,7 @@ async function doAdminRegister(){
     await db.collection('adminAccounts').doc(currentUid).set({
       userId: userId,
       adminName: name,
+      adminPassword: pw,
       recoveryPassword: recovPw,
       hiddenEmail: hiddenEmail,
       type: 'admin',
@@ -1700,6 +1701,7 @@ async function doAdminRegister(){
     // Save full config in user's private namespace
     await uCol('settings').doc('config').set({
       adminName: name,
+      adminPassword: pw,
       recoveryPassword: recovPw,
       userId: userId,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1927,7 +1929,7 @@ function updatePasskeySettingUI(){
   const regBtn=$id('passkeyRegisterBtn');const remBtn=$id('passkeyRemoveBtn');const statusTxt=$id('passkeyStatusText');
   if(!regBtn)return;
   if(saved){regBtn.style.display='none';if(remBtn)remBtn.style.display='flex';if(statusTxt)statusTxt.innerHTML='✅ Passkey registered! Login screen pe "Fingerprint/Face ID" button dikhega.';}
-  else{regBtn.style.display='flex';if(remBtn)remBtn.style.display='none';if(statusTxt)statusTxt.textContent='Fingerprint ya Face ID se fast login karo';}
+  else{regBtn.style.display='flex';if(remBtn)remBtn.style.display='none';if(statusTxt)statusTxt.textContent='Login quickly with Fingerprint or Face ID';}
 }
 
 async function registerPasskey(){
