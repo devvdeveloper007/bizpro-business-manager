@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.bizpro.businessmanager",
+    "sha256_cert_fingerprints": ["F9:2C:C5:D8:8C:8C:A5:38:E4:4A:C7:9B:86:A1:59:D0:CE:B4:7A:E5:CF:1D:A3:AD:45:D5:8F:4B:37:1F:9E:4E"]
+  }
+}]
