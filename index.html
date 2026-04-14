@@ -63,6 +63,33 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .ltab.active{background:var(--primary);border-color:var(--primary);color:#fff;}
 /* LAYOUT */
 #adminApp,#memberApp{display:none;}
+/* Notebook 3-level styles */
+.nb-view{transition:all .15s;}
+.nb-folder-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;position:relative;}
+.nb-folder-card:hover{border-color:var(--primary);transform:translateY(-1px);}
+.nb-folder-card.nb-drag-over{border:2px dashed var(--primary);background:rgba(99,102,241,.06);}
+.nb-folder-ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.nb-nb-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s;position:relative;}
+.nb-nb-card:hover{border-color:var(--primary);}
+.nb-nb-card.nb-drag-over{border:2px dashed var(--primary);}
+.nb-note-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;transition:all .15s;position:relative;}
+.nb-note-card.nb-drag-over{border:2px dashed var(--primary);}
+.nb-drag-handle{cursor:grab;color:var(--muted);font-size:14px;padding:2px 4px;flex-shrink:0;}
+.nb-drop-indicator{height:3px;background:var(--primary);border-radius:2px;margin:2px 0;display:none;}
+.nb-drop-indicator.visible{display:block;}
+.nb-color-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.nb-color-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.nb-color-dot:hover,.nb-color-dot.selected{border-color:#fff;box-shadow:0 0 0 2px var(--primary);transform:scale(1.15);}
+
+/* Instagram-style mobile bottom nav for admin */
+#adminBottomNav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--surface);border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom,6px);box-shadow:0 -2px 12px rgba(0,0,0,.15);}
+.abn-wrap{display:grid;grid-template-columns:repeat(6,1fr);gap:0;}
+.abn-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;background:transparent;border:none;cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;min-width:0;}
+.abn-ico{font-size:18px;line-height:1;}
+.abn-lbl{font-size:9px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;text-align:center;}
+.abn-btn.active .abn-lbl{color:var(--primary);}
+.abn-btn.active .abn-ico{transform:scale(1.12);}
+@media(max-width:768px){#adminBottomNav{display:block;}#adminApp .pw{padding-bottom:72px;}}
 .app-layout{display:flex;min-height:100vh;}
 .sidebar{width:245px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform .28s ease;}
 .sb-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
@@ -86,8 +113,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .theme-btn{width:36px;height:36px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all var(--tr);flex-shrink:0;}
 .theme-btn:hover{border-color:var(--primary);}
 .content{flex:1;margin-left:245px;min-height:100vh;}
-.topbar{padding:13px 22px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
-.topbar-title{font-size:18px;font-weight:800;flex:1;}
+.topbar{padding:7px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;min-height:44px;}
+.topbar-title{font-size:14px;font-weight:800;flex:1;}
 .hamburger{display:none;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);padding:6px 10px;cursor:pointer;color:var(--text);font-size:15px;}
 .pw{padding:20px 22px;}
 .pg{display:none;}.pg.active{display:block;}
@@ -237,8 +264,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .app-layout{width:100%;overflow-x:hidden;}
 
   /* Topbar */
-  .topbar{padding:8px 12px;min-height:50px;}
-  .topbar-title{font-size:15px;}
+  .topbar{padding:5px 10px;min-height:40px;}
+  .topbar-title{font-size:13px;}
   #adminDate{display:none;}
 
   /* Main content */
@@ -282,6 +309,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .member-nav::-webkit-scrollbar{display:none;}
   .mnav-item{padding:10px 12px;font-size:12px;white-space:nowrap;}
   .member-topbar{padding:8px 12px;min-height:50px;width:100%;box-sizing:border-box;}
+  #memberApp>div[style*="padding:18px"]{padding-bottom:72px!important;}
   .member-topbar .logout-btn{padding:5px 10px;font-size:11px;}
   #mAppName{font-size:12px;}
   #memberApp > div:nth-child(3){padding:10px;}
@@ -462,11 +490,11 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
         <div class="fg">
           <label id="regNameLabel">Your Name (Display Name)</label>
-          <input type="text" id="regName" placeholder="e.g. Rahul Sharma">
+          <input type="text" id="regName" placeholder="e.g. Sara Smith">
         </div>
         <div class="fg">
-          <label id="regUserIdLabel">User ID <span style="color:var(--muted);font-weight:400;font-size:10px">(unique — isse login hoga)</span></label>
-          <input type="text" id="regUserId" placeholder="e.g. rahul01 ya admin2026" autocomplete="off"
+          <label id="regUserIdLabel">User ID <span style="color:var(--muted);font-weight:400;font-size:10px">(unique — you will login with this)</span></label>
+          <input type="text" id="regUserId" placeholder="e.g. sara001 or sarasmith2026" autocomplete="off"
             oninput="checkAdminUserIdAvailability()"
             style="font-weight:700;letter-spacing:1px">
           <div id="userIdStatus" style="margin-top:5px;font-size:11px;font-weight:700;min-height:16px"></div>
@@ -498,7 +526,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div style="text-align:center;margin-bottom:18px">
           <div style="font-size:36px;margin-bottom:8px">&#x1F511;</div>
           <p id="forgotTitleEl" style="font-size:14px;font-weight:700;color:var(--text)">Password Reset</p>
-          <p id="forgotSubtitleEl" style="font-size:12px;color:var(--muted);margin-top:4px">User ID + Recovery Password se naya password set karo</p>
+          <p id="forgotSubtitleEl" style="font-size:12px;color:var(--muted);margin-top:4px">Verify with User ID + Recovery Password to set new password</p>
         </div>
         <div class="fg">
           <label>User ID</label>
@@ -515,11 +543,11 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div id="forgotNewPwSection" style="display:none">
           <div class="fg">
             <label id="forgotNewPwLabel">New Password</label>
-            <input type="password" id="forgotNewPw" placeholder="Naya password">
+            <input type="password" id="forgotNewPw" placeholder="New password">
           </div>
           <div class="fg">
             <label id="forgotConfirmPwLabel">Confirm New Password</label>
-            <input type="password" id="forgotConfirmPw" placeholder="Naya password dobara"
+            <input type="password" id="forgotConfirmPw" placeholder="Confirm new password"
               onkeydown="if(event.key==='Enter')doAdminResetPassword()">
           </div>
           <button class="btn btn-success btn-full" onclick="doAdminResetPassword()">&#x2705; Set New Password</button>
@@ -543,9 +571,9 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <!-- Change Password section -->
       <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
         <div id="memberChangePwSection" style="display:none">
-          <div class="fg"><label id="memberCurrentPwLabel">Current Password</label><input type="password" id="memberOldPw" placeholder="Abhi ka password"></div>
-          <div class="fg"><label id="memberNewPwLabel">New Password</label><input type="password" id="memberNewPw" placeholder="Naya password (min 6 chars)"></div>
-          <div class="fg"><label>Confirm New Password</label><input type="password" id="memberConfirmPw" placeholder="Naya password dobara" onkeydown="if(event.key==='Enter')doMemberChangePw()"></div>
+          <div class="fg"><label id="memberCurrentPwLabel">Current Password</label><input type="password" id="memberOldPw" placeholder="Enter current password"></div>
+          <div class="fg"><label id="memberNewPwLabel">New Password</label><input type="password" id="memberNewPw" placeholder="New password (min 6 chars)"></div>
+          <div class="fg"><label>Confirm New Password</label><input type="password" id="memberConfirmPw" placeholder="Confirm new password" onkeydown="if(event.key==='Enter')doMemberChangePw()"></div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-warning btn-full" onclick="doMemberChangePw()">&#x1F511; Change Password</button>
             <button class="btn btn-ghost" onclick="toggleMemberChangePw(false)">Cancel</button>
@@ -579,7 +607,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <button class="ni active" id="ni-dashboard" onclick="adminNav('dashboard',this)"><div class="ni-ico">&#x1F3E0;</div>Dashboard</button>
     <button class="ni" id="ni-members" onclick="adminNav('members',this)"><div class="ni-ico">&#x1F464;</div>Staff</button>
     <div class="nav-lbl">Accounting</div>
-    <button class="ni" id="ni-myacc" onclick="adminNav('myacc',this)"><div class="ni-ico">&#x1F510;</div>My Private Ledger</button>
+    <button class="ni" id="ni-myacc" onclick="adminNav('myacc',this)"><div class="ni-ico">&#x1F510;</div>MY Hisab-private</button>
     <button class="ni" id="ni-inventory" onclick="adminNav('inventory',this)"><div class="ni-ico">&#x1F4E6;</div>Inventory / Stock</button>
     <div class="nav-lbl">Tools</div>
     <button class="ni" id="ni-todo" onclick="adminNav('todo',this)"><div class="ni-ico">&#x2705;</div>To-Do</button>
@@ -587,7 +615,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <button class="ni" id="ni-notebook" onclick="adminNav('notebook',this)"><div class="ni-ico">&#x1F4D3;</div>Notebook</button>
     <div class="nav-lbl">Analytics</div>
     <button class="ni" id="ni-reports" onclick="adminNav('reports',this)"><div class="ni-ico">&#x1F4CA;</div>Reports</button>
-    <button class="ni" id="ni-export" onclick="adminNav('export',this)"><div class="ni-ico">&#x1F4E4;</div>Export CSV</button>
+    <button class="ni" id="ni-export" onclick="adminNav('export',this)"><div class="ni-ico">&#x1F4C4;</div>PDF Export</button>
     <div class="nav-lbl">Admin</div>
     <button class="ni" id="ni-categories" onclick="adminNav('categories',this)"><div class="ni-ico">&#x1F3F7;&#xFE0F;</div>Categories</button>
     <button class="ni" id="ni-archive" onclick="adminNav('archive',this)"><div class="ni-ico">&#x1F5D1;&#xFE0F;</div>Deleted Archive <span class="ni-badge" id="delBadge" style="display:none">0</span></button>
@@ -602,24 +630,50 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   <div class="topbar">
     <button class="hamburger" onclick="toggleSb()">&#x2630;</button>
     <div class="topbar-title" id="adminPageTitle">Dashboard</div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="font-size:12px;color:var(--muted)" id="adminDate"></div>
-      <div style="font-size:16px;font-weight:800;color:var(--primary)" id="liveTime">--:--</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="font-size:10px;color:var(--muted)" id="adminDate"></div>
+      <div style="font-size:12px;font-weight:800;color:var(--primary)" id="liveTime">--:--</div>
     </div>
   </div>
   <div class="pw">
 
   <!-- DASHBOARD PAGE -->
   <div class="pg active" id="pg-dashboard">
-    <div style="background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(129,140,248,.06));border:1px solid rgba(99,102,241,.25);border-radius:var(--r);padding:20px;margin-bottom:18px">
-      <h2 style="font-size:20px;font-weight:800" id="dashWelcome">Welcome back! &#x1F44B;</h2>
-      <p style="color:var(--muted);font-size:13px;margin-top:3px">Here's your overview for today</p>
+    <div style="background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(129,140,248,.04));border:1px solid rgba(99,102,241,.2);border-radius:var(--rsm);padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px">
+      <span style="font-size:13px;font-weight:800;color:var(--primary)" id="dashWelcome">Welcome back! &#x1F44B;</span>
+      <span style="font-size:11px;color:var(--muted)">— Today's overview ready</span>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">&#x1F4CA; Overview Stats</span>
-      <button class="stats-toggle-btn" onclick="toggleStats('dashStats',this)" title="Show/Hide Stats">&#x25B2; Hide</button>
+    <!-- QUICK ACCESS BUTTONS 3+3 -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">&#x26A1; Quick Access</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <button onclick="adminNav('myacc',document.getElementById('ni-myacc'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='var(--primary)';this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x1F510;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">MY Hisab-<br>private</span>
+        </button>
+        <button onclick="adminNav('todo',document.getElementById('ni-todo'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='var(--green)';this.style.background='rgba(63,185,80,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x2705;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">To-Do<br>Tasks</span>
+        </button>
+        <button onclick="adminNav('reminders',document.getElementById('ni-reminders'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='var(--orange)';this.style.background='rgba(249,115,22,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x1F514;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">Reminders</span>
+        </button>
+        <button onclick="adminNav('notebook',document.getElementById('ni-notebook'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='#a855f7';this.style.background='rgba(168,85,247,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x1F4D3;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">Notebook</span>
+        </button>
+        <button onclick="adminNav('members',document.getElementById('ni-members'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(59,130,246,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x1F464;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">Staff</span>
+        </button>
+        <button onclick="adminNav('inventory',document.getElementById('ni-inventory'))" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);font-family:'Outfit',sans-serif" onmouseover="this.style.borderColor='var(--green)';this.style.background='rgba(63,185,80,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="font-size:22px">&#x1F4E6;</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2">Inventory<br>/ Stock</span>
+        </button>
+      </div>
     </div>
-    <div class="stats-collapsible stat-grid" id="dashStats"></div>
+
     <div class="cbox">
       <div class="cbox-hd" style="flex-wrap:wrap;gap:6px">
         <div class="cbox-title">&#x1F4CB; Recent Activity</div>
@@ -641,6 +695,13 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </div>
       <div class="tbl-wrap"><table class="dt"><thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead><tbody id="recentTbody"></tbody></table></div>
     </div>
+
+    <!-- OVERVIEW STATS AT BOTTOM -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:18px">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">&#x1F4CA; Overview Stats</span>
+      <button class="stats-toggle-btn" onclick="toggleStats('dashStats',this)" title="Show/Hide Stats" id="dashStatsToggleBtn">&#x25BC; Show</button>
+    </div>
+    <div class="stats-collapsible stat-grid" id="dashStats" style="display:none"></div>
   </div>
 
   <!-- MEMBERS PAGE -->
@@ -841,14 +902,40 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- NOTEBOOK PAGE -->
   <div class="pg" id="pg-notebook">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <h2 style="font-size:17px;font-weight:800">&#x1F4D3; Notebook</h2>
-      <div style="display:flex;gap:7px">
-        <input class="srch" id="noteSrch" placeholder="Search notes..." oninput="renderNotes()">
-        <button class="btn btn-primary btn-sm" onclick="openM('mNote')">+ New Note</button>
+    <!-- NOTEBOOK: 3-level Folder > Notebook > Note -->
+    <div id="nb-view-folders" class="nb-view">
+      <!-- Folder list view -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="font-size:17px;font-weight:800">📓 Notebook</h2>
+        <button class="btn btn-primary btn-sm" onclick="nbAddFolder()">+ New Folder</button>
       </div>
+      <div id="nb-folders-list"></div>
     </div>
-    <div class="notes-grid" id="notesGrid"></div>
+    <div id="nb-view-notebooks" class="nb-view" style="display:none">
+      <!-- Notebooks inside a folder -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button onclick="nbGoBack('folders')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:18px">←</button>
+        <h2 style="font-size:17px;font-weight:800" id="nb-folder-title">Folder</h2>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary btn-sm" onclick="nbAddNotebook()">+ New Notebook</button>
+      </div>
+      <div id="nb-notebooks-list"></div>
+    </div>
+    <div id="nb-view-notes" class="nb-view" style="display:none">
+      <!-- Notes inside a notebook -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <button onclick="nbGoBack('notebooks')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:18px">←</button>
+        <div>
+          <h2 style="font-size:16px;font-weight:800" id="nb-notebook-title">Notebook</h2>
+          <div style="font-size:11px;color:var(--muted)" id="nb-notebook-breadcrumb"></div>
+        </div>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary btn-sm" onclick="nbAddNote()">+ New Note</button>
+      </div>
+      <div id="nb-notes-list"></div>
+    </div>
+    <!-- Hidden legacy notesGrid for compatibility -->
+    <div id="notesGrid" style="display:none"></div>
   </div>
 
   <!-- REPORTS PAGE -->
@@ -879,7 +966,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div class="stats-collapsible stat-grid" id="reportStats" style="display:none"></div>
     <div class="cbox">
       <div class="cbox-hd"><div class="cbox-title" style="color:var(--blue)">&#x1F464; Staff — All Entries</div></div>
-      <div class="tbl-wrap"><table class="dt"><thead><tr><th>Member</th><th style="color:var(--green)">Income</th><th style="color:var(--orange)">Personal Exp.</th><th style="color:var(--red)">Home/Biz-Exp.</th><th>Net Balance</th></tr></thead><tbody id="repTbodyA"></tbody></table></div>
+      <div class="tbl-wrap"><table class="dt"><thead><tr><th>Member</th><th style="color:var(--green)">Income</th><th style="color:var(--red)">Expense</th><th>Net Balance</th></tr></thead><tbody id="repTbodyA"></tbody></table></div>
     </div>
     <div class="cbox">
       <div class="cbox-hd"><div class="cbox-title" style="color:var(--purple)">&#x1F464; Staff — Private Entries</div></div>
@@ -890,29 +977,35 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   <!-- EXPORT PAGE -->
   <div class="pg" id="pg-export">
     <div class="cbox" style="margin-bottom:14px">
-      <div class="cbox-hd"><div class="cbox-title">&#x1F4C5; Date Range Filter</div></div>
-      <div class="df-bar" id="exportDateBar"></div>
-      <div style="padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--border)">
-        <span style="font-size:12px;color:var(--muted);font-weight:700">Custom:</span>
+      <div class="cbox-hd"><div class="cbox-title">&#x1F4C5; Select Period</div></div>
+      <div style="padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+        <button class="df-tab active" id="expTab-today" onclick="setExportPeriod('today',this)">Today</button>
+        <button class="df-tab" id="expTab-week" onclick="setExportPeriod('week',this)">This Week</button>
+        <button class="df-tab" id="expTab-month" onclick="setExportPeriod('month',this)">This Month</button>
+        <button class="df-tab" id="expTab-year" onclick="setExportPeriod('year',this)">This Year</button>
+        <button class="df-tab" id="expTab-all" onclick="setExportPeriod('all',this)">All Time</button>
+        <button class="df-tab" id="expTab-custom" onclick="setExportPeriod('custom',this)">&#x1F4C5; Custom</button>
+      </div>
+      <div id="expCustomBar" style="display:none;padding:10px 14px;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border)">
         <input type="date" class="df-inp" id="exportFrom">
         <span style="font-size:12px;color:var(--muted)">to</span>
         <input type="date" class="df-inp" id="exportTo">
         <button class="btn btn-primary btn-sm" onclick="applyExportDateFilter()">&#x1F50D; Apply</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearExportFilter()">&#x2715; Clear</button>
-        <span id="exportFilterLabel" style="font-size:12px;color:var(--cyan);font-weight:700"></span>
       </div>
+      <div style="padding:8px 14px;font-size:12px;color:var(--cyan);font-weight:700" id="exportFilterLabel"></div>
     </div>
     <div class="cbox">
-      <div class="cbox-hd"><div class="cbox-title">&#x1F4E4; Export Data (CSV)</div></div>
+      <div class="cbox-hd"><div class="cbox-title">&#x1F4C4; PDF Statement Download</div></div>
       <div class="cbox-body">
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Download as CSV — date filter applied if set above</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="exportCSV('all')">&#x1F4E5; All Entries</button>
-          <button class="btn btn-ghost" onclick="exportCSV('income')">&#x1F4E5; Income Only</button>
-          <button class="btn btn-ghost" onclick="exportCSV('personal_expense')">&#x1F4E5; Personal Expense</button>
-          <button class="btn btn-ghost" onclick="exportCSV('home_expense')">&#x1F4E5; Home/Biz-Expense</button>
-          <button class="btn btn-ghost" onclick="exportCSV('admin')">&#x1F4E5; My Private Ledger</button>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Download clean PDF for tax filing — date filter applied if set above</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-sm" style="background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="downloadPDF('all')">&#x1F4C4; All Entries</button>
+          <button class="btn btn-sm" style="background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="downloadPDF('income')">&#x1F4B0; Income Only</button>
+          <button class="btn btn-sm" style="background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="downloadPDF('personal_expense')">&#x1F6CD;&#xFE0F; Personal Expense</button>
+          <button class="btn btn-sm" style="background:rgba(249,115,22,.1);color:var(--orange);border:1px solid rgba(249,115,22,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="downloadPDF('home_expense')">&#x1F3E0; Home/Biz-Expense</button>
+          <button class="btn btn-sm" style="background:rgba(99,102,241,.12);color:var(--primary);border:1px solid rgba(99,102,241,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="downloadPDF('admin')">&#x1F510; MY Hisab-private</button>
         </div>
+        <div id="pdfStatus" style="display:none;font-size:12px;color:var(--muted);margin-top:6px">⏳ Generating PDF...</div>
       </div>
     </div>
     <div class="cbox">
@@ -975,7 +1068,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           <select class="srch" id="archFilter" onchange="renderArchive()">
             <option value="all">All Modules</option>
             <option value="private_entries">Staff Entries</option>
-            <option value="admin_entries">My Private Ledger</option>
+            <option value="admin_entries">MY Hisab-private</option>
             <option value="todos">To-Do Tasks</option>
             <option value="reminders">Reminders</option>
             <option value="notes">Notes</option>
@@ -1030,10 +1123,10 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <div id="langSelectorWrap"></div>
           </div>
           <div class="set-row">
-            <div class="set-info"><h4>Account User ID</h4><p>Aapka login User ID: <span id="authUserIdDisplay" style="color:var(--cyan);font-weight:700;font-family:monospace">—</span></p></div>
+            <div class="set-info"><h4>Account User ID</h4><p>Your login User ID: <span id="authUserIdDisplay" style="color:var(--cyan);font-weight:700;font-family:monospace">—</span></p></div>
           </div>
           <div class="set-row">
-            <div class="set-info"><h4>&#x1F4CB; Login History</h4><p>Aapke account ki login history</p></div>
+            <div class="set-info"><h4>&#x1F4CB; Login History</h4><p>Your account login history</p></div>
             <button class="btn btn-ghost btn-sm" onclick="showLoginHistory()">&#x1F4CB; View History</button>
             <span style="font-size:12px;font-weight:700;color:var(--green)" id="fbStatus">&#x1F7E2; Connected</span>
           </div>
@@ -1076,7 +1169,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <button class="btn btn-danger btn-sm" onclick="resetInventory()">&#x1F4E6; Clear Inventory</button>
           </div>
           <div class="set-row">
-            <div class="set-info" style="color:var(--red)"><h4>&#x1F4A3; RESET ALL DATA</h4><p>Saara data — entries, members, todos, reminders, notes, inventory — sab delete. App factory reset!</p></div>
+            <div class="set-info" style="color:var(--red)"><h4>&#x1F4A3; RESET ALL DATA</h4><p>All data — entries, members, todos, reminders, notes, inventory — will be permanently deleted. Factory reset!</p></div>
             <button class="btn btn-danger" onclick="resetAllData()">&#x1F4A3; RESET ALL</button>
           </div>
         </div>
@@ -1117,14 +1210,17 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <div class="fg"><label>Target (expense will be recorded here)</label>
               <select id="invTarget">
                 <option value="grpb" selected>Staff (Home/Biz-Expense)</option>
-                <option value="myacc">My Private Ledger</option>
+                <option value="myacc">MY Hisab-private</option>
               </select>
             </div>
             <div class="fg" id="invFolderWrap" style="display:none"><label>Select Folder</label><select id="invFolder"></select></div>
             <div class="fg" id="invMemberWrap"><label id="invMemberLabel">Select Staff Member</label><select id="invMember"></select></div>
           </div>
         </div>
-        <div class="fg"><label>Notes (optional)</label><input id="invNotes" placeholder="Supplier, details..."></div>
+        <div class="inp-row">
+          <div class="fg"><label>&#x1F4CD; Location (optional)</label><input id="invLocation" placeholder="e.g. Shelf A2, Warehouse, Store Room..."></div>
+          <div class="fg"><label>Notes (optional)</label><input id="invNotes" placeholder="Supplier, details..."></div>
+        </div>
         <button class="btn btn-primary" id="invSaveBtn" onclick="saveInventoryItem()">&#x1F4CB; Save to Catalog</button>
       </div>
     </div>
@@ -1140,7 +1236,32 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </table></div>
     </div>
   </div>
-  </div></div></div></div><!-- end admin app -->
+  </div></div></div></div>
+
+<!-- INSTAGRAM-STYLE MOBILE BOTTOM NAV -->
+<div id="adminBottomNav">
+  <div class="abn-wrap">
+    <button class="abn-btn" id="abn-myacc" onclick="adminNav('myacc',document.getElementById('ni-myacc'));updateAdminBottomNav('myacc')">
+      <span class="abn-ico">&#x1F510;</span><span class="abn-lbl">Ledger</span>
+    </button>
+    <button class="abn-btn" id="abn-todo" onclick="adminNav('todo',document.getElementById('ni-todo'));updateAdminBottomNav('todo')">
+      <span class="abn-ico">&#x2705;</span><span class="abn-lbl">To-Do</span>
+    </button>
+    <button class="abn-btn" id="abn-reminders" onclick="adminNav('reminders',document.getElementById('ni-reminders'));updateAdminBottomNav('reminders')">
+      <span class="abn-ico">&#x1F514;</span><span class="abn-lbl">Reminders</span>
+    </button>
+    <button class="abn-btn" id="abn-notebook" onclick="adminNav('notebook',document.getElementById('ni-notebook'));updateAdminBottomNav('notebook')">
+      <span class="abn-ico">&#x1F4D3;</span><span class="abn-lbl">Notebook</span>
+    </button>
+    <button class="abn-btn" id="abn-members" onclick="adminNav('members',document.getElementById('ni-members'));updateAdminBottomNav('members')">
+      <span class="abn-ico">&#x1F464;</span><span class="abn-lbl">Staff</span>
+    </button>
+    <button class="abn-btn" id="abn-inventory" onclick="adminNav('inventory',document.getElementById('ni-inventory'));updateAdminBottomNav('inventory')">
+      <span class="abn-ico">&#x1F4E6;</span><span class="abn-lbl">Inventory</span>
+    </button>
+  </div>
+</div>
+<!-- end admin app -->
 
 <!-- MEMBER APP -->
 <div id="memberApp">
@@ -1155,12 +1276,37 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <button class="logout-btn" style="width:auto;padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px" onclick="doLogout()">&#x1F6AA; Logout</button>
     </div>
   </div>
-  <div class="member-nav">
-    <div class="mnav-item active" id="mni-entries" onclick="memberNav('entries',this)">&#x1F4B0; Entries</div>
-    <div class="mnav-item" id="mni-mtodo" onclick="memberNav('mtodo',this)">&#x2705; To-Do</div>
-    <div class="mnav-item" id="mni-mrem" onclick="memberNav('mrem',this)">&#x1F514; Reminders</div>
-    <div class="mnav-item" id="mni-mnotes" onclick="memberNav('mnotes',this)">&#x1F4D3; Notebook</div>
+  <!-- Hidden nav items (used by JS only, bottom nav is visible) -->
+  <div style="display:none">
+    <div id="mni-entries"></div>
+    <div id="mni-mtodo"></div>
+    <div id="mni-mrem"></div>
+    <div id="mni-mnotes"></div>
+    <div id="mni-matt"></div>
   </div>
+
+  <!-- STAFF MOBILE BOTTOM NAV (5 buttons) -->
+  <div id="memberBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--surface);border-top:1px solid var(--border);padding:5px 0 env(safe-area-inset-bottom,5px);box-shadow:0 -2px 12px rgba(0,0,0,.15)">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr)">
+      <button class="mbn-btn active" id="mbn-entries" onclick="memberNav('entries',document.getElementById('mni-entries'));updateMemberBottomNav('entries')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
+        <span style="font-size:18px">&#x1F4B0;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--primary)">Entries</span>
+      </button>
+      <button class="mbn-btn" id="mbn-mtodo" onclick="memberNav('mtodo',document.getElementById('mni-mtodo'));updateMemberBottomNav('mtodo')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
+        <span style="font-size:18px">&#x2705;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">To-Do</span>
+      </button>
+      <button class="mbn-btn" id="mbn-mrem" onclick="memberNav('mrem',document.getElementById('mni-mrem'));updateMemberBottomNav('mrem')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
+        <span style="font-size:18px">&#x1F514;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Reminders</span>
+      </button>
+      <button class="mbn-btn" id="mbn-mnotes" onclick="memberNav('mnotes',document.getElementById('mni-mnotes'));updateMemberBottomNav('mnotes')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
+        <span style="font-size:18px">&#x1F4D3;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Notebook</span>
+      </button>
+      <button class="mbn-btn" id="mbn-matt" onclick="memberNav('matt',document.getElementById('mni-matt'));updateMemberBottomNav('matt')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
+        <span style="font-size:18px">&#x1F4CB;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Att.</span>
+      </button>
+    </div>
+  </div>
+
+
   <div style="padding:18px">
     <div class="pg" id="mpg-dash">
       <div class="df-bar" id="mDashDateBar" style="border-radius:var(--rsm);margin-bottom:14px"></div>
@@ -1276,6 +1422,52 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </div>
       <div class="notes-grid" id="mNotesGrid"></div>
     </div>
+
+    <!-- MY ATTENDANCE PAGE (Read-only for staff) -->
+    <div class="pg" id="mpg-matt">
+      <h2 style="font-size:17px;font-weight:800;margin-bottom:2px">&#x1F4CB; My Attendance</h2>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px">View-only — marked by your admin</p>
+
+      <!-- Staff Info Card -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:15px;font-weight:800" id="mattStaffName">—</div>
+            <div style="font-size:11px;color:var(--muted)" id="mattStaffRole"></div>
+            <div style="font-size:11px;color:var(--muted)" id="mattStaffPhone"></div>
+            <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:2px" id="mattStaffSalary"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:var(--muted)">Today</div>
+            <div style="font-size:13px;font-weight:800" id="mattTodayStatus">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date Filter Tabs -->
+      <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap">
+        <button id="matt-tab-month" onclick="switchMattTab('month',this)" style="padding:5px 10px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">This Month</button>
+        <button id="matt-tab-prev" onclick="switchMattTab('prev',this)" style="padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">Prev Month</button>
+        <button id="matt-tab-all" onclick="switchMattTab('all',this)" style="padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">All Time</button>
+        <button id="matt-tab-custom" onclick="switchMattTab('custom',this)" style="padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">📅 Custom</button>
+      </div>
+      <div id="mattCustomBar" style="display:none;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <input type="date" id="mattFrom" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--text)">
+        <span style="font-size:11px;color:var(--muted)">to</span>
+        <input type="date" id="mattTo" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--text)">
+        <button onclick="applyMattFilter()" style="padding:5px 9px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">Apply</button>
+      </div>
+
+      <!-- Summary -->
+      <div id="mattSummary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px;text-align:center"></div>
+
+      <!-- Earned Salary Card -->
+      <div id="mattEarned" style="background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2);border-radius:var(--rsm);padding:10px 12px;margin-bottom:12px"></div>
+
+      <!-- History List -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📅 Attendance Records</div>
+      <div id="mattHistoryList" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
+    </div>
   </div>
 </div>
 
@@ -1285,11 +1477,20 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div class="mhd"><h3>&#x1F464; Add New Staff</h3><div class="mclose" onclick="closeM('mAddMember')">&#x2715;</div></div>
     <div class="fg"><label>Staff Name</label><input id="nmName" placeholder="e.g. Rahul, Priya..."></div>
     <input type="hidden" id="nmGroup" value="B">
+    <div class="inp-row">
+      <div class="fg"><label>Role / Designation</label><input id="nmRole" placeholder="e.g. Manager, Cashier..."></div>
+      <div class="fg"><label>Type</label><select id="nmType"><option value="Full Time">Full Time</option><option value="Part Time">Part Time</option><option value="Contract">Contract</option><option value="Daily Wage">Daily Wage</option></select></div>
+    </div>
+    <div class="inp-row">
+      <div class="fg"><label>Salary (&#x20B9;/month)</label><input type="number" id="nmSalary" placeholder="e.g. 15000" min="0"></div>
+      <div class="fg"><label>Phone (optional)</label><input id="nmPhone" placeholder="e.g. 9876543210" type="tel"></div>
+    </div>
     <div class="fg">
-      <label>User ID <span style="color:var(--muted);font-weight:400;font-size:11px">(staff isi se login karega — e.g. 5, 12, raj01)</span></label>
-      <input id="nmUserId" placeholder="e.g. 5 ya raj01" autocomplete="off" style="font-weight:700;letter-spacing:1px">
+      <label>User ID <span style="color:var(--muted);font-weight:400;font-size:11px">(staff will login with this — e.g. 5, raj01)</span></label>
+      <input id="nmUserId" placeholder="e.g. 5 or raj01" autocomplete="off" style="font-weight:700;letter-spacing:1px">
     </div>
     <div class="fg"><label>Password</label><input type="password" id="nmPw" placeholder="Set staff login password"></div>
+    <div class="fg"><label>Join Date (optional)</label><input type="date" id="nmJoinDate"></div>
     <div class="mft">
       <button class="btn btn-ghost" onclick="closeM('mAddMember')">Cancel</button>
       <button class="btn btn-success" onclick="saveMember()">+ Add Staff</button>
@@ -1297,28 +1498,74 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   </div>
 </div>
 <div class="modal-ov" id="mEditMember">
-  <div class="modal">
+  <div class="modal" style="max-width:420px">
     <div class="mhd"><h3>&#x270F;&#xFE0F; Edit Staff</h3><div class="mclose" onclick="closeM('mEditMember')">&#x2715;</div></div>
     <input type="hidden" id="emId">
-    <div class="fg"><label>Staff Name</label><input id="emName"></div>
     <input type="hidden" id="emGroup" value="">
+    <div class="inp-row">
+      <div class="fg"><label>Staff Name</label><input id="emName" placeholder="Full name"></div>
+      <div class="fg"><label>Phone</label><input id="emPhone" placeholder="9876543210" type="tel"></div>
+    </div>
+    <!-- Role with dropdown + manual option -->
     <div class="fg">
-      <label>User ID <span style="color:var(--muted);font-weight:400;font-size:11px">(login ke liye — change karne se purana kaam nahi karega)</span></label>
-      <input id="emUserId" placeholder="e.g. 5 ya raj01" autocomplete="off" style="font-weight:700;letter-spacing:1px">
+      <label>Role / Designation</label>
+      <div style="display:flex;gap:6px">
+        <select id="emRoleSelect" onchange="onEmRoleSelect(this.value)" style="flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none">
+          <option value="">-- Select Role --</option>
+          <option value="Manager">Manager</option>
+          <option value="Supervisor">Supervisor</option>
+          <option value="Cashier">Cashier</option>
+          <option value="Receptionist">Receptionist</option>
+          <option value="Sales Executive">Sales Executive</option>
+          <option value="Accountant">Accountant</option>
+          <option value="Driver">Driver</option>
+          <option value="Guard / Security">Guard / Security</option>
+          <option value="Helper / Worker">Helper / Worker</option>
+          <option value="Peon">Peon</option>
+          <option value="Technician">Technician</option>
+          <option value="Cook / Chef">Cook / Chef</option>
+          <option value="Cleaner">Cleaner</option>
+          <option value="Delivery Boy">Delivery Boy</option>
+          <option value="custom">✏️ Type manually...</option>
+        </select>
+      </div>
+      <input id="emRole" placeholder="Or type custom role here..." style="margin-top:6px;width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;box-sizing:border-box">
+    </div>
+    <div class="inp-row">
+      <div class="fg"><label>Employment Type</label>
+        <select id="emType" style="width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none">
+          <option value="Full Time">Full Time</option>
+          <option value="Part Time">Part Time</option>
+          <option value="Contract">Contract</option>
+          <option value="Daily Wage">Daily Wage</option>
+        </select>
+      </div>
+      <div class="fg"><label>Join Date</label><input type="date" id="emJoinDate"></div>
+    </div>
+    <!-- Salary Section -->
+    <div style="background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2);border-radius:var(--rsm);padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#x1F4B0; Salary Settings</div>
+      <div class="inp-row">
+        <div class="fg"><label>Monthly Salary (&#x20B9;)</label><input type="number" id="emSalary" placeholder="e.g. 15000" min="0" oninput="calcDailySalary()"></div>
+        <div class="fg"><label>Working Days/Month</label><input type="number" id="emWorkDays" placeholder="26" min="1" max="31" value="26" oninput="calcDailySalary()"></div>
+      </div>
+      <div id="emDailyCalc" style="font-size:12px;color:var(--muted);margin-top:4px">Daily rate: ₹0 / day</div>
+    </div>
+    <div class="fg">
+      <label>User ID <span style="color:var(--muted);font-weight:400;font-size:11px">(used for login)</span></label>
+      <input id="emUserId" placeholder="e.g. 5 or raj01" autocomplete="off" style="font-weight:700;letter-spacing:1px">
     </div>
     <div class="fg">
       <label>New Password <span style="color:var(--muted);font-weight:400;font-size:11px">(blank = keep current)</span></label>
       <input type="password" id="emPw" placeholder="Leave blank to keep">
     </div>
-    <!-- Show current password to admin -->
-    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 14px;margin-bottom:12px;font-size:13px">
-      <span style="color:var(--muted);font-weight:600">Current Password: </span>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 12px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:8px">
+      <span style="color:var(--muted);font-weight:600">&#x1F512; Password:</span>
       <span id="emCurrentPwDisplay" style="color:var(--cyan);font-weight:700;font-family:monospace">—</span>
-      <span style="color:var(--muted);font-size:11px;display:block;margin-top:3px">&#x1F512; Only Admin can see this</span>
     </div>
     <div class="mft">
       <button class="btn btn-ghost" onclick="closeM('mEditMember')">Cancel</button>
-      <button class="btn btn-primary" onclick="updateMember()">Save Changes</button>
+      <button class="btn btn-primary" onclick="updateMember()">&#x1F4BE; Save Changes</button>
     </div>
   </div>
 </div>
@@ -1326,11 +1573,9 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   <div class="modal">
     <div class="mhd"><h3>&#x1F464; Add Staff Entry</h3><div class="mclose" onclick="closeM('mGrpaEntry')">&#x2715;</div></div>
     <div class="fg"><label>Member</label><select id="geMember"></select></div>
-    <div class="fg"><label>Entry Type</label><select id="geType" onchange="updateGeCatList()"><option value="income">&#x1F4B0; Income</option><option value="personal_expense">&#x1F6CD;&#xFE0F; Personal Expense</option><option value="home_expense">&#x1F3E0; Home/Biz-Expense</option></select></div>
-    <div class="inp-row">
-      <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="geAmt" placeholder="0.00" min="0"></div>
-      <div class="fg"><label>Category</label><select id="geCat"></select></div>
-    </div>
+    <input type="hidden" id="geType" value="home_expense">
+    <input type="hidden" id="geCat" value="General">
+    <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="geAmt" placeholder="0.00" min="0"></div>
     <div class="inp-row">
       <div class="fg"><label>Description</label><input id="geDesc" placeholder="Details..."></div>
       <div class="fg"><label>Date</label><input type="date" id="geDate"></div>
@@ -1347,6 +1592,18 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div class="fg"><label>Title</label><input id="noteTitle" placeholder="Note title..."></div>
     <div class="fg"><label>Content</label><textarea id="noteContent" style="min-height:120px" placeholder="Write here..."></textarea></div>
     <div class="mft"><button class="btn btn-ghost" onclick="closeM('mNote');editNoteId=null">Cancel</button><button class="btn btn-primary" onclick="saveNote('admin')">Save</button></div>
+  </div>
+</div>
+<div class="modal-ov" id="mNbNote">
+  <div class="modal" style="max-width:480px">
+    <div class="mhd"><h3>&#x1F4DD; Note</h3><div class="mclose" onclick="closeM('mNbNote')">&#x2715;</div></div>
+    <input type="hidden" id="nbNoteId">
+    <div class="fg"><label>Title</label><input id="nbNoteTitle" placeholder="Note title..."></div>
+    <div class="fg"><label>Content</label><textarea id="nbNoteContent" style="min-height:180px;resize:vertical" placeholder="Write your note here..."></textarea></div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeM('mNbNote')">Cancel</button>
+      <button class="btn btn-primary" onclick="nbSaveNote()">&#x1F4BE; Save Note</button>
+    </div>
   </div>
 </div>
 <div class="modal-ov" id="mMemberNote">
@@ -1432,12 +1689,12 @@ function populateCatSelect(selId,type){const sel=$id(selId);if(!sel)return;sel.i
 // ==================== INIT ====================
 // ── EMBEDDED FIREBASE CONFIG — No setup screen needed ──
 const BIZPRO_FB_CONFIG = {
-  apiKey: 'AIzaSyBAQgEfOYAbZQMVmYDXjtr0QLVCG7Z-4J8',
+  apiKey: '1234',
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '936861585181',
-  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
+  messagingSenderId: '1234',
+  appId: '1234'
 };
 
 // Wait for Firebase SDK to load (handles slow networks)
@@ -1841,9 +2098,9 @@ function _showForgotStatus(type, msg){
 async function doAdminResetPassword(){
   const newPw = gv('forgotNewPw');
   const confPw = gv('forgotConfirmPw');
-  if(!newPw||newPw.length<4){toast(t_('pw_min')||'Password min 4 characters ka hona chahiye','e');return;}
-  if(newPw!==confPw){toast(t_('pw_mismatch')||'Dono passwords match nahi kar rahe!','e');return;}
-  if(!window._forgotUid){toast('Pehle verify karo','e');return;}
+  if(!newPw||newPw.length<4){toast(t_('pw_min')||'Password must be at least 4 characters','e');return;}
+  if(newPw!==confPw){toast(t_('pw_mismatch')||'Passwords do not match!','e');return;}
+  if(!window._forgotUid){toast('Please verify first','e');return;}
 
   try{
     // DIRECT UPDATE: adminPassword field update karo dono jagah
@@ -1866,7 +2123,7 @@ async function doAdminResetPassword(){
       // We just update Firestore — login flow uses Firestore as primary
     }catch(e){ console.warn('Firebase Auth update skipped:', e.code); }
 
-    toast('✅ Password reset ho gaya! Ab naye password se login karo.','s');
+    toast('✅ Password reset successful! Login with your new password.','s');
     clearFields(['forgotUserId','forgotRecovery','forgotNewPw','forgotConfirmPw']);
     $id('forgotNewPwSection').style.display='none';
     $id('forgotVerifyStatus').style.display='none';
@@ -1911,112 +2168,160 @@ function switchAdminTab(tab){
 const PASSKEY_RP_ID = window.location.hostname;
 const PASSKEY_RP_NAME = 'BizPro SuperApp';
 
+// Passkey support check (async — proper mobile check)
 function isPasskeySupported(){
-  return window.PublicKeyCredential && typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function';
+  return !!(window.PublicKeyCredential && navigator.credentials && typeof navigator.credentials.create === 'function');
+}
+async function isPasskeyAvailableAsync(){
+  try{
+    if(!isPasskeySupported()) return false;
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return available;
+  }catch(e){ return false; }
 }
 function b64ToBuffer(b64){const bin=atob(b64.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(bin,c=>c.charCodeAt(0)).buffer;}
 function bufToB64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
 function randomB64(len=32){const arr=new Uint8Array(len);crypto.getRandomValues(arr);return bufToB64(arr.buffer);}
 
 async function initPasskeyUI(){
-  if(!isPasskeySupported()){const row=$id('passkeySettingRow');if(row)row.style.display='none';return;}
-  const saved=localStorage.getItem('bp-passkey-id');
-  const wrap=$id('passkeyLoginWrap');if(wrap)wrap.style.display=saved?'block':'none';
-  updatePasskeySettingUI();
+  try{
+    const available = await isPasskeyAvailableAsync();
+    const row=$id('passkeySettingRow');
+    if(!available){if(row)row.style.display='none';return;}
+    if(row)row.style.display='flex';
+    const saved=localStorage.getItem('bp-passkey-id');
+    const wrap=$id('passkeyLoginWrap');if(wrap)wrap.style.display=saved?'block':'none';
+    updatePasskeySettingUI();
+  }catch(e){
+    const row=$id('passkeySettingRow');if(row)row.style.display='none';
+  }
 }
 function updatePasskeySettingUI(){
   const saved=localStorage.getItem('bp-passkey-id');
   const regBtn=$id('passkeyRegisterBtn');const remBtn=$id('passkeyRemoveBtn');const statusTxt=$id('passkeyStatusText');
   if(!regBtn)return;
-  if(saved){regBtn.style.display='none';if(remBtn)remBtn.style.display='flex';if(statusTxt)statusTxt.innerHTML='✅ Passkey registered! Login screen pe "Fingerprint/Face ID" button dikhega.';}
+  if(saved){regBtn.style.display='none';if(remBtn)remBtn.style.display='flex';if(statusTxt)statusTxt.innerHTML='✅ Passkey registered! Login screen pe Fingerprint/Face ID button dikhega.';}
   else{regBtn.style.display='flex';if(remBtn)remBtn.style.display='none';if(statusTxt)statusTxt.textContent='Login quickly with Fingerprint or Face ID';}
 }
 
 async function registerPasskey(){
-  if(!isPasskeySupported()){toast(t_('passkey_not_supported'),'w');return;}
-  if(!currentUid||!currentFirebaseUser){toast(t_('login_first'),'e');return;}
-  const btn=$id('passkeyRegisterBtn');btn.textContent='Setting up...';btn.disabled=true;
+  const available = await isPasskeyAvailableAsync();
+  if(!available){toast(t_('passkey_not_supported')||'Your device does not support Biometric login','w');return;}
+  // Fix: check currentUid OR stored uid — currentFirebaseUser can be null on some login paths
+  const activeUid = currentUid || localStorage.getItem('bp-admin-uid');
+  if(!activeUid){toast('Please login first before setting up Passkey','e');return;}
+  if(!currentUid) currentUid = activeUid; // restore if missing
+  const btn=$id('passkeyRegisterBtn');
+  const origText=btn.innerHTML;
+  btn.innerHTML='⏳ Setting up...';btn.disabled=true;
   try{
     const userId=currentUid;
     const userName=$id('adminDisplayName')?.textContent||'Admin';
     const userIdLabel=localStorage.getItem('bp-admin-userid')||userId;
     const challenge=randomB64(32);
-    sessionStorage.setItem('bp-pk-challenge',challenge);
     const publicKeyOptions={
       challenge:b64ToBuffer(challenge),
       rp:{id:PASSKEY_RP_ID,name:PASSKEY_RP_NAME},
-      user:{id:new TextEncoder().encode(userId),name:userIdLabel,displayName:userName},
-      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-      authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},
-      timeout:60000,attestation:'none',
+      user:{id:new TextEncoder().encode(userId.substring(0,64)),name:userIdLabel,displayName:userName},
+      pubKeyCredParams:[
+        {type:'public-key',alg:-7},
+        {type:'public-key',alg:-257},
+        {type:'public-key',alg:-8},
+      ],
+      authenticatorSelection:{
+        userVerification:'preferred',
+        residentKey:'discouraged',
+        requireResidentKey:false,
+      },
+      timeout:120000,
+      attestation:'none',
     };
     const credential=await navigator.credentials.create({publicKey:publicKeyOptions});
     const credId=bufToB64(credential.rawId);
     localStorage.setItem('bp-passkey-id',credId);
     localStorage.setItem('bp-passkey-uid',userId);
     localStorage.setItem('bp-passkey-label',userIdLabel);
-    try{await uCol('settings').doc('passkey').set({credentialId:credId,userId,userLabel:userIdLabel,registeredAt:firebase.firestore.FieldValue.serverTimestamp(),device:navigator.userAgent.substring(0,120)});}catch(e){}
-    toast(t_('passkey_registered'),'s');
+    try{
+      await uCol('settings').doc('passkey').set({
+        credentialId:credId,userId,userLabel:userIdLabel,
+        registeredAt:firebase.firestore.FieldValue.serverTimestamp(),
+        device:navigator.userAgent.substring(0,120)
+      });
+    }catch(e){console.warn('Firestore passkey save:',e);}
+    toast('✅ Fingerprint/Face ID setup ho gaya! Ab login screen pe button dikhega.','s');
     updatePasskeySettingUI();
     const wrap=$id('passkeyLoginWrap');if(wrap)wrap.style.display='block';
   }catch(e){
-    if(e.name==='NotAllowedError')toast(t_('biometric_cancelled'),'w');
-    else if(e.name==='InvalidStateError')toast(t_('passkey_exists'),'w');
+    console.error('Passkey register error:',e.name,e.message);
+    if(e.name==='NotAllowedError')toast('Biometric cancelled or timed out. Please try again.','w');
+    else if(e.name==='InvalidStateError')toast('Passkey already registered. Remove it first, then setup again.','w');
+    else if(e.name==='NotSupportedError')toast('Your device does not support Passkey.','w');
+    else if(e.name==='SecurityError')toast('Security error: App must be on HTTPS for Passkey.','e');
     else toast('Passkey setup failed: '+e.message,'e');
   }
-  btn.textContent='📱 Setup Passkey';btn.disabled=false;
+  btn.innerHTML=origText;btn.disabled=false;
 }
 
 async function doPasskeyLogin(){
-  if(!isPasskeySupported()){toast('Passkey support nahi hai','w');return;}
+  const available = await isPasskeyAvailableAsync();
+  if(!available){toast('Passkey not supported on this device','w');return;}
   const savedCredId=localStorage.getItem('bp-passkey-id');
   const savedUid=localStorage.getItem('bp-passkey-uid');
-  if(!savedCredId||!savedUid){toast(t_('setup_passkey_first'),'w');return;}
+  if(!savedCredId||!savedUid){toast('Please setup Passkey in Settings first','w');return;}
   const btn=$id('passkeyLoginBtn');const origText=btn.innerHTML;
   btn.innerHTML='<span>⏳</span><span>Verifying...</span>';btn.disabled=true;
   try{
     const challenge=randomB64(32);
     const assertionOptions={
       challenge:b64ToBuffer(challenge),
-      allowCredentials:[{type:'public-key',id:b64ToBuffer(savedCredId),transports:['internal']}],
-      userVerification:'required',timeout:60000,
+      allowCredentials:[{
+        type:'public-key',
+        id:b64ToBuffer(savedCredId),
+        transports:['internal','hybrid'],
+      }],
+      userVerification:'preferred',
+      timeout:120000,
     };
     await navigator.credentials.get({publicKey:assertionOptions});
-    // Verify — load admin data using saved UID
     currentUid=savedUid;
-    const savedData=localStorage.getItem('bp-admin-data');
-    if(savedData){
-      const adminData=JSON.parse(savedData);
+    let adminData=null;
+    const savedDataStr=localStorage.getItem('bp-admin-data');
+    if(savedDataStr){
+      try{adminData=JSON.parse(savedDataStr);}catch(e){}
+    }
+    if(!adminData){
+      try{
+        const cfgDoc=await db.collection('users').doc(savedUid).collection('settings').doc('config').get();
+        if(cfgDoc.exists){
+          adminData=cfgDoc.data();
+          localStorage.setItem('bp-admin-data',JSON.stringify(adminData));
+        }
+      }catch(e){console.warn('Firestore fetch error:',e);}
+    }
+    if(adminData){
       currentUser={type:'admin',name:adminData.adminName||'Admin'};
-      toast('✅ '+t_('login_admin')+' OK!','s');
+      toast('✅ Biometric login successful!','s');
       launchAdmin(adminData);
-    } else {
-      // Fetch from Firestore
-      const cfgDoc=await uCol('settings').doc('config').get();
-      if(cfgDoc.exists){
-        currentUser={type:'admin',name:cfgDoc.data().adminName||'Admin'};
-        localStorage.setItem('bp-admin-data',JSON.stringify(cfgDoc.data()));
-        toast('✅ '+t_('login_admin')+' OK!','s');
-        launchAdmin(cfgDoc.data());
-      } else {
-        toast('Admin data nahi mila. Normal login karo.','w');currentUid=null;
-      }
+    }else{
+      toast('Admin data not found. Please login normally.','w');currentUid=null;
     }
   }catch(e){
-    if(e.name==='NotAllowedError')toast(t_('biometric_cancelled'),'w');
-    else if(e.name==='SecurityError')toast(t_('https_required'),'e');
-    else toast('Passkey login failed: '+e.message,'e');
+    console.error('Passkey login error:',e.name,e.message);
+    if(e.name==='NotAllowedError')toast('Biometric cancelled. Please try again.','w');
+    else if(e.name==='SecurityError')toast('Security error: HTTPS required.','e');
+    else if(e.name==='InvalidStateError')toast('Passkey is invalid. Remove it in Settings and setup again.','w');
+    else toast('Biometric login failed. Please try normal login.','e');
   }
   btn.innerHTML=origText;btn.disabled=false;
 }
 
 async function removePasskey(){
-  confirm2('Remove Passkey?','Fingerprint/Face ID login band ho jaayega.',async()=>{
+  confirm2('Remove Passkey?','Fingerprint/Face ID login will be disabled.',async()=>{
     localStorage.removeItem('bp-passkey-id');localStorage.removeItem('bp-passkey-uid');localStorage.removeItem('bp-passkey-label');
     try{await uCol('settings').doc('passkey').delete();}catch(e){}
     const wrap=$id('passkeyLoginWrap');if(wrap)wrap.style.display='none';
     updatePasskeySettingUI();
-    toast(t_('passkey_removed'),'i');
+    toast('Passkey removed successfully','i');
   });
 }
 
@@ -2116,7 +2421,7 @@ async function doMemberLogin(){
         console.error('Global member search error:', e);
         // If collectionGroup fails (rules issue), show helpful message
         if(e.code === 'permission-denied'){
-          toast('Staff login: Admin se link maango ya same device pe try karo.','w');
+          toast('Staff login: Get the link from Admin or try on same device.','w');
           btn.innerHTML=origText;btn.disabled=false;return;
         }
       }
@@ -2266,6 +2571,9 @@ async function launchMember(m){
   document.querySelectorAll('.mnav-item').forEach(b=>b.classList.remove('active'));
   const ep=$id('mpg-entries'); if(ep) ep.classList.add('active');
   const en=$id('mni-entries'); if(en) en.classList.add('active');
+  // Show staff bottom nav on mobile
+  const mbn=$id('memberBottomNav');if(mbn)mbn.style.display='block';
+  updateMemberBottomNav('entries');
   populateCatSelect('mCat','income');
   if(!membersCache||!membersCache.length){try{await loadMembersForLogin();}catch(e){}}
   loadMemberData(m.id);
@@ -2286,6 +2594,8 @@ function loadAdminData(){
     const mpg=$id('pg-members');if(mpg&&mpg.style.display!=='none')renderMemberCards();
     const glg=$id('grpbLedger');if(glg&&glg.style.display!=='none')renderGrpbLedger();
     if($id('staffLedgerInline')&&$id('staffLedgerInline').style.display!=='none')renderStaffLedger();
+    // Auto-refresh report if visible
+    const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
   });
   uCol('entries').where('deleted','==',false).onSnapshot(snap=>{
     window._grpaEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
@@ -2293,6 +2603,8 @@ function loadAdminData(){
     loadDashRecent(_dashDF&&_dashDF.mode?_dashDF.mode:'today');
     const mpg2=$id('pg-members');if(mpg2&&mpg2.style.display!=='none')renderMemberCards();
     if($id('staffLedgerInline')&&$id('staffLedgerInline').style.display!=='none')renderStaffLedger();
+    // Auto-refresh report if visible
+    const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
   });
   uCol('admin_entries').where('deleted','==',false).onSnapshot(snap=>{
     window._adminLedgerEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
@@ -2300,6 +2612,7 @@ function loadAdminData(){
   });
   uCol('members').orderBy('order','asc').onSnapshot(snap=>{
     membersCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window._membersSnap=membersCache;
     updateMemberSelects();renderDashStats();
     const mpg=$id('pg-members');if(mpg&&mpg.style.display!=='none')renderMemberCards();
     const gpg=$id('pg-grpb');if(gpg&&gpg.style.display!=='none')renderGrpbCards();
@@ -2334,6 +2647,7 @@ function loadAdminData(){
     if($id('pg-archive').classList.contains('active'))renderArchive();
   });
   renderDashStats();loadDashRecent('today');renderCatChips();
+  nbSetupListeners();
 }
 
 // ==================== ENTRIES ====================
@@ -2379,7 +2693,9 @@ async function saveGrpaEntry(){
   const m=membersCache.find(x=>x.id===mId);if(!m){toast('Member not found','e');return;}
   // ← FIXED: Route to correct collection based on member's group (A→entries, B→private_entries)
   const col=m.group==='B'?'private_entries':'entries';
-  await uCol(col).add({memberId:mId,memberName:m.name,group:m.group,type:gv('geType'),amount:amt,category:gv('geCat'),description:gv('geDesc'),date:gv('geDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  const geTypeVal=$id('geType')?.value||'home_expense';
+  const geCatVal=$id('geCat')?.value||'General';
+  await uCol(col).add({memberId:mId,memberName:m.name,group:m.group,type:geTypeVal,amount:amt,category:geCatVal,description:gv('geDesc'),date:gv('geDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   closeM('mGrpaEntry');clearFields(['geAmt','geDesc']);setToday('geDate');toast('Entry saved!','s');renderGrpaEntries();
 }
 
@@ -2585,27 +2901,38 @@ async function exportFolderCSV(){
 // ==================== MEMBERS ====================
 async function saveMember(){
   const name=gv('nmName'),group='B',pw=gv('nmPw'),userId=gv('nmUserId').trim();
+  const role=gv('nmRole'),type=$id('nmType')?.value||'Full Time';
+  const salary=parseFloat($id('nmSalary')?.value||0);
+  const phone=gv('nmPhone'),joinDate=gv('nmJoinDate');
   if(!name){toast(t_('enter_staff_name'),'e');return;}
   if(!userId){toast(t_('enter_staff_userid'),'e');return;}
   if(!pw){toast(t_('enter_password')||'Please set a password','e');return;}
-  // Check if userId already taken
   const existing=membersCache.find(x=>x.userId===userId);
   if(existing){toast(t_('userid_taken'),'e');return;}
   const order=membersCache.length+1;const linkId=genId();
-  await uCol('members').add({name,group,password:pw,userId,order,linkId,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('mAddMember');clearFields(['nmName','nmPw','nmUserId']);toast(name+' '+(t_('staff_added')||'added to Staff! User ID: ')+userId,'s');renderMemberCards();
+  await uCol('members').add({name,group,password:pw,userId,order,linkId,role:role||'',type,salary:salary||0,phone:phone||'',joinDate:joinDate||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  closeM('mAddMember');clearFields(['nmName','nmPw','nmUserId','nmRole','nmSalary','nmPhone','nmJoinDate']);
+  toast(name+' '+(t_('staff_added')||'added to Staff! User ID: ')+userId,'s');renderMemberCards();
 }
 
 async function updateMember(){
   const mId=gv('emId'),name=gv('emName'),pw=gv('emPw'),userId=gv('emUserId').trim();
   if(!name){toast(t_('name_required'),'e');return;}
   if(!userId){toast(t('enter_userid')||'Enter User ID','e');return;}
-  // Check userId conflict (not self)
   const conflict=membersCache.find(x=>x.userId===userId&&x.id!==mId);
   if(conflict){toast((t_('userid_conflict')||'This User ID already belongs to ')+conflict.name,'e');return;}
   const existing=membersCache.find(x=>x.id===mId);
-  const u={name,userId,group:existing?.group||'B'};if(pw)u.password=pw;
-  await uCol('members').doc(mId).update(u);closeM('mEditMember');toast(t_('staff_updated')||'Updated!','s');
+  const role=($id('emRole')?.value||'').trim();
+  const type=$id('emType')?.value||'Full Time';
+  const salary=parseFloat($id('emSalary')?.value||0);
+  const workDays=parseFloat($id('emWorkDays')?.value||26)||26;
+  const phone=($id('emPhone')?.value||'').trim();
+  const joinDate=($id('emJoinDate')?.value||'').trim();
+  const u={name,userId,group:'B',role,type,salary:salary||0,workDays,phone,joinDate};
+  if(pw)u.password=pw;
+  await uCol('members').doc(mId).update(u);
+  closeM('mEditMember');
+  toast(t_('staff_updated')||'Updated!','s');
 }
 
 async function deleteMember(mId,name){
@@ -2614,13 +2941,230 @@ async function deleteMember(mId,name){
   });
 }
 
+// ==================== ATTENDANCE ====================
+function getAttKey(mId){return 'bp-att-'+currentUid+'-'+mId;}
+function getAttData(mId){try{return JSON.parse(localStorage.getItem(getAttKey(mId))||'[]');}catch(e){return[];}}
+function saveAttData(mId,data){localStorage.setItem(getAttKey(mId),JSON.stringify(data));}
+
+// Sync Firestore attendance to localStorage for all staff
+async function syncAttendanceFromFirestore(){
+  if(!currentUid||!membersCache.length)return;
+  for(const m of membersCache){
+    try{
+      const snap=await db.collection('users').doc(currentUid)
+        .collection('members').doc(m.id)
+        .collection('attendance').get();
+      if(!snap.empty){
+        const data=snap.docs.map(d=>({date:d.id,...d.data()}));
+        saveAttData(m.id,data);
+      }
+    }catch(e){}
+  }
+  renderMemberCards();
+}
+
+function markAttendance(mId,mNameEnc){
+  const mName=decodeURIComponent(mNameEnc);
+  const today=new Date().toISOString().split('T')[0];
+
+  const statuses=['Full Day','Half Day','Absent','Leave','Holiday'];
+  const colors={'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'};
+  const icons={'Full Day':'✅','Half Day':'🌗','Absent':'❌','Leave':'🏖️','Holiday':'🎉'};
+
+  const existingMov=$id('mAttMark');if(existingMov)existingMov.remove();
+  const modal=document.createElement('div');
+  modal.className='modal-ov';modal.id='mAttMark';modal.style.display='flex';
+
+  const m=membersCache.find(x=>x.id===mId)||{};
+  const salary=m.salary||0;
+  const workDays=m.workDays||26;
+  const dailyRate=salary>0?Math.round(salary/workDays):0;
+
+  function refreshMarkUI(){
+    const selDate=modal.querySelector('#attMarkDate').value||today;
+    const data=getAttData(mId);
+    const existing=data.find(a=>a.date===selDate);
+    const cur=existing?.status||null;
+    const btnWrap=modal.querySelector('#attMarkBtns');
+    if(btnWrap)btnWrap.innerHTML=statuses.map(s=>`<button onclick="setAttStatus('${mId}','${selDate}','${s}',null,true)" 
+      style="padding:11px 6px;background:${cur===s?'rgba(99,102,241,.2)':'var(--s2)'};border:2px solid ${cur===s?'var(--primary)':'var(--border)'};border-radius:var(--r);cursor:pointer;font-family:'Outfit',sans-serif;font-weight:700;font-size:12px;color:var(--text);transition:all .15s">
+      ${icons[s]}<br><span style="font-size:10px">${s}</span>
+    </button>`).join('');
+    const info=modal.querySelector('#attMarkInfo');
+    if(info)info.innerHTML=`📅 ${selDate}${cur?` · <b style="color:${colors[cur]}">${cur}</b>`:''}`;
+  }
+
+  modal.innerHTML=`<div class="modal" style="max-width:360px">
+    <div class="mhd"><h3>📋 Mark Attendance</h3><div class="mclose" onclick="this.closest('.modal-ov').remove()">✕</div></div>
+    <div style="font-size:14px;font-weight:800;margin-bottom:8px">${mName}</div>
+    ${salary>0?`<div style="font-size:11px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);border-radius:5px;padding:5px 10px;margin-bottom:10px;color:var(--green)">💰 ₹${dailyRate}/day (Full Day) · ₹${Math.round(dailyRate/2)}/day (Half Day)</div>`:''}
+    <div class="fg" style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">SELECT DATE</label>
+      <input type="date" id="attMarkDate" value="${today}" max="${today}" onchange="document.getElementById('mAttMark')._refresh&&document.getElementById('mAttMark')._refresh()"
+        style="width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;box-sizing:border-box">
+    </div>
+    <div id="attMarkInfo" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+    <div id="attMarkBtns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
+  </div>`;
+
+  modal._refresh=refreshMarkUI;
+  modal.querySelector('#attMarkDate').addEventListener('change',refreshMarkUI);
+  document.body.appendChild(modal);
+  refreshMarkUI();
+}
+
+
+function setAttStatus(mId,date,status,modalEl,keepOpen){
+  // 1. Save to localStorage (admin cache)
+  const data=getAttData(mId);
+  const idx=data.findIndex(a=>a.date===date);
+  const record={date,status,markedAt:new Date().toISOString()};
+  if(idx>=0)data[idx]=record;
+  else data.push(record);
+  saveAttData(mId,data);
+  
+  // 2. Save to Firestore (real-time sync to staff)
+  if(currentUid){
+    const attRef=db.collection('users').doc(currentUid)
+      .collection('members').doc(mId)
+      .collection('attendance').doc(date);
+    attRef.set({
+      date,
+      status,
+      markedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      markedBy:'admin'
+    }).then(()=>{
+      // Also update the member document's lastAttendance for quick access
+      db.collection('users').doc(currentUid).collection('members').doc(mId)
+        .update({lastAttDate:date,lastAttStatus:status}).catch(()=>{});
+    }).catch(e=>console.warn('Att Firestore save error:',e));
+  }
+  
+  if(modalEl&&!keepOpen)modalEl.remove();
+  toast('✅ '+date+': '+status,'s');
+  renderMemberCards();
+  if(keepOpen){
+    const mm=$id('mAttMark');
+    if(mm&&mm._refresh)mm._refresh();
+  }
+}
+
+function viewAttHistory(mId,mNameEnc){
+  const mName=decodeURIComponent(mNameEnc);
+  const allData=getAttData(mId).sort((a,b)=>b.date.localeCompare(a.date));
+  const m=membersCache.find(x=>x.id===mId)||{};
+  const salary=m.salary||0;
+  const workDays=m.workDays||26;
+  const dailyRate=salary>0?(salary/workDays):0;
+  const now=new Date();
+  const thisMonth=now.toISOString().substring(0,7);
+  const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
+
+  const existingMov=$id('mAttHistory');if(existingMov)existingMov.remove();
+  const modal=document.createElement('div');
+  modal.className='modal-ov';modal.id='mAttHistory';modal.style.display='flex';
+
+  function renderContent(filter,fromDate,toDate){
+    let data=allData;
+    if(filter==='month')data=allData.filter(a=>a.date.startsWith(thisMonth));
+    else if(filter==='prev')data=allData.filter(a=>a.date.startsWith(prevMonth));
+    else if(filter==='custom'&&fromDate&&toDate)data=allData.filter(a=>a.date>=fromDate&&a.date<=toDate);
+    const colors={'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'};
+    const icons={'Full Day':'✅','Half Day':'🌗','Absent':'❌','Leave':'🏖️','Holiday':'🎉'};
+    const full=data.filter(a=>a.status==='Full Day').length;
+    const half=data.filter(a=>a.status==='Half Day').length;
+    const absent=data.filter(a=>a.status==='Absent').length;
+    const leave=data.filter(a=>a.status==='Leave').length;
+    const holiday=data.filter(a=>a.status==='Holiday').length;
+    const earnedDays=full+(half*0.5);
+    const earnedAmt=earnedDays*dailyRate;
+    const summEl=modal.querySelector('#attHistSumm');
+    const salEl=modal.querySelector('#attHistSalary');
+    const listEl=modal.querySelector('#attHistList');
+    if(summEl)summEl.innerHTML=`
+      <div style="background:rgba(63,185,80,.1);border-radius:6px;padding:5px 2px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--green)">${full}</div><div style="font-size:9px;color:var(--muted)">Full</div></div>
+      <div style="background:rgba(249,115,22,.1);border-radius:6px;padding:5px 2px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--orange)">${half}</div><div style="font-size:9px;color:var(--muted)">Half</div></div>
+      <div style="background:rgba(248,81,73,.1);border-radius:6px;padding:5px 2px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--red)">${absent}</div><div style="font-size:9px;color:var(--muted)">Absent</div></div>
+      <div style="background:rgba(88,166,255,.1);border-radius:6px;padding:5px 2px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--blue)">${leave}</div><div style="font-size:9px;color:var(--muted)">Leave</div></div>
+      <div style="background:rgba(6,182,212,.1);border-radius:6px;padding:5px 2px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--cyan)">${holiday}</div><div style="font-size:9px;color:var(--muted)">Holi.</div></div>`;
+    if(salEl)salEl.innerHTML=salary>0?`
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+        <span style="font-size:12px;color:var(--muted)">Days: <b style="color:var(--text)">${earnedDays}</b> × ₹${Math.round(dailyRate)}/day</span>
+        <span style="font-size:15px;font-weight:800;color:var(--green)">Earned: ₹${Math.round(earnedAmt).toLocaleString('en-IN')}</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">Monthly salary: ₹${salary.toLocaleString('en-IN')} ÷ ${workDays} working days</div>`:
+      '<div style="font-size:11px;color:var(--muted)">💡 Set salary in Edit Staff to see auto-calculation</div>';
+    if(listEl){
+      if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
+      listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;font-weight:600">${a.date}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status}</span>
+          <button onclick="deleteAttRecord('${mId}','${a.date}','${encodeURIComponent(mName)}')" style="background:rgba(248,81,73,.12);border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--red);font-weight:700;font-family:'Outfit',sans-serif">🗑️</button>
+        </div>
+      </div>`).join('');
+    }
+  }
+
+  modal.innerHTML=`<div class="modal" style="max-width:400px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mhd"><h3>📖 Attendance History</h3><div class="mclose" onclick="this.closest('.modal-ov').remove()">✕</div></div>
+    <div style="font-size:14px;font-weight:800">${mName}</div>
+    ${m.role?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px">🎯 ${m.role}</div>`:'<div style="margin-bottom:8px"></div>'}
+    <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+      <button id="ahtab-month" onclick="switchAttTab('month',this)" style="padding:4px 9px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">This Month</button>
+      <button id="ahtab-prev" onclick="switchAttTab('prev',this)" style="padding:4px 9px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">Prev Month</button>
+      <button id="ahtab-all" onclick="switchAttTab('all',this)" style="padding:4px 9px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">All Time</button>
+      <button id="ahtab-custom" onclick="switchAttTab('custom',this)" style="padding:4px 9px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">📅 Custom</button>
+    </div>
+    <div id="attCustomBar" style="display:none;gap:6px;align-items:center;margin-bottom:8px">
+      <input type="date" id="attFrom" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--text)">
+      <span style="font-size:11px;color:var(--muted)">to</span>
+      <input type="date" id="attTo" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--text)">
+      <button onclick="if($id('attFrom').value&&$id('attTo').value)window._renderAtt('custom',$id('attFrom').value,$id('attTo').value);else toast('Select dates','w')" style="padding:5px 9px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">Apply</button>
+    </div>
+    <div id="attHistSumm" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
+    <div id="attHistSalary" style="background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2);border-radius:var(--rsm);padding:8px 10px;margin-bottom:8px"></div>
+    <div style="overflow-y:auto;flex:1" id="attHistList"></div>
+  </div>`;
+  document.body.appendChild(modal);
+  window._renderAtt=renderContent;
+  window._currentAttFilter='month';
+  renderContent('month');
+
+  modal.switchAttTab=function(filter,btn){
+    window._currentAttFilter=filter;
+    modal.querySelectorAll('[id^="ahtab-"]').forEach(b=>{b.style.background='var(--s2)';b.style.color='var(--text)';b.style.border='1px solid var(--border)';});
+    if(btn){btn.style.background='var(--primary)';btn.style.color='#fff';btn.style.border='none';}
+    const cb=$id('attCustomBar');if(cb)cb.style.display=filter==='custom'?'flex':'none';
+    if(filter!=='custom')renderContent(filter);
+  };
+}
+
+function switchAttTab(filter,btn){
+  const modal=$id('mAttHistory');if(!modal)return;
+  if(modal.switchAttTab)modal.switchAttTab(filter,btn);
+}
+
+function deleteAttRecord(mId,date,mNameEnc){
+  if(!confirm('Delete attendance for '+date+'?'))return;
+  const data=getAttData(mId).filter(a=>a.date!==date);
+  saveAttData(mId,data);
+  if(currentUid){
+    db.collection('users').doc(currentUid).collection('members').doc(mId)
+      .collection('attendance').doc(date).delete().catch(()=>{});
+  }
+  toast('Record deleted','i');
+  renderMemberCards();
+  viewAttHistory(mId,mNameEnc);
+}
+
 let _staffLedgerMemberId = null;
 let _staffLedgerDF = {mode:'all'};
 
 async function viewStaffLedger(mId, name){
   _staffLedgerMemberId = mId;
   const m = membersCache.find(x => x.id === mId);
-  $id('staffLedgerTitle').innerHTML = '👤 <b>' + name + '</b> — Ledger';
+  $id('staffLedgerTitle').innerHTML = '👤 <b>' + name + '</b> — Staff Ledger';
   $id('staffLedgerInline').style.display = 'block';
   buildDateBar('staffLedgerDateBar', _staffLedgerDF, renderStaffLedger);
   renderStaffLedger();
@@ -2682,34 +3226,68 @@ async function renderMemberCards(){
     }catch(e){}
     const inc=sum(entries,'income'),pe=sum(entries,'personal_expense'),he=sum(entries,'home_expense'),net=inc-pe-he;
     const total=entries.length;
+    // Get attendance summary from localStorage (synced from Firestore)
+    const attData=getAttData(m.id);
+    const todayStr2=new Date().toISOString().split('T')[0];
+    const todayAtt=attData.find(a=>a.date===todayStr2);
+    // Also check lastAttStatus from member data for today
+    const todayLabel=todayAtt?todayAtt.status:(m.lastAttDate===todayStr2?m.lastAttStatus:'Not Marked');
+    const fullDays=attData.filter(a=>a.status==='Full Day').length;
+    const halfDays=attData.filter(a=>a.status==='Half Day').length;
+    const absentDays=attData.filter(a=>a.status==='Absent').length;
+    const leaveDays=attData.filter(a=>a.status==='Leave').length;
+    const holidayDays=attData.filter(a=>a.status==='Holiday').length;
+    const todayColor=todayAtt?({'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'}[todayAtt.status]||'var(--muted)'):(m.lastAttDate===todayStr2?{'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'}[m.lastAttStatus]||'var(--muted)':'var(--muted)');
+
     html+=`<div class="mc">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
-        <div>
-          <span style="font-weight:800;font-size:14px">${m.name}</span>
-          <div style="margin-top:3px;display:flex;align-items:center;gap:6px">
-            <span style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--primary)">&#x1F464; Staff</span>
-            ${m.userId?`<span style="background:rgba(99,102,241,.15);color:var(--primary);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:800;font-family:monospace">ID: ${m.userId}</span>`:'<span style="background:rgba(248,81,73,.15);color:var(--red);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700">No User ID</span>'}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-weight:800;font-size:15px">${m.name}</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(99,102,241,.12);color:var(--primary)">Today: <span style="color:${todayColor}">${todayLabel}</span></span>
+          </div>
+          ${m.role?`<div style="font-size:11px;color:var(--muted);margin-top:2px">🎯 ${m.role}${m.type?' · '+m.type:''}</div>`:''}
+          ${m.phone?`<div style="font-size:11px;color:var(--muted)">📞 ${m.phone}</div>`:''}
+          <div style="margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            ${m.userId?`<span style="background:rgba(99,102,241,.15);color:var(--primary);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:800;font-family:monospace">ID: ${m.userId}</span>`:''}
+            ${m.salary?`<span style="background:rgba(63,185,80,.1);color:var(--green);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700">₹${fmt(m.salary)}/mo</span>`:''}
+            ${m.joinDate?`<span style="font-size:10px;color:var(--muted)">Joined: ${m.joinDate}</span>`:''}
           </div>
         </div>
-        <div style="display:flex;gap:4px">
-          <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditMember('${m.id}','${encodeURIComponent(m.name)}','${m.group}')">✏️</button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMember('${m.id}','${nameEsc}')">🗑️</button>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditMember('${m.id}','${encodeURIComponent(m.name)}','${m.group}')" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteMember('${m.id}','${nameEsc}')" title="Remove">🗑️</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px;font-size:12px">
+      <!-- Attendance Summary -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 10px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📋 Attendance Summary</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;text-align:center">
+          <div style="background:rgba(63,185,80,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--green)">${fullDays}</div><div style="font-size:9px;color:var(--muted)">Full</div></div>
+          <div style="background:rgba(249,115,22,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--orange)">${halfDays}</div><div style="font-size:9px;color:var(--muted)">Half</div></div>
+          <div style="background:rgba(248,81,73,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--red)">${absentDays}</div><div style="font-size:9px;color:var(--muted)">Absent</div></div>
+          <div style="background:rgba(88,166,255,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--blue)">${leaveDays}</div><div style="font-size:9px;color:var(--muted)">Leave</div></div>
+          <div style="background:rgba(6,182,212,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--cyan)">${holidayDays}</div><div style="font-size:9px;color:var(--muted)">Holi.</div></div>
+        </div>
+      </div>
+      <!-- Entries stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;font-size:12px">
         <div style="background:rgba(63,185,80,.1);border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Income</span><br><span class="amt-pos">₹${fmt(inc)}</span></div>
         <div style="background:rgba(248,81,73,.1);border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Expense</span><br><span class="amt-neg">₹${fmt(pe+he)}</span></div>
-        <div style="background:${net>=0?'rgba(63,185,80,.1)':'rgba(248,81,73,.1)'};border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Net Balance</span><br><span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(net)}</span></div>
-        <div style="background:rgba(88,166,255,.1);border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Entries</span><br><span style="color:var(--blue);font-weight:800">${total}</span></div>
       </div>
-      <!-- Admin: show password -->
-      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:7px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <!-- Password -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:11px;color:var(--muted);font-weight:600">&#x1F512; Password:</span>
-        <span style="font-size:12px;font-weight:800;color:var(--cyan);font-family:monospace" id="pw-${m.id}">${m.password||'—'}</span>
+        <span style="font-size:12px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password||'—'}</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="btn btn-primary btn-sm" style="width:100%" onclick="copyText('${link}',this)">&#x1F517; Copy Staff Link</button>
-        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="viewStaffLedger('${m.id}','${nameEsc}')">&#x1F4CB; View Ledger</button>
+      <!-- Action Buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px">
+        <button class="btn btn-primary btn-sm" onclick="copyText('${link}',this)">&#x1F517; Staff Link</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewStaffLedger('${m.id}','${nameEsc}')">&#x1F4CB; Ledger</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <button class="btn btn-sm" style="background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="markAttendance('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4CB; Mark Att.</button>
+        <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="viewAttHistory('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4D6; History</button>
       </div>
     </div>`;
   }
@@ -2718,16 +3296,43 @@ async function renderMemberCards(){
 }
 
 function switchMemberTab(grp,btn){memberTabFilter=grp;document.querySelectorAll('.gtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderMemberCards();}
+function onEmRoleSelect(val){
+  const ri=$id('emRole');if(!ri)return;
+  if(val==='custom'){ri.value='';ri.focus();}
+  else if(val){ri.value=val;}
+}
+function calcDailySalary(){
+  const sal=parseFloat($id('emSalary')?.value||0);
+  const days=parseFloat($id('emWorkDays')?.value||26)||26;
+  const daily=sal>0?(sal/days):0;
+  const el=$id('emDailyCalc');
+  if(el)el.textContent=sal>0?`Daily rate: ₹${(daily).toFixed(0)} / day  ·  Monthly: ₹${sal.toLocaleString('en-IN')}`:'Daily rate: ₹0 / day';
+}
 function openEditMember(mId,ne,group){
   $id('emId').value=mId;
   $id('emName').value=decodeURIComponent(ne);
   const hg=$id('emGroup');if(hg)hg.value=group;
   $id('emPw').value='';
-  // Prefill userId and show current password
   const m=membersCache.find(x=>x.id===mId);
   if(m){
-    const uid=$id('emUserId');if(uid)uid.value=m.userId||'';
-    const cpd=$id('emCurrentPwDisplay');if(cpd)cpd.textContent=m.password||'—';
+    if($id('emUserId'))$id('emUserId').value=m.userId||'';
+    if($id('emCurrentPwDisplay'))$id('emCurrentPwDisplay').textContent=m.password||'—';
+    if($id('emPhone'))$id('emPhone').value=m.phone||'';
+    if($id('emJoinDate'))$id('emJoinDate').value=m.joinDate||'';
+    if($id('emSalary'))$id('emSalary').value=m.salary||'';
+    if($id('emWorkDays'))$id('emWorkDays').value=m.workDays||26;
+    if($id('emType'))$id('emType').value=m.type||'Full Time';
+    // Role dropdown
+    const rolePresets=['Manager','Supervisor','Cashier','Receptionist','Sales Executive','Accountant','Driver','Guard / Security','Helper / Worker','Peon','Technician','Cook / Chef','Cleaner','Delivery Boy'];
+    const roleVal=m.role||'';
+    const rs=$id('emRoleSelect');
+    const ri=$id('emRole');
+    if(rs&&ri){
+      if(rolePresets.includes(roleVal)){rs.value=roleVal;ri.value=roleVal;}
+      else if(roleVal){rs.value='custom';ri.value=roleVal;}
+      else{rs.value='';ri.value='';}
+    }
+    calcDailySalary();
   }
   openM('mEditMember');
 }
@@ -2754,13 +3359,21 @@ function updateMemberSelects(){
 
 // ==================== DASHBOARD ====================
 async function renderDashStats(){
-  const entries=(window._adminPrivEntries||[]).concat(window._grpaEntries||[]);
-  const inc=sum(entries,'income'),pe=sum(entries,'personal_expense'),he=sum(entries,'home_expense'),net=inc-pe-he;
+  let entries=(window._adminPrivEntries||[]).concat(window._grpaEntries||[]);
+  // Apply same date filter as Recent Activity
+  const df=_dashDF||{mode:'today'};
+  const ts=todayStr();const now=new Date();
+  if(df.mode==='today')entries=entries.filter(e=>e.date===ts);
+  else if(df.mode==='week'){const w=new Date(now-7*86400000).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=w);}
+  else if(df.mode==='month'){const m=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=m);}
+  else if(df.mode==='custom'&&df.from&&df.to)entries=entries.filter(e=>e.date>=df.from&&e.date<=df.to);
+  const inc=sum(entries,'income');
+  const exp=sum(entries,'personal_expense')+sum(entries,'home_expense');
+  const net=inc-exp;
   const totalMembers=membersCache.length;
   $id('dashStats').innerHTML=statCards([
     {cls:'g',ico:'💰',val:'₹'+fmt(inc),lbl:'Staff Income'},
-    {cls:'o',ico:'🛍️',val:'₹'+fmt(pe),lbl:'Personal Expense'},
-    {cls:'r',ico:'🏠',val:'₹'+fmt(he),lbl:'Home/Biz-Expense'},
+    {cls:'r',ico:'🛍️',val:'₹'+fmt(exp),lbl:'Staff Expense'},
     {cls:'b',ico:'💎',val:'₹'+fmt(Math.abs(net)),lbl:'Net Balance',col:net>=0?'var(--green)':'var(--red)'},
     {cls:'c',ico:'👤',val:totalMembers,lbl:'Staff'}
   ]);
@@ -2773,13 +3386,14 @@ function setDashDF(mode, btn){
   if(btn){if(typeof btn==='object')btn.classList.add('active');else{const b=$id('dashDFbtn-'+mode);if(b)b.classList.add('active');}}
   const bar=$id('dashCustomBar');
   if(bar) bar.style.display = mode==='custom'?'flex':'none';
-  if(mode!=='custom') loadDashRecent(mode);
+  if(mode!=='custom'){loadDashRecent(mode);renderDashStats();}
 }
 function applyDashCustom(){
   const f=gv('dashFrom'),t=gv('dashTo');
   if(!f||!t){toast('Please select both From and To dates','w');return;}
   _dashDF={mode:'custom',from:f,to:t};
   loadDashRecent('custom');
+  renderDashStats();
 }
 async function loadDashRecent(period,btn){
   if(btn){document.querySelectorAll('#pg-dashboard .df-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
@@ -2818,16 +3432,38 @@ async function loadReports(period,btn){
   else if(period==='yearly'){cutoff=new Date(now.getFullYear(),0,1).toISOString().split('T')[0];}
   else if(period==='custom'){cutoff=gv('repFrom')||'2020-01-01';cutoffTo=gv('repTo')||todayStr();}
   const ff=e=>{if(!cutoff)return true;if(cutoffTo)return e.date>=cutoff&&e.date<=cutoffTo;return e.date>=cutoff;};
-  let allA=await getGrpaEntries({mode:'all'});allA=allA.filter(ff);
-  const gaM=membersCache.filter(m=>m.group==='A');let gaTI=0,gaTpe=0,gaThe=0;
-  const gaRows=gaM.map(m=>{const me=allA.filter(e=>e.memberId===m.id);const i=sum(me,'income'),p=sum(me,'personal_expense'),h=sum(me,'home_expense'),n=i-p-h;gaTI+=i;gaTpe+=p;gaThe+=h;return`<tr><td>${m.name}</td><td class="amt-pos">₹${fmt(i)}</td><td class="amt-pe">₹${fmt(p)}</td><td class="amt-neg">₹${fmt(h)}</td><td style="color:${n>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(n)}</td></tr>`;});
-  $id('repTbodyA').innerHTML=gaRows.join('')+`<tr class="rep-total"><td><b>STAFF TOTAL</b></td><td class="amt-pos">₹${fmt(gaTI)}</td><td class="amt-pe">₹${fmt(gaTpe)}</td><td class="amt-neg">₹${fmt(gaThe)}</td><td style="color:${(gaTI-gaTpe-gaThe)>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(gaTI-gaTpe-gaThe)}</td></tr>`;
-  const gbM=membersCache.filter(m=>m.group==='B');let gbTI=0,gbTpe=0,gbThe=0;
-  const gbRowsP=gbM.map(async m=>{let me=await getGrpbEntries(m.id,{mode:'all'});me=me.filter(ff);const i=sum(me,'income'),p=sum(me,'personal_expense'),h=sum(me,'home_expense'),n=i-p-h;gbTI+=i;gbTpe+=p;gbThe+=h;return`<tr><td>${m.name}</td><td class="amt-pos">₹${fmt(i)}</td><td class="amt-pe">₹${fmt(p)}</td><td class="amt-neg">₹${fmt(h)}</td><td style="color:${n>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(n)}</td></tr>`;});
-  const gbRows=await Promise.all(gbRowsP);
-  $id('repTbodyB').innerHTML=gbRows.join('')+`<tr class="rep-total"><td><b>STAFF TOTAL (Private)</b></td><td class="amt-pos">₹${fmt(gbTI)}</td><td class="amt-pe">₹${fmt(gbTpe)}</td><td class="amt-neg">₹${fmt(gbThe)}</td><td style="color:${(gbTI-gbTpe-gbThe)>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(gbTI-gbTpe-gbThe)}</td></tr>`;
-  const tI=gaTI+gbTI,tpe=gaTpe+gbTpe,the=gaThe+gbThe,tnet=tI-tpe-the;
-  $id('reportStats').innerHTML=statCards([{cls:'g',ico:'💰',val:'₹'+fmt(tI),lbl:'Total Income'},{cls:'o',ico:'🛍️',val:'₹'+fmt(tpe),lbl:'Total Personal Expense'},{cls:'r',ico:'🏠',val:'₹'+fmt(the),lbl:'Total Home/Biz-Expense'},{cls:'b',ico:'💎',val:'₹'+fmt(Math.abs(tnet)),lbl:'Grand Net Balance',col:tnet>=0?'var(--green)':'var(--red)'}]);
+  // Load ALL staff entries from both collections
+  let allA=[];let allB=[];
+  try{allA=await getGrpaEntries({mode:'all'});allA=allA.filter(ff);}catch(e){}
+  
+  // Load private_entries for all members
+  const gbSnap=await uCol('private_entries').where('deleted','==',false).get();
+  allB=gbSnap.docs.map(d=>d.data()).filter(ff);
+  
+  // All members combined (no group filter - show ALL staff)
+  const allMembers=membersCache;
+  let gaTI=0,gaTpe=0,gaThe=0;
+  const gaRows=allMembers.map(m=>{
+    const meA=allA.filter(e=>e.memberId===m.id);
+    const meB=allB.filter(e=>e.memberId===m.id);
+    const me=[...meA,...meB];
+    const i=sum(me,'income'),p=sum(me,'personal_expense'),h=sum(me,'home_expense'),exp=p+h,n=i-exp;
+    gaTI+=i;gaTpe+=p;gaThe+=h;
+    return`<tr><td>${m.name}</td><td class="amt-pos">₹${fmt(i)}</td><td class="amt-neg">₹${fmt(exp)}</td><td style="color:${n>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(n)}</td></tr>`;
+  });
+  const tnet2=gaTI-gaTpe-gaThe;
+  $id('repTbodyA').innerHTML=gaRows.join('')+(gaRows.length?`<tr class="rep-total"><td><b>TOTAL</b></td><td class="amt-pos">₹${fmt(gaTI)}</td><td class="amt-neg">₹${fmt(gaTpe+gaThe)}</td><td style="color:${tnet2>=0?'var(--green)':'var(--red)'};font-weight:800">₹${fmt(tnet2)}</td></tr>`:'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">No entries for this period</td></tr>');
+  
+  // Hide repTbodyB (old private section) 
+  const tbB=$id('repTbodyB');if(tbB){const row=tbB.closest('div.cbox');if(row)row.style.display='none';}
+  
+  const tI=gaTI,tpe=gaTpe,the=gaThe,tnet=tI-tpe-the;
+  $id('reportStats').innerHTML=statCards([
+    {cls:'g',ico:'💰',val:'₹'+fmt(tI),lbl:'Total Income'},
+    {cls:'r',ico:'🛍️',val:'₹'+fmt(tpe+the),lbl:'Total Expense'},
+    {cls:'b',ico:'💎',val:'₹'+fmt(Math.abs(tnet)),lbl:'Net Balance',col:tnet>=0?'var(--green)':'var(--red)'},
+    {cls:'c',ico:'👤',val:allMembers.length,lbl:'Staff Count'}
+  ]);
 }
 
 // ==================== EXPORT ====================
@@ -2836,27 +3472,165 @@ function applyExportDateFilter(){
   const from=gv('exportFrom'),to=gv('exportTo');
   if(!from||!to){toast('Please select both From and To dates','w');return;}
   exportDF={mode:'custom',from,to};
-  $id('exportFilterLabel').textContent='Filter: '+from+' → '+to;
-  toast('Filter applied! Click export button now','s');
+  const lbl=$id('exportFilterLabel');if(lbl)lbl.textContent='📅 Custom: '+from+' → '+to;
+  toast('Filter applied — now click a download button','s');
 }
 function clearExportFilter(){
-  exportDF={mode:'all'};
-  const fe=$id('exportFrom'),te=$id('exportTo');
-  if(fe)fe.value='';if(te)te.value='';
-  $id('exportFilterLabel').textContent='';
+  setExportPeriod('all',$id('expTab-all'));
   toast('Filter cleared — All dates','i');
 }
+function setExportPeriod(mode,btn){
+  exportDF={mode,from:'',to:''};
+  const now=new Date();
+  const ts=todayStr();
+  document.querySelectorAll('#pg-export .df-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const cb=$id('expCustomBar');if(cb)cb.style.display=mode==='custom'?'flex':'none';
+  const lbl=$id('exportFilterLabel');
+  if(mode==='today'){exportDF={mode,from:ts,to:ts};if(lbl)lbl.textContent='📅 Today: '+ts;}
+  else if(mode==='week'){const w=new Date(now-7*86400000).toISOString().split('T')[0];exportDF={mode,from:w,to:ts};if(lbl)lbl.textContent='📅 This Week: '+w+' → '+ts;}
+  else if(mode==='month'){const m=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];exportDF={mode,from:m,to:ts};if(lbl)lbl.textContent='📅 This Month: '+m+' → '+ts;}
+  else if(mode==='year'){const y=new Date(now.getFullYear(),0,1).toISOString().split('T')[0];exportDF={mode,from:y,to:ts};if(lbl)lbl.textContent='📅 This Year: '+y+' → '+ts;}
+  else if(mode==='all'){exportDF={mode:'all',from:'',to:''};if(lbl)lbl.textContent='📅 All Time';}
+}
+
 function initExportPage(){
   setToday('exportTo');
   const now=new Date();
   const firstDay=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
-  const ef=$id('exportFrom');if(ef&&!ef.value)ef.value=firstDay;
-  buildDateBar('exportDateBar',exportDF,()=>{
-    const bf=barFilters['exportDateBar']||{};
-    exportDF={...bf};
-    $id('exportFilterLabel').textContent=bf.mode==='all'?'':bf.mode==='custom'?'Filter: '+(bf.from||'')+' → '+(bf.to||''):'Filter: '+bf.mode;
-  });
+  const ef=$id('exportFrom');if(ef)ef.value=firstDay;
+  // Set default to This Month
+  setExportPeriod('month',$id('expTab-month'));
 }
+async function downloadPDF(type){
+  const statusEl=$id('pdfStatus');
+  if(statusEl){statusEl.style.display='block';statusEl.textContent='⏳ Generating PDF...';}
+
+  try{
+    let entries=[];
+    const fromD=exportDF.from||'2020-01-01',toD=exportDF.to||'2099-12-31';
+    const hasFilter=exportDF.mode&&exportDF.mode!=='all';
+    const dateFilter=e=>!hasFilter||(e.date&&e.date>=fromD&&e.date<=toD);
+
+    if(type==='admin'){
+      // MY Hisab-private: load admin_entries
+      let adminEntries=window._adminLedgerEntries||null;
+      if(!adminEntries){const snap=await uCol('admin_entries').where('deleted','==',false).get();adminEntries=snap.docs.map(d=>d.data());}
+      entries=adminEntries.filter(dateFilter);
+    } else {
+      // Staff entries from both collections
+      let eA=window._grpaEntries||null;
+      let eB=window._adminPrivEntries||null;
+      if(!eA){const snap=await uCol('entries').where('deleted','==',false).get();eA=snap.docs.map(d=>({_id:d.id,...d.data()}));window._grpaEntries=eA;}
+      if(!eB){const snap=await uCol('private_entries').where('deleted','==',false).get();eB=snap.docs.map(d=>({_id:d.id,...d.data()}));window._adminPrivEntries=eB;}
+      entries=[...eA,...eB].filter(dateFilter);
+      if(type!=='all')entries=entries.filter(e=>e.type===type);
+    }
+
+    const inc=sum(entries,'income');
+    const exp=sum(entries,'personal_expense')+sum(entries,'home_expense');
+    const net=inc-exp;
+    const now=new Date();
+    const adminName=$id('adminDisplayName')?.textContent||'Admin';
+    const periodLabel=hasFilter?`${fromD} to ${toD}`:'All Time';
+    const typeLabel={'all':'All Entries','income':'Income Only','personal_expense':'Personal Expense','home_expense':'Home/Biz-Expense','admin':'MY Hisab-private'}[type]||type;
+    const typeMap={'income':'💰 Income','personal_expense':'🛍️ Personal Exp.','home_expense':'🏠 Home/Biz Exp.'};
+
+    // ── Shared CSS for PDF ──
+    const pdfCSS=`*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:20px;}.header{border-bottom:3px solid #6366f1;padding-bottom:14px;margin-bottom:18px;}.header h1{font-size:22px;color:#6366f1;font-weight:800;}.header p{font-size:11px;color:#666;margin-top:3px;}.summary{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}.sum-box{flex:1;min-width:110px;border-radius:8px;padding:10px 14px;text-align:center;}.sum-box .l{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.5px;}.sum-box .v{font-size:16px;font-weight:800;margin-top:2px;}table{width:100%;border-collapse:collapse;margin-bottom:4px;}th{background:#6366f1;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;}td{padding:6px 8px;border-bottom:1px solid #eee;font-size:11px;}.footer{margin-top:18px;padding-top:10px;border-top:1px solid #ddd;font-size:9px;color:#999;text-align:center;}.section-gap{height:18px;}@media print{body{padding:10px;}}`;
+
+    let bodyHtml='';
+
+    if(type==='admin'){
+      // ── MY Hisab-private: group by FOLDER (same as before) ──
+      const folderMap={};
+      entries.forEach(e=>{const fId=e.folderId||'_unknown';if(!folderMap[fId])folderMap[fId]=[];folderMap[fId].push(e);});
+      const sortedFolders=folderCache.slice().sort((a,b)=>(a.order||0)-(b.order||0));
+
+      // Summary table
+      let fSummaryRows='';
+      sortedFolders.forEach(f=>{
+        const fe=folderMap[f.id]||[];if(!fe.length)return;
+        const fi=fe.filter(e=>e.type==='income').reduce((s,e)=>s+(e.amount||0),0);
+        const fp=fe.filter(e=>e.type==='personal_expense').reduce((s,e)=>s+(e.amount||0),0);
+        const fh=fe.filter(e=>e.type==='home_expense').reduce((s,e)=>s+(e.amount||0),0);
+        const fn=fi-fp-fh;
+        fSummaryRows+=`<tr><td style="font-weight:700">📁 ${f.name}</td><td style="text-align:right;color:#16a34a">₹${fmt(fi)}</td><td style="text-align:right;color:#f97316">₹${fmt(fp)}</td><td style="text-align:right;color:#dc2626">₹${fmt(fh)}</td><td style="text-align:right;font-weight:800;color:${fn>=0?'#16a34a':'#dc2626'}">₹${fmt(Math.abs(fn))}</td><td style="text-align:center;color:#6b7280">${fe.length}</td></tr>`;
+      });
+      bodyHtml+=`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:800;color:#1e1b4b;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #6366f1">📋 Folder-wise Summary</div><table><thead><tr><th>Folder</th><th style="text-align:right">Income</th><th style="text-align:right">Personal Exp.</th><th style="text-align:right">Home/Biz Exp.</th><th style="text-align:right">Net Balance</th><th style="text-align:center">Entries</th></tr></thead><tbody>${fSummaryRows}<tr style="background:#1e1b4b"><td style="font-weight:800;color:#fff">TOTAL</td><td style="text-align:right;color:#86efac;font-weight:800">₹${fmt(inc)}</td><td style="text-align:right;color:#fdba74;font-weight:800">₹${fmt(sum(entries,'personal_expense'))}</td><td style="text-align:right;color:#fca5a5;font-weight:800">₹${fmt(sum(entries,'home_expense'))}</td><td style="text-align:right;font-weight:800;color:${net>=0?'#86efac':'#fca5a5'}">₹${fmt(Math.abs(net))}</td><td style="text-align:center;color:#c7d2fe">${entries.length}</td></tr></tbody></table></div>`;
+
+      // Each folder detail
+      sortedFolders.forEach(folder=>{
+        const fEntries=(folderMap[folder.id]||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+        if(!fEntries.length)return;
+        const fi=fEntries.filter(e=>e.type==='income').reduce((s,e)=>s+(e.amount||0),0);
+        const fpe=fEntries.filter(e=>e.type==='personal_expense').reduce((s,e)=>s+(e.amount||0),0);
+        const fhe=fEntries.filter(e=>e.type==='home_expense').reduce((s,e)=>s+(e.amount||0),0);
+        const fn=fi-fpe-fhe;
+        bodyHtml+=`<div style="margin-bottom:22px"><div style="background:#312e81;padding:10px 12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px"><span style="font-weight:800;color:#fff;font-size:13px">📁 ${folder.name}</span><span style="font-size:10px;color:#c7d2fe">${fEntries.length} entries · Income: ₹${fmt(fi)} · Exp: ₹${fmt(fpe+fhe)} · Net: ₹${fmt(Math.abs(fn))}</span></div><table><thead><tr style="background:#4338ca"><th style="color:#e0e7ff">Date</th><th style="color:#e0e7ff">Type</th><th style="color:#e0e7ff">Category</th><th style="color:#e0e7ff">Description</th><th style="color:#e0e7ff;text-align:right">Amount</th></tr></thead><tbody>${fEntries.map((e,i)=>`<tr style="${i%2===0?'':'background:#f5f3ff'}"><td>${e.date||'—'}</td><td>${typeMap[e.type]||e.type}</td><td style="color:#4b5563;font-size:10px">${e.category||'—'}</td><td>${e.description||'—'}</td><td style="text-align:right;color:${e.type==='income'?'#16a34a':'#dc2626'};font-weight:700">${e.type==='income'?'+':'-'}₹${fmt(e.amount||0)}</td></tr>`).join('')}<tr style="background:#e0e7ff"><td colspan="4" style="text-align:right;font-weight:700;font-size:10px;color:#3730a3;padding:6px 8px">Net Balance — ${folder.name}:</td><td style="text-align:right;font-weight:800;color:${fn>=0?'#16a34a':'#dc2626'}">₹${fmt(Math.abs(fn))}</td></tr></tbody></table></div>`;
+      });
+
+    } else {
+      // ── Staff entries: group by STAFF (alphabetical A→Z) — same structure as MY Hisab folders ──
+
+      // Build staff map
+      const staffMap={};
+      entries.forEach(e=>{
+        const k=e.memberName||'Unknown';
+        if(!staffMap[k])staffMap[k]=[];
+        staffMap[k].push(e);
+      });
+      const sortedNames=Object.keys(staffMap).sort((a,b)=>a.localeCompare(b));
+
+      // Staff summary table (top)
+      let summaryRows='';
+      let gI=0,gP=0,gH=0;
+      sortedNames.forEach(name=>{
+        const se=staffMap[name];
+        const si=sum(se,'income'),sp=sum(se,'personal_expense'),sh=sum(se,'home_expense'),sn=si-sp-sh;
+        gI+=si;gP+=sp;gH+=sh;
+        summaryRows+=`<tr><td style="font-weight:700">👤 ${name}</td><td style="text-align:right;color:#16a34a">₹${fmt(si)}</td><td style="text-align:right;color:#f97316">₹${fmt(sp)}</td><td style="text-align:right;color:#dc2626">₹${fmt(sh)}</td><td style="text-align:right;font-weight:800;color:${sn>=0?'#16a34a':'#dc2626'}">₹${fmt(Math.abs(sn))}</td><td style="text-align:center;color:#6b7280">${se.length}</td></tr>`;
+      });
+      const gn=gI-gP-gH;
+      bodyHtml+=`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:800;color:#1e1b4b;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #6366f1">📋 Staff-wise Summary (A → Z)</div><table><thead><tr><th>Staff Name</th><th style="text-align:right">Income</th><th style="text-align:right">Personal Exp.</th><th style="text-align:right">Home/Biz Exp.</th><th style="text-align:right">Net Balance</th><th style="text-align:center">Entries</th></tr></thead><tbody>${summaryRows}<tr style="background:#1e1b4b"><td style="font-weight:800;color:#fff">GRAND TOTAL</td><td style="text-align:right;color:#86efac;font-weight:800">₹${fmt(gI)}</td><td style="text-align:right;color:#fdba74;font-weight:800">₹${fmt(gP)}</td><td style="text-align:right;color:#fca5a5;font-weight:800">₹${fmt(gH)}</td><td style="text-align:right;font-weight:800;color:${gn>=0?'#86efac':'#fca5a5'}">₹${fmt(Math.abs(gn))}</td><td style="text-align:center;color:#c7d2fe">${entries.length}</td></tr></tbody></table></div>`;
+
+      // Each staff detailed section (same card style as MY Hisab folders)
+      sortedNames.forEach(name=>{
+        const se=staffMap[name].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+        const si=sum(se,'income'),sp=sum(se,'personal_expense'),sh=sum(se,'home_expense'),sn=si-sp-sh;
+        bodyHtml+=`<div style="margin-bottom:22px"><div style="background:#312e81;padding:10px 12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px"><span style="font-weight:800;color:#fff;font-size:13px">👤 ${name}</span><span style="font-size:10px;color:#c7d2fe">${se.length} entries · Income: ₹${fmt(si)} · Exp: ₹${fmt(sp+sh)} · Net: ₹${fmt(Math.abs(sn))}</span></div><table><thead><tr style="background:#4338ca"><th style="color:#e0e7ff">Date</th><th style="color:#e0e7ff">Type</th><th style="color:#e0e7ff">Category</th><th style="color:#e0e7ff">Description</th><th style="color:#e0e7ff;text-align:right">Amount</th></tr></thead><tbody>${se.map((e,i)=>`<tr style="${i%2===0?'':'background:#f5f3ff'}"><td>${e.date||'—'}</td><td>${typeMap[e.type]||e.type}</td><td style="color:#4b5563;font-size:10px">${e.category||'—'}</td><td>${e.description||'—'}</td><td style="text-align:right;color:${e.type==='income'?'#16a34a':'#dc2626'};font-weight:700">${e.type==='income'?'+':'-'}₹${fmt(e.amount||0)}</td></tr>`).join('')}<tr style="background:#e0e7ff"><td colspan="4" style="text-align:right;font-weight:700;font-size:10px;color:#3730a3;padding:6px 8px">Net Balance — ${name}:</td><td style="text-align:right;font-weight:800;color:${sn>=0?'#16a34a':'#dc2626'}">₹${fmt(Math.abs(sn))}</td></tr></tbody></table></div>`;
+      });
+    }
+
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BizPro — ${typeLabel}</title><style>${pdfCSS}<\/style><\/head><body>
+      <div class="header">
+        <h1>📊 BizPro Financial Statement</h1>
+        <p>${adminName} &nbsp;|&nbsp; ${typeLabel} &nbsp;|&nbsp; Period: ${periodLabel} &nbsp;|&nbsp; Generated: ${now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</p>
+      </div>
+      <div class="summary">
+        <div class="sum-box" style="background:#dcfce7;border:1px solid #86efac"><div class="l">Total Income</div><div class="v" style="color:#16a34a">₹${fmt(inc)}</div></div>
+        <div class="sum-box" style="background:#fee2e2;border:1px solid #fca5a5"><div class="l">Total Expense</div><div class="v" style="color:#dc2626">₹${fmt(exp)}</div></div>
+        <div class="sum-box" style="background:#ede9fe;border:1px solid #c4b5fd"><div class="l">Net Balance</div><div class="v" style="color:${net>=0?'#6366f1':'#dc2626'}">₹${fmt(Math.abs(net))}</div></div>
+        <div class="sum-box" style="background:#fef9c3;border:1px solid #fde047"><div class="l">Total Entries</div><div class="v" style="color:#92400e">${entries.length}</div></div>
+      </div>
+      ${bodyHtml||'<p style="text-align:center;color:#999;padding:30px">No entries found.</p>'}
+      <div class="footer">BizPro — Smart Business & Home Manager &nbsp;|&nbsp; ${now.toLocaleString('en-IN')}</div>
+    <\/body><\/html>`;
+
+    const win=window.open('','_blank','width=960,height=720');
+    if(!win){toast('Pop-up blocked! Please allow pop-ups for PDF.','w');if(statusEl)statusEl.style.display='none';return;}
+    win.document.write(html);win.document.close();
+    setTimeout(()=>{win.print();},400);
+    if(statusEl){statusEl.style.display='block';statusEl.textContent='✅ PDF ready! Use Save as PDF in print dialog.';}
+    setTimeout(()=>{if(statusEl)statusEl.style.display='none';},4000);
+    toast('PDF opened! Use "Save as PDF" in print dialog','s');
+  }catch(err){
+    if(statusEl)statusEl.style.display='none';
+    toast('PDF error: '+err.message,'e');
+    console.error('PDF error:',err);
+  }
+}
+
 async function exportCSV(type){
   let rows=[],entries=[];
   const fromD=exportDF.from||'2020-01-01',toD=exportDF.to||'2099-12-31';
@@ -2873,7 +3647,7 @@ async function exportCSV(type){
     entries=[...s1.docs.map(d=>d.data()),...s2.docs.map(d=>d.data())].filter(dateFilter);
     if(type!=='all')entries=entries.filter(e=>e.type===type);
     rows=[['Date','Group','Member','Type','Category','Description','Amount']];
-    entries.forEach(e=>rows.push([e.date,e.group||'A',e.memberName||'',e.type,e.category||'',e.description||'',e.amount]));
+    entries.forEach(e=>rows.push([e.date,'Staff',e.memberName||'',e.type,e.category||'',e.description||'',e.amount]));
   }
   const suffix=hasFilter?'-'+fromD+'_'+toD:'';
   downloadCSV(rows,'bizpro-'+type+suffix+'-'+todayStr()+'.csv');
@@ -2881,17 +3655,101 @@ async function exportCSV(type){
 }
 
 async function genReport(){
-  const snap=await uCol('entries').where('deleted','==',false).get();const entries=snap.docs.map(d=>d.data());
-  const inc=sum(entries,'income'),pe=sum(entries,'personal_expense'),he=sum(entries,'home_expense'),nl='\n';
-  const rpt='BizPro Summary Report'+nl+new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+nl+'='.repeat(40)+nl+'Income:              ₹'+fmt(inc)+nl+'Personal Expense:    ₹'+fmt(pe)+nl+'Home/Biz-Expense:   ₹'+fmt(he)+nl+'Net Balance:₹'+fmt(inc-pe-he)+nl+'='.repeat(40)+nl+'Total Entries: '+entries.length+nl+'Total Staff: '+membersCache.length;
-  $id('reportText').value=rpt;$id('reportOut').style.display='block';
+  // Always fetch fresh data (use cached onSnapshot data if available)
+  let entriesA=window._grpaEntries||[];
+  let entriesB=window._adminPrivEntries||[];
+  // If cache empty, fetch fresh
+  if(!entriesA.length){
+    const snap=await uCol('entries').where('deleted','==',false).get();
+    entriesA=snap.docs.map(d=>({_id:d.id,...d.data()}));
+    window._grpaEntries=entriesA;
+  }
+  if(!entriesB.length){
+    const snap=await uCol('private_entries').where('deleted','==',false).get();
+    entriesB=snap.docs.map(d=>({_id:d.id,...d.data()}));
+    window._adminPrivEntries=entriesB;
+  }
+  const entries=[...entriesA,...entriesB];
+  
+  const inc=sum(entries,'income'),pe=sum(entries,'personal_expense'),he=sum(entries,'home_expense');
+  const exp=pe+he,net=inc-exp;
+  const nl='\n';
+  const now=new Date();
+  
+  // Per-member breakdown
+  const memberLines=membersCache.map(m=>{
+    const me=entries.filter(e=>e.memberId===m.id);
+    const mi=sum(me,'income'),mexp=sum(me,'personal_expense')+sum(me,'home_expense');
+    return`  ${m.name}${m.role?' ('+m.role+')':''}: Income ₹${fmt(mi)} | Expense ₹${fmt(mexp)} | Net ₹${fmt(mi-mexp)}`;
+  }).join(nl);
+  
+  const rpt=
+    'BizPro Summary Report'+nl+
+    now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+nl+
+    '='.repeat(40)+nl+
+    'FINANCIAL SUMMARY'+nl+
+    'Staff Income:    ₹'+fmt(inc)+nl+
+    'Staff Expense:   ₹'+fmt(exp)+nl+
+    'Net Balance:     ₹'+fmt(net)+nl+
+    '='.repeat(40)+nl+
+    'STAFF BREAKDOWN ('+membersCache.length+' members)'+nl+
+    (memberLines||'  No staff entries')+nl+
+    '='.repeat(40)+nl+
+    'Total Entries: '+entries.length+nl+
+    'Generated: '+now.toLocaleString('en-IN');
+    
+  $id('reportText').value=rpt;
+  $id('reportOut').style.display='block';
+  toast('Report generated!','s');
 }
 
 // ==================== CATEGORIES ====================
 function renderCatChips(){const c=getCats();renderChips('incCatChips',c.income,'income');renderChips('peCatChips',c.pe,'pe');renderChips('heCatChips',c.he,'he');}
 function renderChips(cId,cats,type){
   const el=$id(cId);if(!el)return;
-  el.innerHTML=cats.map((c,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--s2);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600">${c}<button onclick="delCat('${type}',${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:0">✕</button></span>`).join('');
+  el.style.minHeight='36px';
+  el.innerHTML=cats.map((c,i)=>`<span 
+    draggable="true"
+    data-idx="${i}" data-type="${type}"
+    ondragstart="catDragStart(event)"
+    ondragover="catDragOver(event)"
+    ondrop="catDrop(event,'${type}')"
+    ondragend="catDragEnd(event)"
+    style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--s2);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;cursor:grab;user-select:none;transition:opacity .15s"
+    title="Drag to reorder">
+    <span style="font-size:10px;color:var(--muted);margin-right:2px">⠿</span>${c}<button onclick="delCat('${type}',${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:0;margin-left:2px">✕</button>
+  </span>`).join('');
+}
+
+let _catDragIdx=null,_catDragType=null;
+function catDragStart(e){
+  _catDragIdx=parseInt(e.currentTarget.dataset.idx);
+  _catDragType=e.currentTarget.dataset.type;
+  e.currentTarget.style.opacity='0.4';
+  e.dataTransfer.effectAllowed='move';
+}
+function catDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.style.border='1.5px solid var(--primary)';
+}
+function catDragEnd(e){
+  e.currentTarget.style.opacity='1';
+  // Reset all borders
+  const el=e.currentTarget.parentElement;
+  if(el)el.querySelectorAll('span[draggable]').forEach(s=>s.style.border='1px solid var(--border)');
+}
+function catDrop(e,type){
+  e.preventDefault();
+  const toIdx=parseInt(e.currentTarget.dataset.idx);
+  if(_catDragIdx===null||_catDragIdx===toIdx||_catDragType!==type)return;
+  const c=getCats();
+  const arr=type==='income'?c.income:type==='pe'?c.pe:c.he;
+  const moved=arr.splice(_catDragIdx,1)[0];
+  arr.splice(toIdx,0,moved);
+  saveCats(c);
+  renderCatChips();
+  _catDragIdx=null;_catDragType=null;
 }
 function addCat(type){const iId=type==='income'?'newIncCat':type==='pe'?'newPeCat':'newHeCat';const v=gv(iId).trim();if(!v)return;const c=getCats();if(type==='income')c.income.push(v);else if(type==='pe')c.pe.push(v);else c.he.push(v);saveCats(c);$id(iId).value='';renderCatChips();toast('Category added!','s');}
 function delCat(type,idx){const c=getCats();if(type==='income')c.income.splice(idx,1);else if(type==='pe')c.pe.splice(idx,1);else c.he.splice(idx,1);saveCats(c);renderCatChips();toast('Removed','i');}
@@ -3226,19 +4084,331 @@ async function deleteNote(docId){
 function editNoteOpen(docId,te,ce){editNoteId=docId;$id('noteTitle').value=decodeURIComponent(te);$id('noteContent').value=decodeURIComponent(ce);openM('mNote');}
 function editMemberNote(docId,te,ce){mEditNoteId=docId;$id('mNoteTitle').value=decodeURIComponent(te);$id('mNoteContent').value=decodeURIComponent(ce);openM('mMemberNote');}
 
-function renderNotes(){
-  const notes=window._adminNotes||[];const q=gv('noteSrch').toLowerCase();let list=notes.filter(n=>!n.deleted);if(q)list=list.filter(n=>(n.title+n.content||'').toLowerCase().includes(q));
-  const el=$id('notesGrid');if(!el)return;const cols=['var(--primary)','var(--green)','var(--gold)','var(--cyan)','var(--purple)','var(--orange)'];
-  if(!list.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ei">📓</div><h3>No notes yet</h3><p>Click + New Note to start</p></div>';return;}
-  el.innerHTML=list.map((n,i)=>`<div class="note-card" style="border-top:3px solid ${cols[i%cols.length]}">
-    <div class="note-acts">
-      <button class="btn btn-ghost btn-sm btn-icon" onclick="editNoteOpen('${n._id}','${encodeURIComponent(n.title||'')}','${encodeURIComponent(n.content||'')}')">✏️</button>
-      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteNote('${n._id}')">🗑️</button>
+// ==================== NOTEBOOK 3-LEVEL SYSTEM ====================
+// State
+let _nbCurrentFolder=null; // {id, name, color, order}
+let _nbCurrentNotebook=null; // {id, name, folderId, order}
+let _nbFolders=[]; // cached from Firestore
+let _nbNotebooks=[]; // cached from Firestore
+let _nbNotes=[]; // cached from Firestore
+let _nbDragSrc=null,_nbDragType=null;
+
+const NB_COLORS=['#6366f1','#22c55e','#f59e0b','#06b6d4','#a855f7','#f97316','#ec4899','#14b8a6','#ef4444','#64748b'];
+
+// Load all notebook data from Firestore
+async function nbLoadAll(){
+  if(!currentUid)return;
+  try{
+    const [fs,nbs,ns]=await Promise.all([
+      uCol('nb_folders').orderBy('order','asc').get(),
+      uCol('nb_notebooks').orderBy('order','asc').get(),
+      uCol('nb_notes').orderBy('order','asc').get()
+    ]);
+    _nbFolders=fs.docs.map(d=>({id:d.id,...d.data()}));
+    _nbNotebooks=nbs.docs.map(d=>({id:d.id,...d.data()}));
+    _nbNotes=ns.docs.map(d=>({id:d.id,...d.data()}));
+    nbRenderFolders();
+  }catch(e){console.warn('nb load:',e);nbRenderFolders();}
+}
+
+// Setup real-time listeners for notebook
+function nbSetupListeners(){
+  if(!currentUid)return;
+  uCol('nb_folders').orderBy('order','asc').onSnapshot(snap=>{
+    _nbFolders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(_nbCurrentFolder)nbRenderNotebooks();
+    else nbRenderFolders();
+  });
+  uCol('nb_notebooks').orderBy('order','asc').onSnapshot(snap=>{
+    _nbNotebooks=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(_nbCurrentNotebook)nbRenderNotes();
+    else if(_nbCurrentFolder)nbRenderNotebooks();
+  });
+  uCol('nb_notes').orderBy('order','asc').onSnapshot(snap=>{
+    _nbNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(_nbCurrentNotebook)nbRenderNotes();
+  });
+}
+
+function nbGoBack(to){
+  if(to==='folders'){_nbCurrentFolder=null;_nbCurrentNotebook=null;nbShowView('folders');nbRenderFolders();}
+  else if(to==='notebooks'){_nbCurrentNotebook=null;nbShowView('notebooks');nbRenderNotebooks();}
+}
+function nbShowView(v){
+  ['folders','notebooks','notes'].forEach(x=>$id('nb-view-'+x).style.display=x===v?'block':'none');
+}
+
+// ── FOLDERS ──
+function nbRenderFolders(){
+  nbShowView('folders');
+  const el=$id('nb-folders-list');if(!el)return;
+  if(!_nbFolders.length){
+    el.innerHTML='<div class="empty"><div class="ei">📁</div><h3>No folders yet</h3><p>Click + New Folder to start</p></div>';return;
+  }
+  el.innerHTML=_nbFolders.map((f,i)=>{
+    const nbCount=_nbNotebooks.filter(n=>n.folderId===f.id).length;
+    const noteCount=_nbNotes.filter(n=>n.folderId===f.id).length;
+    const col=f.color||NB_COLORS[i%NB_COLORS.length];
+    return `<div class="nb-folder-card" id="nbf-${f.id}" draggable="true"
+      ondragstart="nbDragStart(event,'folder','${f.id}')"
+      ondragover="nbDragOver(event,'folder','${f.id}')"
+      ondrop="nbDrop(event,'folder','${f.id}')"
+      ondragend="nbDragEnd(event)">
+      <span class="nb-drag-handle">⠿</span>
+      <div class="nb-folder-ico" style="background:${col}22;color:${col}">📁</div>
+      <div style="flex:1;min-width:0" onclick="nbOpenFolder('${f.id}')">
+        <div style="font-weight:800;font-size:14px">${f.name||'Folder'}</div>
+        <div style="font-size:11px;color:var(--muted)">${nbCount} notebook${nbCount!==1?'s':''} · ${noteCount} note${noteCount!==1?'s':''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="nbChangeColor('${f.id}')" style="background:${col};border:none;border-radius:6px;width:24px;height:24px;cursor:pointer" title="Change color"></button>
+        <button onclick="nbRenameFolder('${f.id}','${encodeURIComponent(f.name||'')}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
+        <button onclick="nbDeleteFolder('${f.id}','${encodeURIComponent(f.name||'')}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function nbAddFolder(){
+  const name=prompt('Folder name:','');if(!name||!name.trim())return;
+  const col=NB_COLORS[_nbFolders.length%NB_COLORS.length];
+  const order=_nbFolders.length;
+  await uCol('nb_folders').add({name:name.trim(),color:col,order,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  toast('Folder created!','s');
+}
+async function nbRenameFolder(fId,nameEnc){
+  const old=decodeURIComponent(nameEnc);
+  const name=prompt('Rename folder:',old);if(!name||!name.trim()||name.trim()===old)return;
+  await uCol('nb_folders').doc(fId).update({name:name.trim()});toast('Renamed!','s');
+}
+async function nbDeleteFolder(fId,nameEnc){
+  const name=decodeURIComponent(nameEnc);
+  if(!confirm('Delete folder "'+name+'"? All notebooks and notes inside will be deleted!'))return;
+  // Delete all notes in this folder
+  const nbs=_nbNotebooks.filter(n=>n.folderId===fId);
+  const notes=_nbNotes.filter(n=>n.folderId===fId);
+  const batch=db.batch();
+  notes.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id)));
+  nbs.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(n.id)));
+  batch.delete(db.collection('users').doc(currentUid).collection('nb_folders').doc(fId));
+  await batch.commit();toast('Folder deleted','i');
+}
+function nbChangeColor(fId){
+  const existing=$id('nb-color-picker-'+fId);
+  if(existing){existing.remove();return;}
+  const card=$id('nbf-'+fId);if(!card)return;
+  const picker=document.createElement('div');
+  picker.id='nb-color-picker-'+fId;
+  picker.className='nb-color-picker';
+  picker.style.cssText='position:absolute;right:8px;top:52px;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,.2)';
+  picker.innerHTML=NB_COLORS.map(c=>`<div class="nb-color-dot" style="background:${c}" onclick="nbSetColor('${fId}','${c}');this.closest('[id^=nb-color-picker]').remove()"></div>`).join('');
+  card.style.position='relative';card.appendChild(picker);
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!picker.contains(e.target)){picker.remove();document.removeEventListener('click',h);}},{once:false}),100);
+}
+async function nbSetColor(fId,color){
+  await uCol('nb_folders').doc(fId).update({color});toast('Color updated!','s');
+}
+function nbOpenFolder(fId){
+  _nbCurrentFolder=_nbFolders.find(f=>f.id===fId);
+  if(!_nbCurrentFolder)return;
+  $id('nb-folder-title').textContent='📁 '+_nbCurrentFolder.name;
+  nbShowView('notebooks');
+  nbRenderNotebooks();
+}
+
+// ── NOTEBOOKS ──
+function nbRenderNotebooks(){
+  nbShowView('notebooks');
+  $id('nb-folder-title').textContent='📁 '+(_nbCurrentFolder?.name||'Folder');
+  const el=$id('nb-notebooks-list');if(!el)return;
+  const nbs=_nbNotebooks.filter(n=>n.folderId===_nbCurrentFolder?.id);
+  if(!nbs.length){
+    el.innerHTML='<div class="empty"><div class="ei">📒</div><h3>No notebooks yet</h3><p>Click + New Notebook</p></div>';return;
+  }
+  el.innerHTML=nbs.map((nb,i)=>{
+    const noteCount=_nbNotes.filter(n=>n.notebookId===nb.id).length;
+    const col=_nbCurrentFolder?.color||NB_COLORS[0];
+    return `<div class="nb-nb-card" id="nbn-${nb.id}" draggable="true"
+      ondragstart="nbDragStart(event,'notebook','${nb.id}')"
+      ondragover="nbDragOver(event,'notebook','${nb.id}')"
+      ondrop="nbDrop(event,'notebook','${nb.id}')"
+      ondragend="nbDragEnd(event)">
+      <span class="nb-drag-handle">⠿</span>
+      <div style="width:32px;height:32px;border-radius:6px;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📒</div>
+      <div style="flex:1;min-width:0" onclick="nbOpenNotebook('${nb.id}')">
+        <div style="font-weight:700;font-size:13px">${nb.name||'Notebook'}</div>
+        <div style="font-size:11px;color:var(--muted)">${noteCount} note${noteCount!==1?'s':''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="nbRenameNotebook('${nb.id}','${encodeURIComponent(nb.name||'')}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
+        <button onclick="nbDeleteNotebook('${nb.id}','${encodeURIComponent(nb.name||'')}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function nbAddNotebook(){
+  if(!_nbCurrentFolder){toast('Select a folder first','w');return;}
+  const name=prompt('Notebook name:','');if(!name||!name.trim())return;
+  const order=_nbNotebooks.filter(n=>n.folderId===_nbCurrentFolder.id).length;
+  await uCol('nb_notebooks').add({name:name.trim(),folderId:_nbCurrentFolder.id,order,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  toast('Notebook created!','s');
+}
+async function nbRenameNotebook(nbId,nameEnc){
+  const old=decodeURIComponent(nameEnc);
+  const name=prompt('Rename notebook:',old);if(!name||!name.trim()||name.trim()===old)return;
+  await uCol('nb_notebooks').doc(nbId).update({name:name.trim()});toast('Renamed!','s');
+}
+async function nbDeleteNotebook(nbId,nameEnc){
+  const name=decodeURIComponent(nameEnc);
+  if(!confirm('Delete notebook "'+name+'"? All notes inside will be deleted!'))return;
+  const notes=_nbNotes.filter(n=>n.notebookId===nbId);
+  const batch=db.batch();
+  notes.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id)));
+  batch.delete(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(nbId));
+  await batch.commit();toast('Notebook deleted','i');
+}
+function nbOpenNotebook(nbId){
+  _nbCurrentNotebook=_nbNotebooks.find(n=>n.id===nbId);
+  if(!_nbCurrentNotebook)return;
+  $id('nb-notebook-title').textContent='📒 '+_nbCurrentNotebook.name;
+  $id('nb-notebook-breadcrumb').textContent='📁 '+(_nbCurrentFolder?.name||'');
+  nbShowView('notes');
+  nbRenderNotes();
+}
+
+// ── NOTES ──
+function nbRenderNotes(){
+  nbShowView('notes');
+  const el=$id('nb-notes-list');if(!el)return;
+  const notes=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook?.id);
+  if(!notes.length){
+    el.innerHTML='<div class="empty"><div class="ei">📝</div><h3>No notes yet</h3><p>Click + New Note</p></div>';return;
+  }
+  const col=_nbCurrentFolder?.color||NB_COLORS[0];
+  el.innerHTML=notes.map((n,i)=>`<div class="nb-note-card" id="nbn2-${n.id}" draggable="true"
+    ondragstart="nbDragStart(event,'note','${n.id}')"
+    ondragover="nbDragOver(event,'note','${n.id}')"
+    ondrop="nbDrop(event,'note','${n.id}')"
+    ondragend="nbDragEnd(event)"
+    style="border-left:4px solid ${col}">
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <span class="nb-drag-handle" style="margin-top:2px">⠿</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">${n.title||'Untitled'}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">${(n.content||'').substring(0,200)}${(n.content||'').length>200?'...':''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="nbEditNote('${n.id}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
+        <button onclick="nbDeleteNote('${n.id}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+      </div>
     </div>
-    <h4 style="font-size:14px;font-weight:700;margin-bottom:7px">${n.title||'Untitled'}</h4>
-    <p style="font-size:12px;color:var(--muted);line-height:1.6">${(n.content||'').substring(0,160)}${(n.content||'').length>160?'...':''}</p>
-    ${(()=>{let ct=n.clientCreatedAt||n.createdAt||n.updatedAt;let ts='';try{if(ct&&typeof ct==='object'&&ct.toDate)ts=ct.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});else if(ct&&typeof ct==='object'&&ct.seconds)ts=new Date(ct.seconds*1000).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});else if(typeof ct==='string')ts=new Date(ct).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});}catch(e){}return ts?`<div style="font-size:10px;color:var(--muted);margin-top:6px;border-top:1px solid var(--border);padding-top:4px">🕐 ${ts}</div>`:'';})()}
   </div>`).join('');
+}
+function nbAddNote(){
+  if(!_nbCurrentNotebook){toast('Select a notebook first','w');return;}
+  $id('nbNoteId').value='';
+  $id('nbNoteTitle').value='';
+  $id('nbNoteContent').value='';
+  openM('mNbNote');
+}
+function nbEditNote(noteId){
+  const n=_nbNotes.find(x=>x.id===noteId);if(!n)return;
+  $id('nbNoteId').value=noteId;
+  $id('nbNoteTitle').value=n.title||'';
+  $id('nbNoteContent').value=n.content||'';
+  openM('mNbNote');
+}
+async function nbSaveNote(){
+  const noteId=$id('nbNoteId')?.value;
+  const title=($id('nbNoteTitle')?.value||'').trim();
+  const content=$id('nbNoteContent')?.value||'';
+  if(!title){toast('Enter a title','e');return;}
+  if(!_nbCurrentNotebook){toast('No notebook selected','e');return;}
+  if(noteId){
+    await uCol('nb_notes').doc(noteId).update({title,content,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('Note updated!','s');
+  }else{
+    const order=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook.id).length;
+    await uCol('nb_notes').add({title,content,notebookId:_nbCurrentNotebook.id,folderId:_nbCurrentFolder?.id||'',order,userId:'admin',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('Note saved!','s');
+  }
+  closeM('mNbNote');
+}
+async function nbDeleteNote(noteId){
+  if(!confirm('Delete this note?'))return;
+  await uCol('nb_notes').doc(noteId).delete();toast('Deleted','i');
+}
+
+// ── DRAG & DROP ──
+function nbDragStart(e,type,id){
+  _nbDragSrc={type,id};_nbDragType=type;
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.style.opacity='0.4';
+}
+function nbDragOver(e,type,id){
+  e.preventDefault();
+  if(_nbDragType!==type&&!(type==='notebook'&&_nbDragType==='notebook'))return;
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.classList.add('nb-drag-over');
+}
+function nbDragEnd(e){
+  e.currentTarget.style.opacity='1';
+  document.querySelectorAll('.nb-drag-over').forEach(el=>el.classList.remove('nb-drag-over'));
+}
+async function nbDrop(e,type,targetId){
+  e.preventDefault();
+  document.querySelectorAll('.nb-drag-over').forEach(el=>el.classList.remove('nb-drag-over'));
+  if(!_nbDragSrc||_nbDragSrc.id===targetId)return;
+  
+  if(type==='folder'&&_nbDragType==='folder'){
+    // Reorder folders
+    const arr=[..._nbFolders];
+    const fromIdx=arr.findIndex(f=>f.id===_nbDragSrc.id);
+    const toIdx=arr.findIndex(f=>f.id===targetId);
+    if(fromIdx<0||toIdx<0)return;
+    const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
+    const batch=db.batch();
+    arr.forEach((f,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_folders').doc(f.id),{order:i}));
+    await batch.commit();
+  } else if(type==='notebook'&&_nbDragType==='notebook'){
+    // Reorder or cross-folder move notebooks
+    const srcNb=_nbNotebooks.find(n=>n.id===_nbDragSrc.id);
+    const tgtNb=_nbNotebooks.find(n=>n.id===targetId);
+    if(!srcNb||!tgtNb)return;
+    if(srcNb.folderId===tgtNb.folderId){
+      // Same folder - reorder
+      let arr=_nbNotebooks.filter(n=>n.folderId===srcNb.folderId);
+      const fromIdx=arr.findIndex(n=>n.id===srcNb.id);
+      const toIdx=arr.findIndex(n=>n.id===tgtNb.id);
+      const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
+      const batch=db.batch();
+      arr.forEach((n,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(n.id),{order:i}));
+      await batch.commit();
+    } else {
+      // Cross-folder move
+      await uCol('nb_notebooks').doc(_nbDragSrc.id).update({folderId:tgtNb.folderId,order:tgtNb.order});
+      toast('Notebook moved!','s');
+    }
+  } else if(type==='note'&&_nbDragType==='note'){
+    // Reorder notes
+    let arr=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook?.id);
+    const fromIdx=arr.findIndex(n=>n.id===_nbDragSrc.id);
+    const toIdx=arr.findIndex(n=>n.id===targetId);
+    if(fromIdx<0||toIdx<0)return;
+    const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
+    const batch=db.batch();
+    arr.forEach((n,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id),{order:i}));
+    await batch.commit();
+  }
+  _nbDragSrc=null;_nbDragType=null;
+}
+
+// Legacy renderNotes (for compatibility)
+function renderNotes(){
+  // If notebook view is active, just refresh
+  if(_nbCurrentNotebook)nbRenderNotes();
+  else if(_nbCurrentFolder)nbRenderNotebooks();
+  else nbRenderFolders();
 }
 
 function renderMemberNotes(){
@@ -3447,17 +4617,35 @@ function syncDF(barId){const bf=barFilters[barId]||{mode:'all'};if(barId==='grpa
 function applyDF(entries,dfObj){if(!dfObj||dfObj.mode==='all')return entries;const f=dfObj.from||'2020-01-01',t=dfObj.to||'2099-12-31';return entries.filter(e=>e.date&&e.date>=f&&e.date<=t);}
 
 // ==================== NAVIGATION ====================
+function updateAdminBottomNav(page){
+  // Instagram-style bottom nav active state
+  document.querySelectorAll('.abn-btn').forEach(b=>b.classList.remove('active'));
+  const maps={myacc:'abn-myacc',todo:'abn-todo',reminders:'abn-reminders',notebook:'abn-notebook',members:'abn-members',inventory:'abn-inventory'};
+  if(maps[page]){const el=$id(maps[page]);if(el)el.classList.add('active');}
+}
+
 function adminNav(page,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   const pg=$id('pg-'+page);if(pg)pg.classList.add('active');if(btn)btn.classList.add('active');
-  const titles={dashboard:'Dashboard',members:'Staff',grpb:'Staff',myacc:'My Private Ledger',inventory:'Inventory / Stock',todo:'To-Do Tasks',reminders:'Reminders',notebook:'Notebook',reports:'Reports',export:'Export Data',categories:'Categories',archive:'Deleted Archive',settings:'Settings'};
+  const titles={dashboard:'Dashboard',members:'Staff',grpb:'Staff',myacc:'MY Hisab-private',inventory:'Inventory / Stock',todo:'To-Do Tasks',reminders:'Reminders',notebook:'Notebook',reports:'Reports',export:'Export Data',categories:'Categories',archive:'Deleted Archive',settings:'Settings'};
   $id('adminPageTitle').textContent=titles[page]||page;closeSb();
-  if(page==='members'){$id('staffLedgerInline').style.display='none';_staffLedgerMemberId=null;buildDateBar('membersDateBar',memberCardsDF,renderMemberCards);renderMemberCards();return;}
+  updateAdminBottomNav(page);
+  if(page==='members'){
+    $id('staffLedgerInline').style.display='none';_staffLedgerMemberId=null;
+    buildDateBar('membersDateBar',memberCardsDF,renderMemberCards);
+    syncAttendanceFromFirestore();
+    renderMemberCards();
+    return;
+  }
   if(page==='grpb'){renderGrpbCards();return;}
   if(page==='myacc'){setToday('myaccDate');if(activeFolderId)selectFolder(activeFolderId);else{hide('myaccContent');show('myaccEmpty');}return;}
   if(page==='todo'){setToday('todoDue');renderTodos();return;}
   if(page==='reminders'){setToday('remDue');renderReminders();return;}
-  if(page==='notebook'){renderNotes();return;}
+  if(page==='notebook'){
+    if(!_nbFolders.length&&!_nbNotebooks.length&&!_nbNotes.length)nbLoadAll();
+    else{_nbCurrentFolder=null;_nbCurrentNotebook=null;nbRenderFolders();}
+    return;
+  }
   if(page==='reports'){loadReports('monthly',document.querySelector('#pg-reports .df-tab'));return;}
   if(page==='categories'){renderCatChips();return;}
   if(page==='export'){initExportPage();return;}
@@ -3465,13 +4653,141 @@ function adminNav(page,btn){
   if(page==='archive'){renderArchive();return;}
   if(page==='settings'){const sn=$id('setAdminName');if(sn)sn.value=$id('adminDisplayName').textContent;switchSettingsTab('general');return;}
 }
+function updateMemberBottomNav(page){
+  document.querySelectorAll('.mbn-btn .mbn-lbl').forEach(l=>l.style.color='var(--muted)');
+  const map={entries:'mbn-entries',mtodo:'mbn-mtodo',mrem:'mbn-mrem',mnotes:'mbn-mnotes',matt:'mbn-matt'};
+  if(map[page]){const el=$id(map[page]);if(el){const lbl=el.querySelector('.mbn-lbl');if(lbl)lbl.style.color='var(--primary)';}}
+}
+
 function memberNav(page,btn){
   document.querySelectorAll('#memberApp .pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mnav-item').forEach(b=>b.classList.remove('active'));
   const pg=$id('mpg-'+page);if(pg)pg.classList.add('active');if(btn)btn.classList.add('active');
+  updateMemberBottomNav(page);
   if(page==='entries'){populateCatSelect('mCat',memberType);buildDateBar('mLedgerDateBar',mLedgerDF,renderMemberLedger);renderMemberLedger();return;}
   if(page==='dash'){buildDateBar('mDashDateBar',mDashDF,renderMemberDash);renderMemberDash();return;}
   if(page==='mnotes'){renderMemberNotes();return;}
+  if(page==='matt'){renderStaffAttendance();return;}
 }
+
+async function renderStaffAttendance(){
+  const mId=currentMemberId;const adminUid=currentUid;
+  if(!mId||!adminUid)return;
+  const m=membersCache.find(x=>x.id===mId)||{};
+  const today=new Date().toISOString().split('T')[0];
+  const now=new Date();
+  const thisMonth=now.toISOString().substring(0,7);
+  const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
+  let mData=m;
+  try{
+    const mDoc=await db.collection('users').doc(adminUid).collection('members').doc(mId).get();
+    if(mDoc.exists)mData={...m,...mDoc.data()};
+  }catch(e){}
+  const salary=mData.salary||0;
+  const workDays=mData.workDays||26;
+  const dailyRate=salary>0?(salary/workDays):0;
+  const nameEl=$id('mattStaffName');if(nameEl)nameEl.textContent=mData.name||currentUser?.name||'—';
+  const roleEl=$id('mattStaffRole');if(roleEl)roleEl.textContent=(mData.role||'')+(mData.type?' · '+mData.type:'');
+  const phoneEl=$id('mattStaffPhone');if(phoneEl)phoneEl.textContent=mData.phone?'📞 '+mData.phone:'';
+  const salEl=$id('mattStaffSalary');if(salEl)salEl.textContent=mData.salary?'💰 ₹'+fmt(mData.salary)+'/month'+(mData.joinDate?' · Joined: '+mData.joinDate:''):'';
+  try{
+    // Use onSnapshot for real-time sync when staff is viewing
+    const attRef=db.collection('users').doc(adminUid)
+      .collection('members').doc(mId)
+      .collection('attendance')
+      .orderBy('date','desc');
+    
+    // Cancel previous listener if any
+    if(window._mattUnsubscribe)window._mattUnsubscribe();
+    
+    window._mattUnsubscribe=attRef.onSnapshot(snap=>{
+      window._mattAllData=snap.docs.map(d=>d.data());
+      window._mattDailyRate=dailyRate;
+      window._mattSalary=salary;
+      window._mattWorkDays=workDays;
+      renderMattContent(window._mattFilter||'month');
+    },err=>{
+      console.warn('Att listener error:',err);
+      // Fallback to one-time get
+      attRef.get().then(snap=>{
+        window._mattAllData=snap.docs.map(d=>d.data());
+        renderMattContent(window._mattFilter||'month');
+      });
+    });
+  }catch(e){
+    const listEl=$id('mattHistoryList');
+    if(listEl)listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Could not load attendance</div>';
+  }
+}
+
+function renderMattContent(filter,fromDate,toDate){
+  const allData=window._mattAllData||[];
+  const today=new Date().toISOString().split('T')[0];
+  const now=new Date();
+  const thisMonth=now.toISOString().substring(0,7);
+  const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
+  const dailyRate=window._mattDailyRate||0;
+  const salary=window._mattSalary||0;
+  const workDays=window._mattWorkDays||26;
+  let data=allData;
+  if(filter==='month')data=allData.filter(a=>a.date&&a.date.startsWith(thisMonth));
+  else if(filter==='prev')data=allData.filter(a=>a.date&&a.date.startsWith(prevMonth));
+  else if(filter==='custom'&&fromDate&&toDate)data=allData.filter(a=>a.date&&a.date>=fromDate&&a.date<=toDate);
+  const colors={'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'};
+  const icons={'Full Day':'✅','Half Day':'🌗','Absent':'❌','Leave':'🏖️','Holiday':'🎉'};
+  const todayAtt=allData.find(a=>a.date===today);
+  const todayEl=$id('mattTodayStatus');
+  if(todayEl)todayEl.innerHTML=todayAtt?`<span style="color:${colors[todayAtt.status]||'var(--muted)'}">${icons[todayAtt.status]||''} ${todayAtt.status}</span>`:'<span style="color:var(--muted)">Not marked</span>';
+  const full=data.filter(a=>a.status==='Full Day').length;
+  const half=data.filter(a=>a.status==='Half Day').length;
+  const absent=data.filter(a=>a.status==='Absent').length;
+  const leave=data.filter(a=>a.status==='Leave').length;
+  const holiday=data.filter(a=>a.status==='Holiday').length;
+  const earnedDays=full+(half*0.5);
+  const earnedAmt=earnedDays*dailyRate;
+  const sumEl=$id('mattSummary');
+  if(sumEl)sumEl.innerHTML=`
+    <div style="background:rgba(63,185,80,.1);border-radius:6px;padding:6px 2px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">${full}</div><div style="font-size:9px;color:var(--muted)">Full Day</div></div>
+    <div style="background:rgba(249,115,22,.1);border-radius:6px;padding:6px 2px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--orange)">${half}</div><div style="font-size:9px;color:var(--muted)">Half Day</div></div>
+    <div style="background:rgba(248,81,73,.1);border-radius:6px;padding:6px 2px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--red)">${absent}</div><div style="font-size:9px;color:var(--muted)">Absent</div></div>
+    <div style="background:rgba(88,166,255,.1);border-radius:6px;padding:6px 2px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--blue)">${leave}</div><div style="font-size:9px;color:var(--muted)">Leave</div></div>
+    <div style="background:rgba(6,182,212,.1);border-radius:6px;padding:6px 2px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--cyan)">${holiday}</div><div style="font-size:9px;color:var(--muted)">Holiday</div></div>`;
+  const earnEl=$id('mattEarned');
+  if(earnEl){
+    if(salary>0){
+      earnEl.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+          <div style="font-size:12px;color:var(--muted)">Days: <b style="color:var(--text)">${earnedDays}</b> × <b style="color:var(--text)">₹${Math.round(dailyRate)}</b>/day</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green)">Earned: ₹${Math.round(earnedAmt).toLocaleString('en-IN')}</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">₹${salary.toLocaleString('en-IN')} ÷ ${workDays} days/month = ₹${Math.round(dailyRate)}/day</div>`;
+      earnEl.style.display='block';
+    }else{earnEl.style.display='none';}
+  }
+  const listEl=$id('mattHistoryList');
+  if(listEl){
+    if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
+    listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;font-weight:600">${a.date||'—'}</span>
+      <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status||'—'}</span>
+    </div>`).join('');
+  }
+}
+
+function switchMattTab(filter,btn){
+  ['month','prev','all','custom'].forEach(t=>{
+    const b=$id('matt-tab-'+t);
+    if(b){b.style.background=t===filter?'var(--primary)':'var(--s2)';b.style.color=t===filter?'#fff':'var(--text)';b.style.border=t===filter?'none':'1px solid var(--border)';}
+  });
+  const cb=$id('mattCustomBar');if(cb)cb.style.display=filter==='custom'?'flex':'none';
+  if(filter!=='custom')renderMattContent(filter);
+}
+
+function applyMattFilter(){
+  const from=$id('mattFrom')?.value;const to=$id('mattTo')?.value;
+  if(!from||!to){toast('Select both dates','w');return;}
+  renderMattContent('custom',from,to);
+}
+
 
 // ==================== THEME ====================
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('bp-theme',n);updateThemeBtns();}
@@ -3551,8 +4867,8 @@ function initInventoryPage(){
   // populate folder select
   const fs=$id('invFolder');
   if(fs){fs.innerHTML=folderCache.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
-  // set initial member list
-  updateInvMemberList('grpa');
+  // set initial member list - match the default selected value ('grpb')
+  updateInvMemberList($id('invTarget')?.value||'grpb');
   // target change handler
   $id('invTarget').onchange=function(){
     const v=this.value;
@@ -3569,13 +4885,33 @@ function initInventoryPage(){
 
 function updateInvMemberList(target){
   const ms=$id('invMember');const lbl=$id('invMemberLabel');if(!ms)return;
-  if(target==='grpa'){
-    const ga=membersCache.filter(m=>m.group==='A');
-    ms.innerHTML=ga.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-    if(lbl)lbl.textContent='Select Staff Member';
-  }else if(target==='grpb'){
-    const gb=membersCache.filter(m=>m.group==='B');
-    ms.innerHTML=gb.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  // FIXED: Show ALL members regardless of group — group filter was causing empty list
+  // Also reload from membersCache if empty
+  let members = membersCache||[];
+  if(!members.length){
+    // Try to reload from DOM/store
+    try{
+      const snap = window._membersSnap;
+      if(snap) members = snap;
+    }catch(e){}
+  }
+  if(target==='grpa'||target==='grpb'){
+    if(!members.length){
+      ms.innerHTML='<option value="">-- Loading staff... --</option>';
+      // Re-trigger load
+      if(currentUid){
+        db.collection('users').doc(currentUid).collection('members').where('deleted','==',false).get()
+          .then(snap=>{
+            membersCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+            ms.innerHTML=membersCache.length
+              ? membersCache.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')
+              : '<option value="">No staff found</option>';
+          }).catch(()=>{ms.innerHTML='<option value="">Error loading staff</option>';});
+      }
+      return;
+    }
+    ms.innerHTML='<option value="">-- Select Staff Member --</option>'+
+      members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
     if(lbl)lbl.textContent='Select Staff Member';
   }
 }
@@ -3648,11 +4984,12 @@ function editInvCatalogItem(docId){
   const priceEl=$id('invPrice');if(priceEl)priceEl.value=item.price||0;
   const sellEl=$id('invSellPrice');if(sellEl)sellEl.value=item.sellPrice||0;
   const unitEl=$id('invUnit');if(unitEl)unitEl.value=item.unit||'Pcs';
+  const locEl=$id('invLocation');if(locEl)locEl.value=item.location||'';
   setInvMode('catalog',$id('invModeCatalog'));
   window._editingInvId=docId;
   const saveBtn=$id('invSaveBtn');if(saveBtn){saveBtn.textContent='✏️ Update Item';saveBtn.style.background='var(--orange)';}
   window.scrollTo({top:0,behavior:'smooth'});
-  toast('Editing: '+(item.name||''),' — save to update!','i');
+  toast('Editing: '+(item.name||'')+' — save to update!','i');
 }
 
 function quickPurchaseItem(docId){
@@ -3675,18 +5012,19 @@ async function saveInventoryItem(){
   if(!name){toast('Enter item name','e');return;}
   if(!price||price<=0){toast('Enter purchase price','e');return;}
   // Catalog-only mode: just save item to catalog, no expense
+  const location=($id('invLocation')?.value||'').trim();
   if(isCatalogMode){
     if(window._editingInvId){
       // Update existing catalog item
-      await uCol('inventory').doc(window._editingInvId).update({name,price,unit,sellPrice:sellPrice||0});
+      await uCol('inventory').doc(window._editingInvId).update({name,price,unit,sellPrice:sellPrice||0,location:location||''});
       window._editingInvId=null;
       const sb=$id('invSaveBtn');if(sb){sb.textContent='📋 Save to Catalog';sb.style.background='';}
       toast('Item updated! ₹'+fmt(price)+'/'+unit+' ✅','s');
     } else {
-      await uCol('inventory').add({name,price,unit,sellPrice:sellPrice||0,qty:0,totalCost:0,date:todayStr(),notes,target:'catalog',targetLabel:'Catalog',createdAt:firebase.firestore.FieldValue.serverTimestamp(),deleted:false,catalogOnly:true});
+      await uCol('inventory').add({name,price,unit,sellPrice:sellPrice||0,location:location||'',qty:0,totalCost:0,date:todayStr(),notes,target:'catalog',targetLabel:'Catalog',createdAt:firebase.firestore.FieldValue.serverTimestamp(),deleted:false,catalogOnly:true});
       toast('Item saved to catalog! ₹'+fmt(price)+'/'+unit+' ✅','s');
     }
-    clearFields(['invItemName','invPrice','invSellPrice','invNotes']);
+    clearFields(['invItemName','invPrice','invSellPrice','invNotes','invLocation']);
     populateInvItemList();renderInventory();return;
   }
   const qty=parseFloat($id('invQty')?.value||0);
@@ -3696,7 +5034,7 @@ async function saveInventoryItem(){
   const totalCost=qty*price;
   const desc=name+' x'+qty+' '+unit;
   // Save inventory record
-  const invDoc={name,qty,unit,price,sellPrice:sellPrice||0,totalCost,date,notes,target,createdAt:firebase.firestore.FieldValue.serverTimestamp(),deleted:false};
+  const invDoc={name,qty,unit,price,sellPrice:sellPrice||0,totalCost,date,notes,location:location||'',target,createdAt:firebase.firestore.FieldValue.serverTimestamp(),deleted:false};
 
   if(target==='myacc'){
     // My Private Ledger
@@ -3732,7 +5070,7 @@ async function saveInventoryItem(){
     renderGrpbCards();renderDashStats();
   }
 
-  clearFields(['invItemName','invQty','invPrice','invSellPrice','invNotes']);
+  clearFields(['invItemName','invQty','invPrice','invSellPrice','invNotes','invLocation']);
   toast('Item added! Expense recorded in Home/Biz-Expense ✅','s');
   // Refresh datalist with new item name
   populateInvItemList();
@@ -3758,7 +5096,10 @@ async function renderInventory(){
     html+=`<tr style="background:rgba(6,182,212,.06)"><td colspan="9" style="font-size:11px;font-weight:800;color:var(--cyan);padding:7px 13px;letter-spacing:.5px">📋 ITEM CATALOG (${catalogItems.length} items saved)</td></tr>`;
     html+=catalogItems.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>`<tr style="opacity:.85">
       <td><span style="font-size:10px;background:rgba(6,182,212,.15);color:var(--cyan);padding:2px 7px;border-radius:10px">Catalog</span></td>
-      <td style="font-weight:700">${i.name||'—'}</td>
+      <td style="font-weight:700">
+        ${i.name||'—'}
+        ${i.location?`<div style="font-size:10px;color:var(--muted);margin-top:2px">📍 ${i.location}</div>`:''}
+      </td>
       <td style="color:var(--muted)">—</td>
       <td><small style="color:var(--muted)">${i.unit||''}</small></td>
       <td style="color:var(--primary)">₹${fmt(i.price||0)}</td>
@@ -3836,6 +5177,7 @@ const BIZPRO_LANGS = {
   sw: { name:'Kiswahili', flag:'🇰🇪', dir:'ltr' },
   gu: { name:'ગુજરાતી', flag:'🇮🇳', dir:'ltr' },
   ta: { name:'தமிழ்', flag:'🇮🇳', dir:'ltr' },
+  ur: { name:'اردو', flag:'🇵🇰', dir:'rtl' },
 };
 
 const TRANSLATIONS = {
@@ -3847,7 +5189,7 @@ const TRANSLATIONS = {
     notebook:'Notebook', reminders:'Reminders', todo:'To-Do',
     inventory:'Inventory / Stock', export:'Export CSV',
     archive:'Deleted Archive', categories:'Categories',
-    my_ledger:'My Private Ledger', staff_members:'Staff',
+    my_ledger:'MY Hisab-private', staff_members:'Staff',
     overview:'Overview', welcome:'Welcome back!',
     select_language:'Language', save:'Save', cancel:'Cancel',
     // Login / Auth
@@ -3858,7 +5200,7 @@ const TRANSLATIONS = {
     // Register
     your_name:'Your Name (Display Name)',
     userid_label:'User ID (unique — login with this)',
-    userid_hint:'e.g. rahul01 or admin2026',
+    userid_hint:'e.g. sara001 or sarasmith2026',
     pw_label:'Password (min 6 characters)',
     confirm_pw:'Confirm Password',
     recovery_hint:'Save this safely — this is your backup if you forget password',
@@ -3944,7 +5286,7 @@ const TRANSLATIONS = {
     notebook:'नोटबुक', reminders:'रिमाइंडर', todo:'कार्य सूची',
     inventory:'इन्वेंटरी', export:'CSV निर्यात',
     archive:'हटाया गया संग्रह', categories:'श्रेणियाँ',
-    my_ledger:'मेरा निजी खाता', staff_members:'स्टाफ',
+    my_ledger:'MY Hisab-private', staff_members:'स्टाफ',
     overview:'अवलोकन', welcome:'वापस स्वागत है! 👋',
     select_language:'भाषा', save:'सहेजें', cancel:'रद्द करें',
     // Login / Auth
@@ -4175,7 +5517,7 @@ const TRANSLATIONS = {
     notebook:'Notebook', reminders:'Reminders', todo:'To-Do',
     inventory:'Inventory / Stock', export:'Export CSV',
     archive:'Deleted Archive', categories:'Categories',
-    my_ledger:'My Private Ledger', staff_members:'Staff',
+    my_ledger:'MY Hisab-private', staff_members:'Staff',
     overview:'Overview', welcome:'Welcome back!',
     select_language:'Language', save:'Save', cancel:'Cancel',
     login_admin:'Log in as Admin', login_member:'Log in',
@@ -4251,7 +5593,7 @@ const TRANSLATIONS = {
     notebook:'નોટબુક', reminders:'રિમાઇન્ડર', todo:'કાર્ય સૂચિ',
     inventory:'ઇન્વૅન્ટરી', export:'CSV નિકાસ',
     archive:'કાઢી નાખેલ સંગ્રહ', categories:'શ્રેણીઓ',
-    my_ledger:'મારો ખાનગી ખાતો', staff_members:'સ્ટાફ',
+    my_ledger:'MY Hisab-private', staff_members:'સ્ટાફ',
     overview:'ઝાંખી', welcome:'પાછા સ્વાગત! 👋',
     select_language:'ભાષા', save:'સેવ', cancel:'રદ',
     // Login / Auth
@@ -4435,6 +5777,100 @@ const TRANSLATIONS = {
     recovery_mode:'மீட்பு முறை', login_history:'உள்நுழைவு வரலாறு',
     enter_email:'மின்னஞ்சல் உள்ளிடுங்கள்',
   },
+
+  // ─── اردو (Urdu) ───
+  ur: {
+    // Navigation
+    dashboard:'ڈیش بورڈ', members:'عملہ', accounting:'حساب کتاب',
+    tools:'ٹولز', analytics:'تجزیہ', admin_label:'ایڈمن',
+    logout:'لاگ آؤٹ', settings:'ترتیبات', reports:'رپورٹس',
+    notebook:'نوٹ بک', reminders:'یاد دہانیاں', todo:'کام کی فہرست',
+    inventory:'انوینٹری', export:'CSV ایکسپورٹ',
+    archive:'حذف شدہ ریکارڈ', categories:'زمرے',
+    my_ledger:'میری نجی بہی', staff_members:'عملہ',
+    overview:'جائزہ', welcome:'خوش آمدید! 👋',
+    select_language:'زبان', save:'محفوظ کریں', cancel:'منسوخ',
+    // Login / Auth
+    login_admin:'ایڈمن لاگ ان', login_member:'لاگ ان',
+    user_id:'یوزر ID', password:'پاسورڈ',
+    recovery_password:'بحالی پاسورڈ', go_back:'واپس جائیں',
+    new_user_prompt:'نیا اکاؤنٹ؟ Register ٹیب پر کلک کریں ↑',
+    // Register
+    your_name:'آپ کا نام (ڈسپلے نام)',
+    userid_label:'یوزر ID (منفرد — اسی سے لاگ ان ہوں گے)',
+    userid_hint:'مثال: rahul01 یا admin2026',
+    pw_label:'پاسورڈ (کم از کم 6 حروف)',
+    confirm_pw:'پاسورڈ کی تصدیق کریں',
+    recovery_hint:'محفوظ جگہ لکھ رکھیں — بھولنے پر کام آئے گا',
+    create_account:'اکاؤنٹ بنائیں',
+    // Forgot
+    forgot_title:'پاسورڈ ری سیٹ',
+    forgot_subtitle:'یوزر ID + بحالی پاسورڈ سے تصدیق کریں',
+    verify_continue:'تصدیق کریں اور جاری رکھیں',
+    set_new_pw:'نیا پاسورڈ سیٹ کریں',
+    new_password:'نیا پاسورڈ',
+    confirm_new_pw:'نئے پاسورڈ کی تصدیق کریں',
+    // Toasts / Errors
+    enter_name:'اپنا نام درج کریں',
+    enter_userid:'یوزر ID درج کریں',
+    userid_min:'یوزر ID کم از کم 3 حروف ہونا چاہیے',
+    userid_chars:'یوزر ID میں صرف انگریزی حروف، نمبر اور _ کی اجازت ہے',
+    pw_min:'پاسورڈ کم از کم 6 حروف ہونا چاہیے',
+    pw_mismatch:'پاسورڈ میل نہیں کھاتے!',
+    enter_recovery:'بحالی پاسورڈ بھی درج کریں',
+    creating:'بن رہا ہے...',
+    userid_taken:'یہ یوزر ID پہلے سے موجود ہے — کوئی اور چنیں',
+    account_created:'✅ اکاؤنٹ بن گیا! خوش آمدید ',
+    enter_password:'پاسورڈ درج کریں',
+    logging_in:'لاگ ان ہو رہے ہیں...',
+    userid_not_found:'یوزر ID نہیں ملا۔ چیک کریں یا رجسٹر کریں۔',
+    wrong_password:'غلط پاسورڈ!',
+    enter_recovery_pw:'بحالی پاسورڈ درج کریں',
+    verified_set_pw:'✅ تصدیق ہو گئی! اب نیا پاسورڈ سیٹ کریں',
+    wrong_recovery:'بحالی پاسورڈ غلط ہے!',
+    pw_changed:'✅ پاسورڈ بدل گیا! نئے پاسورڈ سے لاگ ان کریں۔',
+    logged_out:'لاگ آؤٹ ہو گئے',
+    login_first:'پہلے لاگ ان کریں',
+    // Staff
+    staff_added:'عملے میں شامل ہو گیا! یوزر ID: ',
+    enter_staff_name:'عملے کا نام درج کریں',
+    enter_staff_userid:'یوزر ID درج کریں',
+    enter_staff_pw:'پاسورڈ سیٹ کریں',
+    userid_conflict:'یہ یوزر ID پہلے سے ',
+    staff_updated:'اپ ڈیٹ ہو گیا!',
+    name_required:'نام ضروری ہے',
+    // Entries
+    income:'آمدنی', expense:'خرچ', amount:'رقم',
+    description:'تفصیل', category:'زمرہ', date:'تاریخ',
+    add_entry:'اندراج شامل کریں', save_entry:'اندراج محفوظ کریں',
+    entry_saved:'✅ اندراج محفوظ ہو گیا',
+    entry_deleted:'اندراج حذف ہو گیا',
+    // Passkey
+    passkey_not_supported:'آپ کے آلے میں Passkey سپورٹ نہیں ہے',
+    passkey_registered:'✅ Passkey رجسٹر ہو گئی! لاگ ان اسکرین پر Fingerprint/Face ID بٹن نظر آئے گا۔',
+    passkey_exists:'اس آلے پر Passkey پہلے سے رجسٹر ہے',
+    passkey_removed:'Passkey ہٹا دی گئی',
+    setup_passkey_first:'پہلے ترتیبات میں Passkey سیٹ کریں',
+    biometric_cancelled:'Biometric منسوخ ہو گئی',
+    https_required:'HTTPS ضروری ہے',
+    login_member:'عملہ لاگ ان',
+    enter_member_pw:'پاسورڈ درج کریں',
+    change_my_pw:'میرا پاسورڈ بدلیں',
+    new_pw:'نیا پاسورڈ',
+    current_pw:'موجودہ پاسورڈ',
+    forgot_note:'یوزر ID اور بحالی پاسورڈ یاد ہونا ضروری ہے',
+    register_note:'ایک بار رجسٹر کریں — پھر اسی یوزر ID سے لاگ ان کریں',
+    // Generic
+    error_prefix:'خطا: ',
+    saved:'محفوظ ہو گیا!',
+    deleted:'حذف ہو گیا',
+    restored:'بحال ہو گیا!',
+    confirm_delete:'یقین ہے؟',
+    admin_not_setup:'ایڈمن ابھی سیٹ اپ نہیں ہوا۔',
+    select_name:'اپنا نام چنیں', admin_password:'ایڈمن پاسورڈ',
+    recovery_mode:'بحالی موڈ', login_history:'لاگ ان تاریخ',
+    enter_email:'ای میل درج کریں',
+  },
 };
 
 let _currentLang = localStorage.getItem('bp-lang') || 'en';
@@ -4478,6 +5914,7 @@ function applyLanguage(){
     'memberChangePwToggle': 'change_my_pw',
     'memberNewPwLabel': 'new_pw',
     'memberCurrentPwLabel': 'current_pw',
+    'memberLoginTabBtn': 'members',
   };
   Object.entries(regLabels).forEach(([id, key])=>{
     const el=$id(id);
@@ -4609,7 +6046,7 @@ function getTimeAgo(date,now){
 }
 
 function clearLoginHistory(){
-  confirm2('Clear Login History?','Saari login history delete ho jaayegi.',()=>{
+  confirm2('Clear Login History?','All login history will be permanently deleted.',()=>{
     localStorage.removeItem('bp-login-history');
     showLoginHistory();
     toast('History cleared','i');
