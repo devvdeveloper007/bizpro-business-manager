@@ -72,8 +72,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .nb-nb-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s;position:relative;}
 .nb-nb-card:hover{border-color:var(--primary);}
 .nb-nb-card.nb-drag-over{border:2px dashed var(--primary);}
-.nb-note-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;transition:all .15s;position:relative;}
+.nb-note-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;transition:all .15s;position:relative;cursor:pointer;}
+.nb-note-card:hover{border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--sh);}
 .nb-note-card.nb-drag-over{border:2px dashed var(--primary);}
+.nb-back-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--tr);flex-shrink:0;}
+.nb-back-btn:hover{background:var(--primary);border-color:var(--primary);color:#fff;}
 .nb-drag-handle{cursor:grab;color:var(--muted);font-size:14px;padding:2px 4px;flex-shrink:0;}
 .nb-drop-indicator{height:3px;background:var(--primary);border-radius:2px;margin:2px 0;display:none;}
 .nb-drop-indicator.visible{display:block;}
@@ -902,39 +905,23 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- NOTEBOOK PAGE -->
   <div class="pg" id="pg-notebook">
-    <!-- NOTEBOOK: 3-level Folder > Notebook > Note -->
+    <!-- VIEW 1: Folder list -->
     <div id="nb-view-folders" class="nb-view">
-      <!-- Folder list view -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <h2 style="font-size:17px;font-weight:800">📓 Notebook</h2>
         <button class="btn btn-primary btn-sm" onclick="nbAddFolder()">+ New Folder</button>
       </div>
       <div id="nb-folders-list"></div>
     </div>
-    <div id="nb-view-notebooks" class="nb-view" style="display:none">
-      <!-- Notebooks inside a folder -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <button onclick="nbGoBack('folders')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:18px">←</button>
-        <h2 style="font-size:17px;font-weight:800" id="nb-folder-title">Folder</h2>
-        <div style="flex:1"></div>
-        <button class="btn btn-primary btn-sm" onclick="nbAddNotebook()">+ New Notebook</button>
-      </div>
-      <div id="nb-notebooks-list"></div>
-    </div>
+    <!-- VIEW 2: Notes inside a folder (NO notebook layer) -->
     <div id="nb-view-notes" class="nb-view" style="display:none">
-      <!-- Notes inside a notebook -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-        <button onclick="nbGoBack('notebooks')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:18px">←</button>
-        <div>
-          <h2 style="font-size:16px;font-weight:800" id="nb-notebook-title">Notebook</h2>
-          <div style="font-size:11px;color:var(--muted)" id="nb-notebook-breadcrumb"></div>
-        </div>
-        <div style="flex:1"></div>
+        <button class="nb-back-btn" onclick="nbGoBack()">← Back</button>
+        <h2 style="font-size:16px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="nb-folder-title">Folder</h2>
         <button class="btn btn-primary btn-sm" onclick="nbAddNote()">+ New Note</button>
       </div>
       <div id="nb-notes-list"></div>
     </div>
-    <!-- Hidden legacy notesGrid for compatibility -->
     <div id="notesGrid" style="display:none"></div>
   </div>
 
@@ -4084,18 +4071,16 @@ async function deleteNote(docId){
 function editNoteOpen(docId,te,ce){editNoteId=docId;$id('noteTitle').value=decodeURIComponent(te);$id('noteContent').value=decodeURIComponent(ce);openM('mNote');}
 function editMemberNote(docId,te,ce){mEditNoteId=docId;$id('mNoteTitle').value=decodeURIComponent(te);$id('mNoteContent').value=decodeURIComponent(ce);openM('mMemberNote');}
 
-// ==================== NOTEBOOK 3-LEVEL SYSTEM ====================
+// ==================== NOTEBOOK 2-LEVEL SYSTEM (Folder → Notes) ====================
 // State
-let _nbCurrentFolder=null; // {id, name, color, order}
-let _nbCurrentNotebook=null; // {id, name, folderId, order}
-let _nbFolders=[]; // cached from Firestore
-let _nbNotebooks=[]; // cached from Firestore
-let _nbNotes=[]; // cached from Firestore
+let _nbCurrentFolder=null;
+let _nbFolders=[];
+let _nbNotebooks=[]; // kept for backward compat only (old data)
+let _nbNotes=[];
 let _nbDragSrc=null,_nbDragType=null;
 
 const NB_COLORS=['#6366f1','#22c55e','#f59e0b','#06b6d4','#a855f7','#f97316','#ec4899','#14b8a6','#ef4444','#64748b'];
 
-// Load all notebook data from Firestore
 async function nbLoadAll(){
   if(!currentUid)return;
   try{
@@ -4111,31 +4096,34 @@ async function nbLoadAll(){
   }catch(e){console.warn('nb load:',e);nbRenderFolders();}
 }
 
-// Setup real-time listeners for notebook
 function nbSetupListeners(){
   if(!currentUid)return;
   uCol('nb_folders').orderBy('order','asc').onSnapshot(snap=>{
     _nbFolders=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(_nbCurrentFolder)nbRenderNotebooks();
+    if(_nbCurrentFolder) nbRenderNotes();
     else nbRenderFolders();
   });
+  // Keep nb_notebooks listener for backward compat (old notes may have notebookId)
   uCol('nb_notebooks').orderBy('order','asc').onSnapshot(snap=>{
     _nbNotebooks=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(_nbCurrentNotebook)nbRenderNotes();
-    else if(_nbCurrentFolder)nbRenderNotebooks();
   });
   uCol('nb_notes').orderBy('order','asc').onSnapshot(snap=>{
     _nbNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(_nbCurrentNotebook)nbRenderNotes();
+    if(_nbCurrentFolder) nbRenderNotes();
+    else nbRenderFolders(); // update note counts on cards
   });
 }
 
-function nbGoBack(to){
-  if(to==='folders'){_nbCurrentFolder=null;_nbCurrentNotebook=null;nbShowView('folders');nbRenderFolders();}
-  else if(to==='notebooks'){_nbCurrentNotebook=null;nbShowView('notebooks');nbRenderNotebooks();}
+// Back to folder list
+function nbGoBack(){
+  _nbCurrentFolder=null;
+  $id('nb-view-folders').style.display='block';
+  $id('nb-view-notes').style.display='none';
+  nbRenderFolders();
 }
 function nbShowView(v){
-  ['folders','notebooks','notes'].forEach(x=>$id('nb-view-'+x).style.display=x===v?'block':'none');
+  $id('nb-view-folders').style.display=v==='folders'?'block':'none';
+  $id('nb-view-notes').style.display=v==='notes'?'block':'none';
 }
 
 // ── FOLDERS ──
@@ -4146,7 +4134,7 @@ function nbRenderFolders(){
     el.innerHTML='<div class="empty"><div class="ei">📁</div><h3>No folders yet</h3><p>Click + New Folder to start</p></div>';return;
   }
   el.innerHTML=_nbFolders.map((f,i)=>{
-    const nbCount=_nbNotebooks.filter(n=>n.folderId===f.id).length;
+    // Count notes by folderId
     const noteCount=_nbNotes.filter(n=>n.folderId===f.id).length;
     const col=f.color||NB_COLORS[i%NB_COLORS.length];
     return `<div class="nb-folder-card" id="nbf-${f.id}" draggable="true"
@@ -4156,14 +4144,20 @@ function nbRenderFolders(){
       ondragend="nbDragEnd(event)">
       <span class="nb-drag-handle">⠿</span>
       <div class="nb-folder-ico" style="background:${col}22;color:${col}">📁</div>
-      <div style="flex:1;min-width:0" onclick="nbOpenFolder('${f.id}')">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="nbOpenFolder('${f.id}')">
         <div style="font-weight:800;font-size:14px">${f.name||'Folder'}</div>
-        <div style="font-size:11px;color:var(--muted)">${nbCount} notebook${nbCount!==1?'s':''} · ${noteCount} note${noteCount!==1?'s':''}</div>
+        <div style="font-size:11px;color:var(--muted)">${noteCount} note${noteCount!==1?'s':''}</div>
       </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
-        <button onclick="nbChangeColor('${f.id}')" style="background:${col};border:none;border-radius:6px;width:24px;height:24px;cursor:pointer" title="Change color"></button>
-        <button onclick="nbRenameFolder('${f.id}','${encodeURIComponent(f.name||'')}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
-        <button onclick="nbDeleteFolder('${f.id}','${encodeURIComponent(f.name||'')}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+      <div style="display:flex;gap:5px;flex-shrink:0;align-items:center">
+        <button onclick="event.stopPropagation();nbQuickNote('${f.id}')"
+          style="background:rgba(99,102,241,.12);border:1.5px solid rgba(99,102,241,.3);border-radius:var(--rsm);padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700;color:var(--primary);font-family:'Outfit',sans-serif"
+          title="Add Note">✏️ Note</button>
+        <button onclick="event.stopPropagation();nbChangeColor('${f.id}')"
+          style="background:${col};border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;flex-shrink:0" title="Change folder color"></button>
+        <button onclick="event.stopPropagation();nbRenameFolder('${f.id}','${encodeURIComponent(f.name||'')}')"
+          style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
+        <button onclick="event.stopPropagation();nbDeleteFolder('${f.id}','${encodeURIComponent(f.name||'')}')"
+          style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -4172,8 +4166,7 @@ function nbRenderFolders(){
 async function nbAddFolder(){
   const name=prompt('Folder name:','');if(!name||!name.trim())return;
   const col=NB_COLORS[_nbFolders.length%NB_COLORS.length];
-  const order=_nbFolders.length;
-  await uCol('nb_folders').add({name:name.trim(),color:col,order,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await uCol('nb_folders').add({name:name.trim(),color:col,order:_nbFolders.length,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   toast('Folder created!','s');
 }
 async function nbRenameFolder(fId,nameEnc){
@@ -4183,15 +4176,16 @@ async function nbRenameFolder(fId,nameEnc){
 }
 async function nbDeleteFolder(fId,nameEnc){
   const name=decodeURIComponent(nameEnc);
-  if(!confirm('Delete folder "'+name+'"? All notebooks and notes inside will be deleted!'))return;
-  // Delete all notes in this folder
-  const nbs=_nbNotebooks.filter(n=>n.folderId===fId);
+  if(!confirm('Delete folder "'+name+'"? All notes inside will also be deleted!'))return;
   const notes=_nbNotes.filter(n=>n.folderId===fId);
+  const nbs=_nbNotebooks.filter(n=>n.folderId===fId);
   const batch=db.batch();
   notes.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id)));
   nbs.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(n.id)));
   batch.delete(db.collection('users').doc(currentUid).collection('nb_folders').doc(fId));
-  await batch.commit();toast('Folder deleted','i');
+  await batch.commit();
+  if(_nbCurrentFolder?.id===fId){_nbCurrentFolder=null;nbShowView('folders');}
+  toast('Folder deleted','i');
 }
 function nbChangeColor(fId){
   const existing=$id('nb-color-picker-'+fId);
@@ -4200,112 +4194,75 @@ function nbChangeColor(fId){
   const picker=document.createElement('div');
   picker.id='nb-color-picker-'+fId;
   picker.className='nb-color-picker';
-  picker.style.cssText='position:absolute;right:8px;top:52px;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,.2)';
-  picker.innerHTML=NB_COLORS.map(c=>`<div class="nb-color-dot" style="background:${c}" onclick="nbSetColor('${fId}','${c}');this.closest('[id^=nb-color-picker]').remove()"></div>`).join('');
+  picker.style.cssText='position:absolute;right:8px;top:54px;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,.2)';
+  picker.innerHTML=NB_COLORS.map(c=>`<div class="nb-color-dot" style="background:${c}" onclick="nbSetFolderColor('${fId}','${c}');this.closest('[id^=nb-color-picker]').remove()"></div>`).join('');
   card.style.position='relative';card.appendChild(picker);
   setTimeout(()=>document.addEventListener('click',function h(e){if(!picker.contains(e.target)){picker.remove();document.removeEventListener('click',h);}},{once:false}),100);
 }
-async function nbSetColor(fId,color){
+async function nbSetFolderColor(fId,color){
   await uCol('nb_folders').doc(fId).update({color});toast('Color updated!','s');
 }
+// Open folder → go directly to notes
 function nbOpenFolder(fId){
   _nbCurrentFolder=_nbFolders.find(f=>f.id===fId);
   if(!_nbCurrentFolder)return;
-  $id('nb-folder-title').textContent='📁 '+_nbCurrentFolder.name;
-  nbShowView('notebooks');
-  nbRenderNotebooks();
+  const tEl=$id('nb-folder-title');if(tEl)tEl.textContent='📁 '+_nbCurrentFolder.name;
+  nbShowView('notes');
+  nbRenderNotes();
+}
+// Quick note from folder card ✏️ Note button
+function nbQuickNote(fId){
+  const f=_nbFolders.find(x=>x.id===fId);if(!f)return;
+  _nbCurrentFolder=f;
+  $id('nbNoteId').value='';
+  $id('nbNoteTitle').value='';
+  $id('nbNoteContent').value='';
+  openM('mNbNote');
 }
 
-// ── NOTEBOOKS ──
-function nbRenderNotebooks(){
-  nbShowView('notebooks');
-  $id('nb-folder-title').textContent='📁 '+(_nbCurrentFolder?.name||'Folder');
-  const el=$id('nb-notebooks-list');if(!el)return;
-  const nbs=_nbNotebooks.filter(n=>n.folderId===_nbCurrentFolder?.id);
-  if(!nbs.length){
-    el.innerHTML='<div class="empty"><div class="ei">📒</div><h3>No notebooks yet</h3><p>Click + New Notebook</p></div>';return;
+// ── NOTES (stored directly under folderId) ──
+function nbRenderNotes(){
+  nbShowView('notes');
+  const el=$id('nb-notes-list');if(!el)return;
+  const tEl=$id('nb-folder-title');if(tEl&&_nbCurrentFolder)tEl.textContent='📁 '+_nbCurrentFolder.name;
+  // Filter by folderId (new notes) OR by folderId via notebookId (old notes — backward compat)
+  const notes=_nbNotes.filter(n=>n.folderId===_nbCurrentFolder?.id).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!notes.length){
+    el.innerHTML='<div class="empty"><div class="ei">📝</div><h3>No notes yet</h3><p>Click + New Note to add</p></div>';return;
   }
-  el.innerHTML=nbs.map((nb,i)=>{
-    const noteCount=_nbNotes.filter(n=>n.notebookId===nb.id).length;
-    const col=_nbCurrentFolder?.color||NB_COLORS[0];
-    return `<div class="nb-nb-card" id="nbn-${nb.id}" draggable="true"
-      ondragstart="nbDragStart(event,'notebook','${nb.id}')"
-      ondragover="nbDragOver(event,'notebook','${nb.id}')"
-      ondrop="nbDrop(event,'notebook','${nb.id}')"
-      ondragend="nbDragEnd(event)">
-      <span class="nb-drag-handle">⠿</span>
-      <div style="width:32px;height:32px;border-radius:6px;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📒</div>
-      <div style="flex:1;min-width:0" onclick="nbOpenNotebook('${nb.id}')">
-        <div style="font-weight:700;font-size:13px">${nb.name||'Notebook'}</div>
-        <div style="font-size:11px;color:var(--muted)">${noteCount} note${noteCount!==1?'s':''}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
-        <button onclick="nbRenameNotebook('${nb.id}','${encodeURIComponent(nb.name||'')}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
-        <button onclick="nbDeleteNotebook('${nb.id}','${encodeURIComponent(nb.name||'')}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
+  const folderCol=_nbCurrentFolder?.color||NB_COLORS[0];
+  el.innerHTML=notes.map((n,i)=>{
+    const noteCol=n.color||folderCol;
+    return `<div class="nb-note-card" id="nbn2-${n.id}" draggable="true"
+      ondragstart="nbDragStart(event,'note','${n.id}')"
+      ondragover="nbDragOver(event,'note','${n.id}')"
+      ondrop="nbDrop(event,'note','${n.id}')"
+      ondragend="nbDragEnd(event)"
+      onclick="nbEditNote('${n.id}')"
+      style="border-left:4px solid ${noteCol}">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <span class="nb-drag-handle" style="margin-top:2px" onclick="event.stopPropagation()">⠿</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">${n.title||'Untitled'}</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">${(n.content||'').substring(0,200)}${(n.content||'').length>200?'...':''}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
+          <button onclick="nbAddNote()"
+            style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;font-weight:700;color:var(--primary);font-family:'Outfit',sans-serif"
+            title="New Note">✏️ New</button>
+          <button onclick="nbCycleNoteColor('${n.id}')"
+            style="background:${noteCol};border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;flex-shrink:0" title="Change color"></button>
+          <button onclick="nbEditNote('${n.id}')"
+            style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px" title="Edit">✏️</button>
+          <button onclick="nbDeleteNote('${n.id}')"
+            style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px" title="Delete">🗑️</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
-async function nbAddNotebook(){
-  if(!_nbCurrentFolder){toast('Select a folder first','w');return;}
-  const name=prompt('Notebook name:','');if(!name||!name.trim())return;
-  const order=_nbNotebooks.filter(n=>n.folderId===_nbCurrentFolder.id).length;
-  await uCol('nb_notebooks').add({name:name.trim(),folderId:_nbCurrentFolder.id,order,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  toast('Notebook created!','s');
-}
-async function nbRenameNotebook(nbId,nameEnc){
-  const old=decodeURIComponent(nameEnc);
-  const name=prompt('Rename notebook:',old);if(!name||!name.trim()||name.trim()===old)return;
-  await uCol('nb_notebooks').doc(nbId).update({name:name.trim()});toast('Renamed!','s');
-}
-async function nbDeleteNotebook(nbId,nameEnc){
-  const name=decodeURIComponent(nameEnc);
-  if(!confirm('Delete notebook "'+name+'"? All notes inside will be deleted!'))return;
-  const notes=_nbNotes.filter(n=>n.notebookId===nbId);
-  const batch=db.batch();
-  notes.forEach(n=>batch.delete(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id)));
-  batch.delete(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(nbId));
-  await batch.commit();toast('Notebook deleted','i');
-}
-function nbOpenNotebook(nbId){
-  _nbCurrentNotebook=_nbNotebooks.find(n=>n.id===nbId);
-  if(!_nbCurrentNotebook)return;
-  $id('nb-notebook-title').textContent='📒 '+_nbCurrentNotebook.name;
-  $id('nb-notebook-breadcrumb').textContent='📁 '+(_nbCurrentFolder?.name||'');
-  nbShowView('notes');
-  nbRenderNotes();
-}
-
-// ── NOTES ──
-function nbRenderNotes(){
-  nbShowView('notes');
-  const el=$id('nb-notes-list');if(!el)return;
-  const notes=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook?.id);
-  if(!notes.length){
-    el.innerHTML='<div class="empty"><div class="ei">📝</div><h3>No notes yet</h3><p>Click + New Note</p></div>';return;
-  }
-  const col=_nbCurrentFolder?.color||NB_COLORS[0];
-  el.innerHTML=notes.map((n,i)=>`<div class="nb-note-card" id="nbn2-${n.id}" draggable="true"
-    ondragstart="nbDragStart(event,'note','${n.id}')"
-    ondragover="nbDragOver(event,'note','${n.id}')"
-    ondrop="nbDrop(event,'note','${n.id}')"
-    ondragend="nbDragEnd(event)"
-    style="border-left:4px solid ${col}">
-    <div style="display:flex;align-items:flex-start;gap:8px">
-      <span class="nb-drag-handle" style="margin-top:2px">⠿</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:13px;margin-bottom:4px">${n.title||'Untitled'}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.5">${(n.content||'').substring(0,200)}${(n.content||'').length>200?'...':''}</div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
-        <button onclick="nbEditNote('${n.id}')" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">✏️</button>
-        <button onclick="nbDeleteNote('${n.id}')" style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:12px">🗑️</button>
-      </div>
-    </div>
-  </div>`).join('');
-}
 function nbAddNote(){
-  if(!_nbCurrentNotebook){toast('Select a notebook first','w');return;}
+  if(!_nbCurrentFolder){toast('Select a folder first','w');return;}
   $id('nbNoteId').value='';
   $id('nbNoteTitle').value='';
   $id('nbNoteContent').value='';
@@ -4313,23 +4270,40 @@ function nbAddNote(){
 }
 function nbEditNote(noteId){
   const n=_nbNotes.find(x=>x.id===noteId);if(!n)return;
+  // Restore folder context if needed
+  if(!_nbCurrentFolder&&n.folderId){
+    _nbCurrentFolder=_nbFolders.find(f=>f.id===n.folderId)||null;
+  }
   $id('nbNoteId').value=noteId;
   $id('nbNoteTitle').value=n.title||'';
   $id('nbNoteContent').value=n.content||'';
   openM('mNbNote');
+}
+async function nbCycleNoteColor(noteId){
+  const n=_nbNotes.find(x=>x.id===noteId);if(!n)return;
+  const cur=n.color||(_nbCurrentFolder?.color||NB_COLORS[0]);
+  const idx=NB_COLORS.indexOf(cur);
+  const next=NB_COLORS[(idx+1)%NB_COLORS.length];
+  await uCol('nb_notes').doc(noteId).update({color:next});
 }
 async function nbSaveNote(){
   const noteId=$id('nbNoteId')?.value;
   const title=($id('nbNoteTitle')?.value||'').trim();
   const content=$id('nbNoteContent')?.value||'';
   if(!title){toast('Enter a title','e');return;}
-  if(!_nbCurrentNotebook){toast('No notebook selected','e');return;}
+  if(!_nbCurrentFolder){toast('No folder selected','e');return;}
   if(noteId){
     await uCol('nb_notes').doc(noteId).update({title,content,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     toast('Note updated!','s');
   }else{
-    const order=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook.id).length;
-    await uCol('nb_notes').add({title,content,notebookId:_nbCurrentNotebook.id,folderId:_nbCurrentFolder?.id||'',order,userId:'admin',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const order=_nbNotes.filter(n=>n.folderId===_nbCurrentFolder.id).length;
+    await uCol('nb_notes').add({
+      title,content,
+      folderId:_nbCurrentFolder.id,
+      notebookId:'',         // blank — 2-level system
+      order,userId:'admin',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
     toast('Note saved!','s');
   }
   closeM('mNbNote');
@@ -4347,7 +4321,7 @@ function nbDragStart(e,type,id){
 }
 function nbDragOver(e,type,id){
   e.preventDefault();
-  if(_nbDragType!==type&&!(type==='notebook'&&_nbDragType==='notebook'))return;
+  if(_nbDragType!==type)return;
   e.dataTransfer.dropEffect='move';
   e.currentTarget.classList.add('nb-drag-over');
 }
@@ -4359,43 +4333,19 @@ async function nbDrop(e,type,targetId){
   e.preventDefault();
   document.querySelectorAll('.nb-drag-over').forEach(el=>el.classList.remove('nb-drag-over'));
   if(!_nbDragSrc||_nbDragSrc.id===targetId)return;
-  
   if(type==='folder'&&_nbDragType==='folder'){
-    // Reorder folders
     const arr=[..._nbFolders];
-    const fromIdx=arr.findIndex(f=>f.id===_nbDragSrc.id);
-    const toIdx=arr.findIndex(f=>f.id===targetId);
-    if(fromIdx<0||toIdx<0)return;
-    const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
+    const fi=arr.findIndex(f=>f.id===_nbDragSrc.id),ti=arr.findIndex(f=>f.id===targetId);
+    if(fi<0||ti<0)return;
+    const [mv]=arr.splice(fi,1);arr.splice(ti,0,mv);
     const batch=db.batch();
     arr.forEach((f,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_folders').doc(f.id),{order:i}));
     await batch.commit();
-  } else if(type==='notebook'&&_nbDragType==='notebook'){
-    // Reorder or cross-folder move notebooks
-    const srcNb=_nbNotebooks.find(n=>n.id===_nbDragSrc.id);
-    const tgtNb=_nbNotebooks.find(n=>n.id===targetId);
-    if(!srcNb||!tgtNb)return;
-    if(srcNb.folderId===tgtNb.folderId){
-      // Same folder - reorder
-      let arr=_nbNotebooks.filter(n=>n.folderId===srcNb.folderId);
-      const fromIdx=arr.findIndex(n=>n.id===srcNb.id);
-      const toIdx=arr.findIndex(n=>n.id===tgtNb.id);
-      const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
-      const batch=db.batch();
-      arr.forEach((n,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_notebooks').doc(n.id),{order:i}));
-      await batch.commit();
-    } else {
-      // Cross-folder move
-      await uCol('nb_notebooks').doc(_nbDragSrc.id).update({folderId:tgtNb.folderId,order:tgtNb.order});
-      toast('Notebook moved!','s');
-    }
   } else if(type==='note'&&_nbDragType==='note'){
-    // Reorder notes
-    let arr=_nbNotes.filter(n=>n.notebookId===_nbCurrentNotebook?.id);
-    const fromIdx=arr.findIndex(n=>n.id===_nbDragSrc.id);
-    const toIdx=arr.findIndex(n=>n.id===targetId);
-    if(fromIdx<0||toIdx<0)return;
-    const [moved]=arr.splice(fromIdx,1);arr.splice(toIdx,0,moved);
+    const arr=_nbNotes.filter(n=>n.folderId===_nbCurrentFolder?.id).sort((a,b)=>(a.order||0)-(b.order||0));
+    const fi=arr.findIndex(n=>n.id===_nbDragSrc.id),ti=arr.findIndex(n=>n.id===targetId);
+    if(fi<0||ti<0)return;
+    const [mv]=arr.splice(fi,1);arr.splice(ti,0,mv);
     const batch=db.batch();
     arr.forEach((n,i)=>batch.update(db.collection('users').doc(currentUid).collection('nb_notes').doc(n.id),{order:i}));
     await batch.commit();
@@ -4403,11 +4353,9 @@ async function nbDrop(e,type,targetId){
   _nbDragSrc=null;_nbDragType=null;
 }
 
-// Legacy renderNotes (for compatibility)
+// Legacy renderNotes (compatibility)
 function renderNotes(){
-  // If notebook view is active, just refresh
-  if(_nbCurrentNotebook)nbRenderNotes();
-  else if(_nbCurrentFolder)nbRenderNotebooks();
+  if(_nbCurrentFolder)nbRenderNotes();
   else nbRenderFolders();
 }
 
@@ -4642,8 +4590,9 @@ function adminNav(page,btn){
   if(page==='todo'){setToday('todoDue');renderTodos();return;}
   if(page==='reminders'){setToday('remDue');renderReminders();return;}
   if(page==='notebook'){
-    if(!_nbFolders.length&&!_nbNotebooks.length&&!_nbNotes.length)nbLoadAll();
-    else{_nbCurrentFolder=null;_nbCurrentNotebook=null;nbRenderFolders();}
+    _nbCurrentFolder=null;
+    if(!_nbFolders.length&&!_nbNotes.length)nbLoadAll();
+    else nbRenderFolders();
     return;
   }
   if(page==='reports'){loadReports('monthly',document.querySelector('#pg-reports .df-tab'));return;}
