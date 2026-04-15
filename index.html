@@ -201,8 +201,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 .note-acts{position:absolute;top:10px;right:10px;display:none;gap:4px;}
 .note-card:hover .note-acts{display:flex;}
 /* FOLDER TABS */
-.folder-tabs{display:flex;gap:5px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--border);}
-.ftab{padding:7px 16px;border-radius:var(--rsm);border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--tr);}
+.folder-tabs{display:flex;gap:5px;flex-wrap:wrap;padding:6px 0;border-bottom:none;}
+.ftab{padding:5px 12px;border-radius:var(--rsm);border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--tr);}
 .ftab.active{background:var(--gold);border-color:var(--gold);color:#000;}
 .ftab:hover:not(.active){border-color:var(--gold);color:var(--gold);}
 /* GROUP TABS */
@@ -288,7 +288,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   /* Forms */
   .inp-row{grid-template-columns:1fr;}
-  .etype-tabs{flex-direction:column;gap:5px;}
+  .etype-tabs{flex-direction:row;gap:4px;flex-wrap:nowrap;}
+  .etab{flex:1;padding:8px 4px;font-size:11px;min-width:0;text-align:center;}
   .etab{width:100%;text-align:center;}
   .fg input,.fg select,.fg textarea,.srch,.df-inp{font-size:16px!important;width:100%;box-sizing:border-box;}
 
@@ -350,9 +351,9 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .sb-nav{padding:5px;}
 
   /* Folder tabs */
-  .folder-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+  .folder-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;padding:4px 0;}
   .folder-tabs::-webkit-scrollbar{display:none;}
-  .ftab{flex-shrink:0;font-size:12px;padding:6px 12px;}
+  .ftab{flex-shrink:0;font-size:11px;padding:4px 10px;}
 
   /* Notes */
   .notes-grid{grid-template-columns:1fr;}
@@ -771,25 +772,25 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- MY PRIVATE LEDGER PAGE -->
   <div class="pg" id="pg-myacc">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div class="folder-tabs" id="folderTabsBar" style="flex:1;margin-bottom:0"></div>
-      <button class="btn btn-primary btn-sm" onclick="addFolder()" style="flex-shrink:0;white-space:nowrap">+ New Folder</button>
+    <!-- Compact folder bar: tabs + New Folder button -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:nowrap;overflow-x:auto">
+      <div class="folder-tabs" id="folderTabsBar" style="flex:1;margin-bottom:0;min-width:0"></div>
+      <button class="btn btn-primary btn-sm" onclick="addFolder()" style="flex-shrink:0;white-space:nowrap;padding:5px 10px;font-size:12px">+ Folder</button>
     </div>
     <div id="myaccContent" style="display:none">
-      <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="font-size:16px;font-weight:800" id="activeFolderName">Folder</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="renameActiveFolder()">&#x270F;&#xFE0F; Rename</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteActiveFolder()">&#x1F5D1;&#xFE0F; Delete</button>
-        </div>
+      <!-- Compact folder action bar: folder name + Rename + Delete -->
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);margin-bottom:10px;flex-wrap:nowrap">
+        <span style="font-size:14px">📁</span>
+        <div style="font-size:14px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="activeFolderName">Folder</div>
+        <button class="btn btn-ghost btn-sm" onclick="renameActiveFolder()" style="flex-shrink:0;padding:4px 8px;font-size:12px">✏️ Rename</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteActiveFolder()" style="flex-shrink:0;padding:4px 8px;font-size:12px">🗑️ Delete</button>
       </div>
-      <div class="cbox" style="margin:0 0 14px">
-        <div class="cbox-hd"><div class="cbox-title">+ Add Entry</div></div>
-        <div class="cbox-body">
+      <div class="cbox" style="margin:0 0 10px">
+        <div class="cbox-body" style="padding:12px 14px">
           <div class="etype-tabs" id="myaccTypeTabs">
-            <button class="etab sel-income" onclick="selectMyaccType('income',this)">&#x1F4B0; Income</button>
-            <button class="etab" onclick="selectMyaccType('personal_expense',this)">&#x1F6CD;&#xFE0F; Personal Expense</button>
-            <button class="etab" onclick="selectMyaccType('home_expense',this)">&#x1F3E0; Home/Biz-Expense</button>
+            <button class="etab sel-income" onclick="selectMyaccType('income',this)">💰 Income</button>
+            <button class="etab" onclick="selectMyaccType('personal_expense',this)">🛍️ Personal</button>
+            <button class="etab" onclick="selectMyaccType('home_expense',this)">🏠 Home/Biz</button>
           </div>
           <div class="inp-row">
             <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="myaccAmt" placeholder="0.00" min="0"></div>
@@ -821,7 +822,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="tbl-wrap"><table class="dt"><thead><tr><th class="col-date">Date</th><th>Type</th><th class="col-cat">Category</th><th class="col-desc">Description</th><th class="col-amt">Amount</th><th class="col-act"></th></tr></thead><tbody id="myaccTbody"></tbody></table></div>
       </div>
     </div>
-    <div id="myaccEmpty" class="empty"><div class="ei">&#x1F4C1;</div><h3>No folder selected</h3><p>Click a folder tab above or create a new one with + New Folder</p></div>
+    <div id="myaccEmpty" class="empty"><div class="ei">&#x1F4C1;</div><h3>No folder selected</h3><p>Click a folder tab above or create a new one with + Folder</p></div>
   </div>
 
   <!-- TODO PAGE -->
@@ -3268,13 +3269,13 @@ async function renderMemberCards(){
         <span style="font-size:12px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password||'—'}</span>
       </div>
       <!-- Action Buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px">
-        <button class="btn btn-primary btn-sm" onclick="copyText('${link}',this)">&#x1F517; Staff Link</button>
-        <button class="btn btn-ghost btn-sm" onclick="viewStaffLedger('${m.id}','${nameEsc}')">&#x1F4CB; Ledger</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
+        <button class="btn btn-primary btn-sm" onclick="copyText('${link}',this)" style="font-size:11px;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔗 Staff Link</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewStaffLedger('${m.id}','${nameEsc}')" style="font-size:11px;padding:6px 4px;white-space:nowrap">📋 Ledger</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-        <button class="btn btn-sm" style="background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="markAttendance('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4CB; Mark Att.</button>
-        <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="viewAttHistory('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4D6; History</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <button class="btn btn-sm" style="background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:11px;padding:6px 4px;white-space:nowrap" onclick="markAttendance('${m.id}','${encodeURIComponent(m.name)}')">📋 Mark Att.</button>
+        <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:11px;padding:6px 4px;white-space:nowrap" onclick="viewAttHistory('${m.id}','${encodeURIComponent(m.name)}')">📖 History</button>
       </div>
     </div>`;
   }
