@@ -201,8 +201,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 .note-acts{position:absolute;top:10px;right:10px;display:none;gap:4px;}
 .note-card:hover .note-acts{display:flex;}
 /* FOLDER TABS */
-.folder-tabs{display:flex;gap:5px;flex-wrap:wrap;padding:6px 0;border-bottom:none;}
-.ftab{padding:5px 12px;border-radius:var(--rsm);border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--tr);}
+.folder-tabs{display:flex;gap:5px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--border);}
+.ftab{padding:7px 16px;border-radius:var(--rsm);border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--tr);}
 .ftab.active{background:var(--gold);border-color:var(--gold);color:#000;}
 .ftab:hover:not(.active){border-color:var(--gold);color:var(--gold);}
 /* GROUP TABS */
@@ -271,36 +271,42 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .topbar-title{font-size:13px;}
   #adminDate{display:none;}
 
-  /* Main content */
-  .pw{padding:10px 10px;max-width:100%;overflow-x:hidden;box-sizing:border-box;}
+  /* Main content — tighter padding */
+  .pw{padding:8px 8px;max-width:100%;overflow-x:hidden;box-sizing:border-box;}
 
-  /* ALL boxes full width */
-  .cbox{width:100%;box-sizing:border-box;overflow:hidden;}
-  .cbox-hd{padding:10px 12px;flex-wrap:wrap;gap:6px;}
-  .cbox-body{padding:12px;}
+  /* ALL boxes — compact */
+  .cbox{width:100%;box-sizing:border-box;overflow:hidden;margin-bottom:10px!important;}
+  .cbox-hd{padding:8px 10px;flex-wrap:wrap;gap:5px;}
+  .cbox-body{padding:10px;}
+  .cbox-title{font-size:13px;}
 
-  /* Stats grid - 2 column */
-  .stat-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;width:100%;min-width:0;}
-  .sc{padding:10px 8px;min-width:0;overflow:hidden;}
-  .sc-val{font-size:15px;}
+  /* Stats grid - 2 column, tighter */
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px;width:100%;min-width:0;}
+  .sc{padding:8px 6px;min-width:0;overflow:hidden;}
+  .sc-val{font-size:14px;}
   .sc-lbl{font-size:10px;}
-  .sc-ico{font-size:18px;width:32px;height:32px;}
+  .sc-ico{font-size:16px;width:28px;height:28px;}
 
-  /* Forms */
-  .inp-row{grid-template-columns:1fr;}
-  .etype-tabs{flex-direction:row;gap:4px;flex-wrap:nowrap;}
-  .etab{flex:1;padding:8px 4px;font-size:11px;min-width:0;text-align:center;}
-  .etab{width:100%;text-align:center;}
-  .fg input,.fg select,.fg textarea,.srch,.df-inp{font-size:16px!important;width:100%;box-sizing:border-box;}
+  /* Forms — compact */
+  .inp-row{grid-template-columns:1fr 1fr;gap:8px;}
+  .inp-row .fg:only-child,.inp-row .fg[style*="grid-column:1/-1"]{grid-column:1/-1;}
+  .fg{margin-bottom:8px;}
 
-  /* Date bars — mobile: tabs row1, date-wrap row2 */
-  .df-bar{flex-wrap:wrap;padding:8px 10px;gap:6px;}
+  /* Type tabs — HORIZONTAL (1+1+1) */
+  .etype-tabs{flex-direction:row!important;gap:4px!important;flex-wrap:nowrap!important;margin-bottom:10px;}
+  .etab{flex:1!important;width:auto!important;text-align:center;padding:7px 2px!important;font-size:11px!important;white-space:nowrap;}
+
+  /* Inputs */
+  .fg input,.fg select,.fg textarea,.srch,.df-inp{font-size:15px!important;width:100%;box-sizing:border-box;padding:8px 10px!important;}
+
+  /* Date bars */
+  .df-bar{flex-wrap:wrap;padding:6px 8px;gap:5px;}
   .df-bar::-webkit-scrollbar{display:none;}
-  .df-bar-tabs{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .df-bar-tabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .df-bar-tabs::-webkit-scrollbar{display:none;}
-  .df-tab{scroll-snap-align:start;flex-shrink:0;font-size:11px;padding:4px 10px;}
+  .df-tab{scroll-snap-align:start;flex-shrink:0;font-size:11px;padding:4px 8px;}
   .df-date-wrap{width:100%;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto;}
-  .df-date-wrap .df-inp{flex:1;min-width:0;font-size:13px!important;padding:5px 6px;}
+  .df-date-wrap .df-inp{flex:1;min-width:0;font-size:13px!important;padding:4px 6px!important;}
   .df-date-wrap .df-arrow{width:26px;height:26px;flex-shrink:0;}
 
   /* Tab bars */
@@ -312,15 +318,15 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .member-nav{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 8px;-ms-overflow-style:none;scrollbar-width:none;}
   .member-nav::-webkit-scrollbar{display:none;}
   .mnav-item{padding:10px 12px;font-size:12px;white-space:nowrap;}
-  .member-topbar{padding:8px 12px;min-height:50px;width:100%;box-sizing:border-box;}
-  #memberApp>div[style*="padding:18px"]{padding-bottom:72px!important;}
-  .member-topbar .logout-btn{padding:5px 10px;font-size:11px;}
+  .member-topbar{padding:6px 10px;min-height:44px;width:100%;box-sizing:border-box;}
+  #memberApp>div[style*="padding:18px"]{padding:8px 8px 80px 8px!important;}
+  .member-topbar .logout-btn{padding:4px 8px;font-size:11px;}
   #mAppName{font-size:12px;}
-  #memberApp > div:nth-child(3){padding:10px;}
+  #memberApp > div:nth-child(3){padding:8px;}
 
   /* Cards */
-  .member-cards{grid-template-columns:repeat(2,1fr);gap:8px;padding:8px;}
-  .mc{padding:8px;width:100%;box-sizing:border-box;overflow:hidden;}
+  .member-cards{grid-template-columns:repeat(2,1fr);gap:7px;padding:6px;}
+  .mc{padding:7px;width:100%;box-sizing:border-box;overflow:hidden;}
   .mc *{max-width:100%;word-break:break-word;box-sizing:border-box;}
 
   /* Staff/grpb cards */
@@ -330,17 +336,17 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   /* Tables */
   .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
   table.dt{font-size:11px;min-width:400px;}
-  table.dt th,table.dt td{padding:7px 8px;white-space:nowrap;}
+  table.dt th,table.dt td{padding:6px 7px;white-space:nowrap;}
 
   /* Modals */
   .modal-ov{align-items:flex-end;padding:0;}
-  .modal{border-radius:18px 18px 0 0;max-height:92vh;padding:18px 16px;animation:mSlideUp .25s ease;width:100%;box-sizing:border-box;}
+  .modal{border-radius:18px 18px 0 0;max-height:92vh;padding:16px 14px;animation:mSlideUp .25s ease;width:100%;box-sizing:border-box;}
   @keyframes mSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
-  /* Buttons */
-  .btn{padding:10px 12px;min-height:42px;font-size:13px;}
-  .btn-sm{padding:8px 12px;min-height:38px;font-size:12px;}
-  .btn-icon{width:38px;height:38px;}
+  /* Buttons — compact on mobile */
+  .btn{padding:8px 10px;min-height:38px;font-size:12px;}
+  .btn-sm{padding:6px 10px;min-height:32px;font-size:11px;}
+  .btn-icon{width:34px;height:34px;}
   .btn-full{width:100%;}
 
   /* Toast */
@@ -350,8 +356,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .ni{padding:10px 8px;}
   .sb-nav{padding:5px;}
 
-  /* Folder tabs */
-  .folder-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;padding:4px 0;}
+  /* Folder tabs — ultra compact */
+  .folder-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:3px 0;border-bottom:none;}
   .folder-tabs::-webkit-scrollbar{display:none;}
   .ftab{flex-shrink:0;font-size:11px;padding:4px 10px;}
 
@@ -365,7 +371,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .rep-table{font-size:11px;}
 
   /* Login page */
-  .login-card{padding:28px 20px;margin:10px;}
+  .login-card{padding:24px 16px;margin:8px;}
   #loginLangBar{top:10px;right:8px;}
 
   /* Fix overflow everywhere */
@@ -375,17 +381,46 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   /* Live time smaller */
   #liveTime{font-size:12px;}
+
+  /* Todo/Reminder add form compact */
+  #pg-todo .cbox-body .inp-row,
+  #pg-reminders .cbox-body .inp-row{grid-template-columns:1fr 1fr;}
+
+  /* Reminder time picker compact */
+  #remHour,#remMin,#mRemHour,#mRemMin{width:46px!important;padding:6px!important;font-size:14px!important;}
+
+  /* Member entries add form */
+  #mpg-entries .cbox{margin-bottom:8px!important;}
+
+  /* Staff management bar */
+  #pg-members .cbox-hd{padding:7px 10px;}
+
+  /* Inventory form compact */
+  #pg-inventory .cbox-body{padding:10px;}
+  #invPurchaseFields .inp-row{grid-template-columns:1fr 1fr;}
+
+  /* Stats toggle button compact */
+  .stats-toggle-btn{padding:2px 6px;font-size:11px;}
+
+  /* Section labels compact */
+  .set-row{padding:10px 0;}
+  .set-info h4{font-size:13px;}
+  .set-info p{font-size:11px;}
 }
 
 @media(max-width:420px){
-  .stat-grid{grid-template-columns:1fr 1fr;gap:7px;}
-  .sc-val{font-size:16px;}
-  .sc{padding:10px;}
-  .topbar-title{font-size:14px;}
-  .pw{padding:8px;}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:5px;}
+  .sc-val{font-size:14px;}
+  .sc{padding:7px 5px;}
+  .topbar-title{font-size:13px;}
+  .pw{padding:6px;}
   table.dt{font-size:10px;}
-  table.dt th,table.dt td{padding:5px 6px;}
-  .btn{font-size:12px;}
+  table.dt th,table.dt td{padding:5px 5px;}
+  .btn{font-size:11px;padding:7px 8px;}
+  .btn-sm{font-size:10px;padding:5px 7px;min-height:28px;}
+  .etab{font-size:10px!important;padding:6px 1px!important;}
+  .cbox-body{padding:8px!important;}
+  .cbox-hd{padding:6px 8px!important;}
 }
 
 /* ── Desktop: center content, max width ── */
@@ -468,8 +503,11 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <div class="fg">
           <label id="adminPwLabel">Password</label>
-          <input type="password" id="adminPwIn" placeholder="Enter your password"
-            onkeydown="if(event.key==='Enter')doAdminLogin()">
+          <div style="position:relative">
+            <input type="password" id="adminPwIn" placeholder="Enter your password"
+              onkeydown="if(event.key==='Enter')doAdminLogin()" style="padding-right:38px">
+            <button type="button" onclick="const i=$id('adminPwIn');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁️':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;padding:0;line-height:1">👁️</button>
+          </div>
         </div>
         <div id="loginAttemptWarn" style="display:none;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:var(--rsm);padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--red);text-align:center"></div>
         <button class="btn btn-primary btn-full" onclick="doAdminLogin()" id="adminLoginBtn">&#x1F513; Login as Admin</button>
@@ -569,7 +607,10 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </div>
       <div class="fg">
         <label id="memberPwLabel">Password</label>
-        <input type="password" id="memberPwIn" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doMemberLogin()">
+        <div style="position:relative">
+          <input type="password" id="memberPwIn" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doMemberLogin()" style="padding-right:38px">
+          <button type="button" onclick="const i=$id('memberPwIn');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁️':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;padding:0;line-height:1">👁️</button>
+        </div>
       </div>
       <button class="btn btn-primary btn-full" id="memberLoginBtn" onclick="doMemberLogin()">&#x1F513; Login as Staff</button>
       <!-- Change Password section -->
@@ -710,10 +751,10 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- MEMBERS PAGE -->
   <div class="pg" id="pg-members">
-    <div class="cbox" style="margin-bottom:14px">
-      <div class="cbox-hd">
+    <div class="cbox" style="margin-bottom:8px">
+      <div class="cbox-hd" style="padding:7px 10px">
         <div class="cbox-title">&#x1F464; Staff Management</div>
-        <button class="btn btn-primary btn-sm" onclick="openM('mAddMember')">+ Add Staff</button>
+        <button class="btn btn-primary btn-sm" onclick="openM('mAddMember')" style="font-size:11px;padding:5px 10px">+ Add Staff</button>
       </div>
 
     </div>
@@ -772,35 +813,42 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- MY PRIVATE LEDGER PAGE -->
   <div class="pg" id="pg-myacc">
-    <!-- Compact folder bar: tabs + New Folder button -->
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:nowrap;overflow-x:auto">
-      <div class="folder-tabs" id="folderTabsBar" style="flex:1;margin-bottom:0;min-width:0"></div>
-      <button class="btn btn-primary btn-sm" onclick="addFolder()" style="flex-shrink:0;white-space:nowrap;padding:5px 10px;font-size:12px">+ Folder</button>
+    <!-- MERGED TOP BAR: folder tabs + New Folder + Rename + Delete -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
+      <!-- Row 1: Action buttons -->
+      <div style="display:flex;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;font-weight:800;color:var(--muted);flex:1">📁 MY Hisab</span>
+        <button class="btn btn-primary btn-sm" onclick="addFolder()" style="white-space:nowrap;padding:4px 10px;font-size:11px">+ New</button>
+        <button class="btn btn-ghost btn-sm btn-icon" id="myaccRenameBtn" onclick="renameActiveFolder()" title="Rename folder" style="font-size:13px">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" id="myaccDeleteBtn" onclick="deleteActiveFolder()" title="Delete folder" style="font-size:13px">🗑️</button>
+      </div>
+      <!-- Row 2: Folder tabs — horizontal scroll -->
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 10px;display:flex;gap:5px;flex-wrap:nowrap;scrollbar-width:none">
+        <div class="folder-tabs" id="folderTabsBar" style="display:contents"></div>
+      </div>
     </div>
     <div id="myaccContent" style="display:none">
-      <!-- Compact folder action bar: folder name + Rename + Delete -->
-      <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);margin-bottom:10px;flex-wrap:nowrap">
-        <span style="font-size:14px">📁</span>
-        <div style="font-size:14px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="activeFolderName">Folder</div>
-        <button class="btn btn-ghost btn-sm" onclick="renameActiveFolder()" style="flex-shrink:0;padding:4px 8px;font-size:12px">✏️ Rename</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteActiveFolder()" style="flex-shrink:0;padding:4px 8px;font-size:12px">🗑️ Delete</button>
-      </div>
-      <div class="cbox" style="margin:0 0 10px">
-        <div class="cbox-body" style="padding:12px 14px">
-          <div class="etype-tabs" id="myaccTypeTabs">
-            <button class="etab sel-income" onclick="selectMyaccType('income',this)">💰 Income</button>
-            <button class="etab" onclick="selectMyaccType('personal_expense',this)">🛍️ Personal</button>
-            <button class="etab" onclick="selectMyaccType('home_expense',this)">🏠 Home/Biz</button>
+      <div class="cbox" style="margin:0 0 14px">
+        <!-- Folder name + type buttons in one compact row -->
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:800;color:var(--muted);flex-shrink:0">📁</span>
+          <span style="font-size:13px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="activeFolderName">Select Folder</span>
+          <div style="display:flex;gap:4px;flex-shrink:0" id="myaccTypeTabs">
+            <button class="etab sel-income" onclick="selectMyaccType('income',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F4B0; Income</button>
+            <button class="etab" onclick="selectMyaccType('personal_expense',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F6CD;&#xFE0F; Personal Expanse ↓</button>
+            <button class="etab" onclick="selectMyaccType('home_expense',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F3E0; Home/Biz Expanse ↓</button>
           </div>
+        </div>
+        <div class="cbox-body">
           <div class="inp-row">
             <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="myaccAmt" placeholder="0.00" min="0"></div>
             <div class="fg"><label>Category</label><select id="myaccCat"></select></div>
           </div>
-          <div class="inp-row">
-            <div class="fg"><label>Description</label><input id="myaccDesc" placeholder="Details..."></div>
-            <div class="fg"><label>Date</label><input type="date" id="myaccDate"></div>
+          <div class="inp-row" style="grid-template-columns:1fr auto;align-items:end;gap:8px">
+            <div class="fg" style="margin-bottom:0"><label>Description</label><input id="myaccDesc" placeholder="Details..."></div>
+            <div class="fg" style="margin-bottom:0"><label>Date</label><input type="date" id="myaccDate"></div>
           </div>
-          <button class="btn btn-primary" onclick="saveMyaccEntry()">+ Save Entry</button>
+          <button class="btn btn-primary btn-full" onclick="saveMyaccEntry()" style="margin-top:10px;position:sticky;bottom:0;z-index:10">+ Save Entry</button>
         </div>
       </div>
       <div class="cbox">
@@ -810,7 +858,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <select class="srch" id="myaccFilter" onchange="renderMyacc()">
               <option value="all">All Types</option><option value="income">Income</option><option value="personal_expense">Personal Exp.</option><option value="home_expense">Home Exp.</option>
             </select>
-            <button class="btn btn-ghost btn-sm" onclick="exportFolderCSV()">&#x1F4E5; CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadPDF('admin',myaccDF)">&#x1F4C4; PDF</button>
           </div>
         </div>
         <div class="df-bar" id="myaccDateBar"></div>
@@ -822,14 +870,13 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="tbl-wrap"><table class="dt"><thead><tr><th class="col-date">Date</th><th>Type</th><th class="col-cat">Category</th><th class="col-desc">Description</th><th class="col-amt">Amount</th><th class="col-act"></th></tr></thead><tbody id="myaccTbody"></tbody></table></div>
       </div>
     </div>
-    <div id="myaccEmpty" class="empty"><div class="ei">&#x1F4C1;</div><h3>No folder selected</h3><p>Click a folder tab above or create a new one with + Folder</p></div>
+    <div id="myaccEmpty" class="empty"><div class="ei">&#x1F4C1;</div><h3>No folder selected</h3><p>Click a folder tab above or create a new one with + New Folder</p></div>
   </div>
 
   <!-- TODO PAGE -->
   <div class="pg" id="pg-todo">
-    <div class="cbox" style="margin-bottom:14px">
-      <div class="cbox-hd"><div class="cbox-title">+ Add Task</div></div>
-      <div class="cbox-body">
+    <div class="cbox" style="margin-bottom:10px">
+      <div class="cbox-body" style="padding:10px 12px">
         <div class="inp-row">
           <div class="fg" style="grid-column:1/-1"><label>Task Title</label><input id="todoTitle" placeholder="What needs to be done?"></div>
         </div>
@@ -858,9 +905,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
   <!-- REMINDERS PAGE -->
   <div class="pg" id="pg-reminders">
-    <div class="cbox" style="margin-bottom:14px">
-      <div class="cbox-hd"><div class="cbox-title">+ Add Reminder</div></div>
-      <div class="cbox-body">
+    <div class="cbox" style="margin-bottom:10px">
+      <div class="cbox-body" style="padding:10px 12px">
         <div class="inp-row">
           <div class="fg" style="grid-column:1/-1"><label>Title</label><input id="remTitle" placeholder="What to remind?"></div>
         </div>
@@ -1002,14 +1048,12 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn btn-primary" onclick="genReport()">&#x1F4CA; Generate Summary</button>
           <button class="btn btn-ghost" onclick="shareWhatsApp()">&#x1F4F1; WhatsApp Share</button>
-          <button class="btn btn-ghost" onclick="shareEmail()">&#x1F4E7; Email Share</button>
         </div>
         <div id="reportOut" style="display:none;margin-top:14px">
           <textarea id="reportText" style="width:100%;height:220px;background:var(--s2);border:1.5px solid var(--border);color:var(--text);padding:13px;border-radius:var(--rsm);font-size:12px;font-family:monospace;resize:vertical;outline:none"></textarea>
           <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
             <button class="btn btn-ghost btn-sm" onclick="document.getElementById('reportText').select();document.execCommand('copy');toast('Copied!','i')">&#x1F4CB; Copy</button>
             <button class="btn btn-ghost btn-sm" onclick="shareWhatsApp()">&#x1F4F1; WhatsApp</button>
-            <button class="btn btn-ghost btn-sm" onclick="shareEmail()">&#x1F4E7; Email</button>
           </div>
         </div>
       </div>
@@ -1129,10 +1173,6 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
               <button class="btn btn-danger btn-sm" id="passkeyRemoveBtn" style="display:none" onclick="removePasskey()">&#x1F5D1;&#xFE0F; Remove</button>
             </div>
           </div>
-          <div class="set-row">
-            <div class="set-info"><h4>Reconfigure Firebase</h4><p>Update your project credentials</p></div>
-            <button class="btn btn-warning btn-sm" onclick="resetSetup()">&#x2699;&#xFE0F; Reconfigure</button>
-          </div>
         </div>
       </div>
     </div>
@@ -1168,10 +1208,10 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   
   <!-- INVENTORY PAGE -->
   <div class="pg" id="pg-inventory">
-    <div class="cbox" style="margin-bottom:14px">
-      <div class="cbox-hd">
-        <div class="cbox-title">+ Add Stock Item</div>
-        <div style="display:flex;gap:6px;align-items:center">
+    <div class="cbox" style="margin-bottom:10px">
+      <div class="cbox-hd" style="padding:7px 10px">
+        <div class="cbox-title" style="font-size:12px">+ Add Stock Item</div>
+        <div style="display:flex;gap:5px;align-items:center">
           <button class="df-tab active" id="invModeCatalog" onclick="setInvMode('catalog',this)" title="Save to catalog only — no expense recorded">📋 Catalog</button>
           <button class="df-tab" id="invModePurchase" onclick="setInvMode('purchase',this)" title="Add item and record expense">🛒 Purchase</button>
         </div>
@@ -1215,11 +1255,14 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div class="cbox">
       <div class="cbox-hd">
         <div class="cbox-title">&#x1F4CB; Stock List</div>
-        <input class="srch" id="invSrch" placeholder="Search items..." oninput="renderInventory()">
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="invSortBtn" onclick="toggleInvSort()" class="btn btn-ghost btn-sm" style="white-space:nowrap">&#x1F53D; New→Old</button>
+          <input class="srch" id="invSrch" placeholder="Search items..." oninput="renderInventory()">
+        </div>
       </div>
       <div class="df-bar" id="invDateBar"></div>
-      <div class="tbl-wrap"><table class="dt">
-        <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit</th><th>Buy Price</th><th>Total Cost</th><th>Sell Price</th><th>Target</th><th></th></tr></thead>
+      <div class="tbl-wrap"><table class="dt" style="min-width:520px">
+        <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit</th><th>Buy ₹</th><th>Total</th><th>Sell ₹</th><th>Target</th><th></th></tr></thead>
         <tbody id="invTbody"></tbody>
       </table></div>
     </div>
@@ -1230,7 +1273,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 <div id="adminBottomNav">
   <div class="abn-wrap">
     <button class="abn-btn" id="abn-myacc" onclick="adminNav('myacc',document.getElementById('ni-myacc'));updateAdminBottomNav('myacc')">
-      <span class="abn-ico">&#x1F510;</span><span class="abn-lbl">Ledger</span>
+      <span class="abn-ico">&#x1F510;</span><span class="abn-lbl">My Hisab</span>
     </button>
     <button class="abn-btn" id="abn-todo" onclick="adminNav('todo',document.getElementById('ni-todo'));updateAdminBottomNav('todo')">
       <span class="abn-ico">&#x2705;</span><span class="abn-lbl">To-Do</span>
@@ -1317,13 +1360,12 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </div>
     </div>
     <div class="pg active" id="mpg-entries">
-      <div class="cbox" style="margin-bottom:14px">
-        <div class="cbox-hd"><div class="cbox-title">+ Add Entry</div></div>
-        <div class="cbox-body">
+      <div class="cbox" style="margin-bottom:8px">
+        <div class="cbox-body" style="padding:10px 12px">
           <div class="etype-tabs" id="mEntryTypeTabs">
-            <button class="etab sel-income" id="metab-income" onclick="selectMemberType('income',this)">&#x1F4B0; Income</button>
-            <button class="etab" id="metab-pe" onclick="selectMemberType('personal_expense',this)">&#x1F6CD;&#xFE0F; Personal Expense</button>
-            <button class="etab" id="metab-he" onclick="selectMemberType('home_expense',this)">&#x1F3E0; Home/Biz-Expense</button>
+            <button class="etab sel-income" id="metab-income" onclick="selectMemberType('income',this)">💰 Income</button>
+            <button class="etab" id="metab-pe" onclick="selectMemberType('personal_expense',this)">🛍️ Personal Expanse</button>
+            <button class="etab" id="metab-he" onclick="selectMemberType('home_expense',this)">🏠 Home/Biz Expanse</button>
           </div>
           <div class="inp-row">
             <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="mAmt" placeholder="0.00" min="0" inputmode="decimal"></div>
@@ -1333,7 +1375,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <div class="fg"><label>Description</label><input id="mDesc" placeholder="Details..."></div>
             <div class="fg"><label>Date</label><input type="date" id="mDate"></div>
           </div>
-          <button class="btn btn-primary btn-full" onclick="saveMemberEntry()">&#x1F4BE; Save Entry</button>
+          <button class="btn btn-primary btn-full" onclick="saveMemberEntry()" style="margin-top:10px;position:sticky;bottom:0;z-index:10">&#x1F4BE; Save Entry</button>
         </div>
       </div>
       <div class="cbox">
@@ -1349,9 +1391,9 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="df-bar" id="mLedgerDateBar"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 0">
           <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">&#x1F4CA; Stats</span>
-          <button class="stats-toggle-btn" onclick="toggleStats('mLedgerStats',this)" id="mLedgerStatsBtn">&#x25B2; Hide</button>
+          <button class="stats-toggle-btn" onclick="toggleStats('mLedgerStats',this)" id="mLedgerStatsBtn">&#x25BC; Show</button>
         </div>
-        <div class="stats-collapsible stat-grid" id="mLedgerStats" style="padding:14px 18px;border-bottom:1px solid var(--border)"></div>
+        <div class="stats-collapsible stat-grid" id="mLedgerStats" style="padding:10px 14px;border-bottom:1px solid var(--border);display:none"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border)">
           <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">&#x1F4CB; Entries</span>
           <button class="stats-toggle-btn" onclick="toggleLedgerSection('mLedgerBody',this)" id="mLedgerBodyBtn">&#x25B2; Hide</button>
@@ -1363,8 +1405,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     </div>
     <div class="pg" id="mpg-mtodo">
       <div class="cbox" style="margin-bottom:14px">
-        <div class="cbox-hd"><div class="cbox-title">+ Add Task</div></div>
-        <div class="cbox-body">
+        <div class="cbox-body" style="padding:10px 12px">
           <div class="inp-row"><div class="fg" style="grid-column:1/-1"><label>Task</label><input id="mTodoTitle" placeholder="What to do?"></div></div>
           <div class="inp-row">
             <div class="fg"><label>Priority</label><select id="mTodoPri"><option value="high">&#x1F534; High</option><option value="medium" selected>&#x1F7E1; Medium</option><option value="low">&#x1F7E2; Low</option></select></div>
@@ -1376,20 +1417,19 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="cbox"><div id="mTodoList"></div></div>
     </div>
     <div class="pg" id="mpg-mrem">
-      <div class="cbox" style="margin-bottom:14px">
-        <div class="cbox-hd"><div class="cbox-title">+ Add Reminder</div></div>
-        <div class="cbox-body">
+      <div class="cbox" style="margin-bottom:8px">
+        <div class="cbox-body" style="padding:10px 12px">
           <div class="inp-row"><div class="fg" style="grid-column:1/-1"><label>Title</label><input id="mRemTitle" placeholder="What to remind?"></div></div>
           <div class="inp-row">
             <div class="fg"><label>Due Date</label><input type="date" id="mRemDue"></div>
             <div class="fg"><label>Alert Time</label>
-              <div style="display:flex;gap:6px;align-items:center">
-                <input type="number" id="mRemHour" min="1" max="12" value="9" style="width:60px;padding:8px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:16px;text-align:center" placeholder="HH">
+              <div style="display:flex;gap:5px;align-items:center">
+                <input type="number" id="mRemHour" min="1" max="12" value="9" style="width:44px;padding:6px 4px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:14px;text-align:center" placeholder="HH">
                 <span style="font-weight:800;color:var(--muted)">:</span>
-                <input type="number" id="mRemMin" min="0" max="59" value="0" style="width:60px;padding:8px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:16px;text-align:center" placeholder="MM">
+                <input type="number" id="mRemMin" min="0" max="59" value="0" style="width:44px;padding:6px 4px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:14px;text-align:center" placeholder="MM">
                 <div style="display:flex;border-radius:var(--rsm);overflow:hidden;border:1.5px solid var(--border)">
-                  <button id="mRemAmBtn" onclick="setAmPm('mRem','AM')" style="padding:8px 12px;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700">AM</button>
-                  <button id="mRemPmBtn" onclick="setAmPm('mRem','PM')" style="padding:8px 12px;background:var(--s2);color:var(--muted);border:none;cursor:pointer;font-size:13px;font-weight:700">PM</button>
+                  <button id="mRemAmBtn" onclick="setAmPm('mRem','AM')" style="padding:6px 9px;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:700">AM</button>
+                  <button id="mRemPmBtn" onclick="setAmPm('mRem','PM')" style="padding:6px 9px;background:var(--s2);color:var(--muted);border:none;cursor:pointer;font-size:12px;font-weight:700">PM</button>
                 </div>
               </div>
             </div>
@@ -1672,7 +1712,7 @@ const DEF_HE=['🛒 Grocery','🏠 Rent / EMI','⚡ Electricity','💧 Water','�
 function getCats(){return{income:JSON.parse(localStorage.getItem('bp-cats-inc')||'null')||[...DEF_INC],pe:JSON.parse(localStorage.getItem('bp-cats-pe')||'null')||[...DEF_PE],he:JSON.parse(localStorage.getItem('bp-cats-he')||'null')||[...DEF_HE]};}
 function saveCats(c){localStorage.setItem('bp-cats-inc',JSON.stringify(c.income));localStorage.setItem('bp-cats-pe',JSON.stringify(c.pe));localStorage.setItem('bp-cats-he',JSON.stringify(c.he));}
 function getCatsForType(t){const c=getCats();if(t==='income')return c.income;if(t==='personal_expense')return c.pe;return c.he;}
-function populateCatSelect(selId,type){const sel=$id(selId);if(!sel)return;sel.innerHTML=getCatsForType(type).map(c=>`<option>${c}</option>`).join('');}
+function populateCatSelect(selId,type,defaultVal){const sel=$id(selId);if(!sel)return;const cats=getCatsForType(type);sel.innerHTML=cats.map(c=>`<option${(defaultVal&&c===defaultVal)||((!defaultVal)&&(c.toLowerCase().includes('otr')||c.toLowerCase().includes('other')))?` selected`:``}>${c}</option>`).join('');}
 
 // ==================== INIT ====================
 // ── EMBEDDED FIREBASE CONFIG — No setup screen needed ──
@@ -2693,7 +2733,7 @@ async function saveMemberEntry(){
   let m=membersCache.find(x=>x.id===currentMemberId);
   if(!m){try{await loadMembersForLogin();m=membersCache.find(x=>x.id===currentMemberId);}catch(e){}}
   if(!m){toast('Member not found. Re-login.','e');return;}
-  const col='private_entries';
+  const col=m.group==='A'?'entries':'private_entries';
   await uCol(col).add({memberId:currentMemberId,memberName:m.name,group:m.group,type:memberType,amount:amt,category:gv('mCat'),description:gv('mDesc'),date:gv('mDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   clearFields(['mAmt','mDesc']);toast('Entry saved!','s');renderMemberDash();renderMemberLedger();
 }
@@ -3085,7 +3125,7 @@ function viewAttHistory(mId,mNameEnc){
     if(listEl){
       if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
       listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px;font-weight:600">${a.date}</span>
+        <span style="font-size:13px;font-weight:600">${(()=>{try{const d=new Date(a.date);return isNaN(d)?a.date:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return a.date;}})()}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status}</span>
           <button onclick="deleteAttRecord('${mId}','${a.date}','${encodeURIComponent(mName)}')" style="background:rgba(248,81,73,.12);border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--red);font-weight:700;font-family:'Outfit',sans-serif">🗑️</button>
@@ -3097,7 +3137,11 @@ function viewAttHistory(mId,mNameEnc){
   modal.innerHTML=`<div class="modal" style="max-width:400px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column">
     <div class="mhd"><h3>📖 Attendance History</h3><div class="mclose" onclick="this.closest('.modal-ov').remove()">✕</div></div>
     <div style="font-size:14px;font-weight:800">${mName}</div>
-    ${m.role?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px">🎯 ${m.role}</div>`:'<div style="margin-bottom:8px"></div>'}
+    ${m.role?`<div style="font-size:11px;color:var(--muted)">🎯 ${m.role}</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;margin-top:3px">
+      ${m.phone?`<span style="font-size:11px;color:var(--muted)">📞 ${m.phone}</span>`:''}
+      ${m.joinDate?`<span style="font-size:11px;color:var(--muted)">📅 Joined: ${(()=>{try{const d=new Date(m.joinDate);return isNaN(d)?m.joinDate:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return m.joinDate;}})()}</span>`:''}
+    </div>
     <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
       <button id="ahtab-month" onclick="switchAttTab('month',this)" style="padding:4px 9px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">This Month</button>
       <button id="ahtab-prev" onclick="switchAttTab('prev',this)" style="padding:4px 9px;background:var(--s2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif;color:var(--text)">Prev Month</button>
@@ -3228,18 +3272,17 @@ async function renderMemberCards(){
     const todayColor=todayAtt?({'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'}[todayAtt.status]||'var(--muted)'):(m.lastAttDate===todayStr2?{'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'}[m.lastAttStatus]||'var(--muted)':'var(--muted)');
 
     html+=`<div class="mc">
+      <!-- Top row: Name + Role + Edit/Delete -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
             <span style="font-weight:800;font-size:15px">${m.name}</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(99,102,241,.12);color:var(--primary)">Today: <span style="color:${todayColor}">${todayLabel}</span></span>
+            ${m.role?`<span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(244,162,97,.12);border-radius:6px;padding:1px 7px">🎯 ${m.role}</span>`:''}
           </div>
-          ${m.role?`<div style="font-size:11px;color:var(--muted);margin-top:2px">🎯 ${m.role}${m.type?' · '+m.type:''}</div>`:''}
-          ${m.phone?`<div style="font-size:11px;color:var(--muted)">📞 ${m.phone}</div>`:''}
+          <!-- Today + Salary in one row -->
           <div style="margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-            ${m.userId?`<span style="background:rgba(99,102,241,.15);color:var(--primary);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:800;font-family:monospace">ID: ${m.userId}</span>`:''}
-            ${m.salary?`<span style="background:rgba(63,185,80,.1);color:var(--green);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700">₹${fmt(m.salary)}/mo</span>`:''}
-            ${m.joinDate?`<span style="font-size:10px;color:var(--muted)">Joined: ${m.joinDate}</span>`:''}
+            <span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;background:rgba(99,102,241,.12);color:var(--primary)">Today: <span style="color:${todayColor}">${todayLabel}</span></span>
+            ${m.salary?`<span style="background:rgba(63,185,80,.1);color:var(--green);border-radius:8px;padding:1px 7px;font-size:10px;font-weight:700">₹${fmt(m.salary)}/mo</span>`:''}
           </div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
@@ -3248,34 +3291,28 @@ async function renderMemberCards(){
         </div>
       </div>
       <!-- Attendance Summary -->
-      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 10px;margin-bottom:8px">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📋 Attendance Summary</div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:6px 8px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">📋 Attendance</div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;text-align:center">
-          <div style="background:rgba(63,185,80,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--green)">${fullDays}</div><div style="font-size:9px;color:var(--muted)">Full</div></div>
-          <div style="background:rgba(249,115,22,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--orange)">${halfDays}</div><div style="font-size:9px;color:var(--muted)">Half</div></div>
-          <div style="background:rgba(248,81,73,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--red)">${absentDays}</div><div style="font-size:9px;color:var(--muted)">Absent</div></div>
-          <div style="background:rgba(88,166,255,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--blue)">${leaveDays}</div><div style="font-size:9px;color:var(--muted)">Leave</div></div>
-          <div style="background:rgba(6,182,212,.1);border-radius:4px;padding:4px 2px"><div style="font-size:13px;font-weight:800;color:var(--cyan)">${holidayDays}</div><div style="font-size:9px;color:var(--muted)">Holi.</div></div>
+          <div style="background:rgba(63,185,80,.1);border-radius:4px;padding:3px 2px"><div style="font-size:12px;font-weight:800;color:var(--green)">${fullDays}</div><div style="font-size:9px;color:var(--muted)">Full</div></div>
+          <div style="background:rgba(249,115,22,.1);border-radius:4px;padding:3px 2px"><div style="font-size:12px;font-weight:800;color:var(--orange)">${halfDays}</div><div style="font-size:9px;color:var(--muted)">Half</div></div>
+          <div style="background:rgba(248,81,73,.1);border-radius:4px;padding:3px 2px"><div style="font-size:12px;font-weight:800;color:var(--red)">${absentDays}</div><div style="font-size:9px;color:var(--muted)">Absent</div></div>
+          <div style="background:rgba(88,166,255,.1);border-radius:4px;padding:3px 2px"><div style="font-size:12px;font-weight:800;color:var(--blue)">${leaveDays}</div><div style="font-size:9px;color:var(--muted)">Leave</div></div>
+          <div style="background:rgba(6,182,212,.1);border-radius:4px;padding:3px 2px"><div style="font-size:12px;font-weight:800;color:var(--cyan)">${holidayDays}</div><div style="font-size:9px;color:var(--muted)">Holi.</div></div>
         </div>
       </div>
-      <!-- Entries stats -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;font-size:12px">
-        <div style="background:rgba(63,185,80,.1);border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Income</span><br><span class="amt-pos">₹${fmt(inc)}</span></div>
-        <div style="background:rgba(248,81,73,.1);border-radius:5px;padding:5px 8px"><span style="color:var(--muted);font-size:10px">Expense</span><br><span class="amt-neg">₹${fmt(pe+he)}</span></div>
+      <!-- Income/Expense + Password in 1 row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;font-size:12px">
+        <div style="background:rgba(63,185,80,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Income</div><div class="amt-pos" style="font-size:12px">₹${fmt(inc)}</div></div>
+        <div style="background:rgba(248,81,73,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Expense</div><div class="amt-neg" style="font-size:12px">₹${fmt(pe+he)}</div></div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">🔑 Pass</div><div style="font-size:11px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password||'—'}</div></div>
       </div>
-      <!-- Password -->
-      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;color:var(--muted);font-weight:600">&#x1F512; Password:</span>
-        <span style="font-size:12px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password||'—'}</span>
-      </div>
-      <!-- Action Buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
-        <button class="btn btn-primary btn-sm" onclick="copyText('${link}',this)" style="font-size:11px;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔗 Staff Link</button>
-        <button class="btn btn-ghost btn-sm" onclick="viewStaffLedger('${m.id}','${nameEsc}')" style="font-size:11px;padding:6px 4px;white-space:nowrap">📋 Ledger</button>
-      </div>
+      <!-- Action Buttons: 2x2 grid -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
-        <button class="btn btn-sm" style="background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:11px;padding:6px 4px;white-space:nowrap" onclick="markAttendance('${m.id}','${encodeURIComponent(m.name)}')">📋 Mark Att.</button>
-        <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:11px;padding:6px 4px;white-space:nowrap" onclick="viewAttHistory('${m.id}','${encodeURIComponent(m.name)}')">📖 History</button>
+        <button class="btn btn-primary btn-sm" onclick="copyText('${link}',this)">&#x1F517; Staff Link</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewStaffLedger('${m.id}','${nameEsc}')">&#x1F4CB; Ledger</button>
+        <button class="btn btn-sm" style="background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="markAttendance('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4CB; Mark Att.</button>
+        <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3);font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer" onclick="viewAttHistory('${m.id}','${encodeURIComponent(m.name)}')">&#x1F4D6; History</button>
       </div>
     </div>`;
   }
@@ -3490,15 +3527,16 @@ function initExportPage(){
   // Set default to This Month
   setExportPeriod('month',$id('expTab-month'));
 }
-async function downloadPDF(type){
+async function downloadPDF(type,df){
   const statusEl=$id('pdfStatus');
   if(statusEl){statusEl.style.display='block';statusEl.textContent='⏳ Generating PDF...';}
-
+  const activeDF=df||exportDF;
   try{
     let entries=[];
-    const fromD=exportDF.from||'2020-01-01',toD=exportDF.to||'2099-12-31';
-    const hasFilter=exportDF.mode&&exportDF.mode!=='all';
+    const fromD=activeDF.from||'2020-01-01',toD=activeDF.to||'2099-12-31';
+    const hasFilter=activeDF.mode&&activeDF.mode!=='all';
     const dateFilter=e=>!hasFilter||(e.date&&e.date>=fromD&&e.date<=toD);
+    const periodLabel=hasFilter?(activeDF.mode==='today'?'Today':activeDF.mode==='week'?'This Week':activeDF.mode==='month'?'This Month':`${fromD} to ${toD}`):'All Time';
 
     if(type==='admin'){
       // MY Hisab-private: load admin_entries
@@ -3520,7 +3558,6 @@ async function downloadPDF(type){
     const net=inc-exp;
     const now=new Date();
     const adminName=$id('adminDisplayName')?.textContent||'Admin';
-    const periodLabel=hasFilter?`${fromD} to ${toD}`:'All Time';
     const typeLabel={'all':'All Entries','income':'Income Only','personal_expense':'Personal Expense','home_expense':'Home/Biz-Expense','admin':'MY Hisab-private'}[type]||type;
     const typeMap={'income':'💰 Income','personal_expense':'🛍️ Personal Exp.','home_expense':'🏠 Home/Biz Exp.'};
 
@@ -3643,36 +3680,29 @@ async function exportCSV(type){
 }
 
 async function genReport(){
-  // Always fetch fresh data (use cached onSnapshot data if available)
   let entriesA=window._grpaEntries||[];
   let entriesB=window._adminPrivEntries||[];
-  // If cache empty, fetch fresh
-  if(!entriesA.length){
-    const snap=await uCol('entries').where('deleted','==',false).get();
-    entriesA=snap.docs.map(d=>({_id:d.id,...d.data()}));
-    window._grpaEntries=entriesA;
-  }
-  if(!entriesB.length){
-    const snap=await uCol('private_entries').where('deleted','==',false).get();
-    entriesB=snap.docs.map(d=>({_id:d.id,...d.data()}));
-    window._adminPrivEntries=entriesB;
-  }
-  const entries=[...entriesA,...entriesB];
-  
+  if(!entriesA.length){const snap=await uCol('entries').where('deleted','==',false).get();entriesA=snap.docs.map(d=>({_id:d.id,...d.data()}));window._grpaEntries=entriesA;}
+  if(!entriesB.length){const snap=await uCol('private_entries').where('deleted','==',false).get();entriesB=snap.docs.map(d=>({_id:d.id,...d.data()}));window._adminPrivEntries=entriesB;}
+  let entries=[...entriesA,...entriesB];
+  // Apply exportDF date filter
+  const fromD=exportDF.from||'2020-01-01',toD=exportDF.to||'2099-12-31';
+  const hasFilter=exportDF.mode&&exportDF.mode!=='all';
+  if(hasFilter)entries=entries.filter(e=>e.date&&e.date>=fromD&&e.date<=toD);
+  const periodLabel=hasFilter?(exportDF.mode==='today'?'Today':exportDF.mode==='week'?'This Week':exportDF.mode==='month'?'This Month':`${fromD} → ${toD}`):'All Time';
+
   const inc=sum(entries,'income'),pe=sum(entries,'personal_expense'),he=sum(entries,'home_expense');
   const exp=pe+he,net=inc-exp;
   const nl='\n';
   const now=new Date();
-  
-  // Per-member breakdown
   const memberLines=membersCache.map(m=>{
     const me=entries.filter(e=>e.memberId===m.id);
     const mi=sum(me,'income'),mexp=sum(me,'personal_expense')+sum(me,'home_expense');
     return`  ${m.name}${m.role?' ('+m.role+')':''}: Income ₹${fmt(mi)} | Expense ₹${fmt(mexp)} | Net ₹${fmt(mi-mexp)}`;
   }).join(nl);
-  
   const rpt=
     'BizPro Summary Report'+nl+
+    'Period: '+periodLabel+nl+
     now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+nl+
     '='.repeat(40)+nl+
     'FINANCIAL SUMMARY'+nl+
@@ -3685,10 +3715,9 @@ async function genReport(){
     '='.repeat(40)+nl+
     'Total Entries: '+entries.length+nl+
     'Generated: '+now.toLocaleString('en-IN');
-    
   $id('reportText').value=rpt;
   $id('reportOut').style.display='block';
-  toast('Report generated!','s');
+  toast('Report generated — Period: '+periodLabel,'s');
 }
 
 // ==================== CATEGORIES ====================
@@ -4144,9 +4173,9 @@ function nbRenderFolders(){
       ondrop="nbDrop(event,'folder','${f.id}')"
       ondragend="nbDragEnd(event)">
       <span class="nb-drag-handle">⠿</span>
-      <div class="nb-folder-ico" style="background:${col}22;color:${col}">📁</div>
+      <div class="nb-folder-ico" style="background:${col}22;color:${col}">${f.isPrivate?'🔒':'📁'}</div>
       <div style="flex:1;min-width:0;cursor:pointer" onclick="nbOpenFolder('${f.id}')">
-        <div style="font-weight:800;font-size:14px">${f.name||'Folder'}</div>
+        <div style="font-weight:800;font-size:14px">${f.name||'Folder'}${f.isPrivate?'<span style="margin-left:6px;font-size:9px;font-weight:800;background:rgba(188,140,255,.18);color:var(--purple);border:1px solid rgba(188,140,255,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">PRIVATE</span>':''}</div>
         <div style="font-size:11px;color:var(--muted)">${noteCount} note${noteCount!==1?'s':''}</div>
       </div>
       <div style="display:flex;gap:5px;flex-shrink:0;align-items:center">
@@ -4246,11 +4275,9 @@ function nbRenderNotes(){
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:13px;margin-bottom:4px">${n.title||'Untitled'}</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.5">${(n.content||'').substring(0,200)}${(n.content||'').length>200?'...':''}</div>
+          ${(()=>{const ct=n.updatedAt||n.clientCreatedAt||n.createdAt;let ts='';try{if(ct&&typeof ct==='object'&&ct.toDate)ts=ct.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});else if(ct&&typeof ct==='object'&&ct.seconds)ts=new Date(ct.seconds*1000).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});else if(typeof ct==='string')ts=new Date(ct).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});}catch(e){}return ts?`<div style="font-size:10px;color:var(--muted);margin-top:5px">🕐 ${ts}</div>`:'';})()} 
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
-          <button onclick="nbAddNote()"
-            style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;font-weight:700;color:var(--primary);font-family:'Outfit',sans-serif"
-            title="New Note">✏️ New</button>
           <button onclick="nbCycleNoteColor('${n.id}')"
             style="background:${noteCol};border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;flex-shrink:0" title="Change color"></button>
           <button onclick="nbEditNote('${n.id}')"
@@ -4380,7 +4407,7 @@ function saveMemberNote(){saveNote(currentMemberId);}
 function loadMemberData(mId){
   currentMemberId=mId;
   const m=membersCache.find(x=>x.id===mId)||{group:'B'};
-  const col='private_entries';
+  const col=m.group==='A'?'entries':'private_entries';
 
   // Safety: ensure currentUid is set
   if(!currentUid){const s=localStorage.getItem('bp-admin-uid');if(s)currentUid=s;else{console.error('loadMemberData: no currentUid');return;}}
@@ -4448,7 +4475,7 @@ async function renderMemberLedger(){
   let entries=window._memberEntriesCache||[];
   if(!entries.length&&!window._memberEntriesCache){
     const m=membersCache.find(x=>x.id===currentMemberId)||{group:'B'};
-    const col='private_entries';
+    const col=m.group==='A'?'entries':'private_entries';
     const snap=await uCol(col).where('memberId','==',currentMemberId).where('deleted','==',false).get();
     entries=snap.docs.map(d=>({_id:d.id,...d.data()}));
   } else {
@@ -4717,7 +4744,7 @@ function renderMattContent(filter,fromDate,toDate){
   if(listEl){
     if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
     listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;font-weight:600">${a.date||'—'}</span>
+      <span style="font-size:13px;font-weight:600">${(()=>{try{const d=new Date(a.date);return isNaN(d)?a.date:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return a.date;}})()}</span>
       <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status||'—'}</span>
     </div>`).join('');
   }
@@ -4810,6 +4837,13 @@ function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(v=>'"'+String(v)
 
 // ==================== INVENTORY ====================
 let invDF={mode:'all'};
+let _invSortOrder='new';
+function toggleInvSort(){
+  _invSortOrder=_invSortOrder==='new'?'old':'new';
+  const btn=$id('invSortBtn');
+  if(btn)btn.innerHTML=_invSortOrder==='new'?'&#x1F53D; New→Old':'&#x1F53C; Old→New';
+  renderInventory();
+}
 
 function initInventoryPage(){
   setToday('invDate');
@@ -5036,7 +5070,7 @@ async function renderInventory(){
   const catalogItems=items.filter(i=>i.catalogOnly);
   let purchaseItems=items.filter(i=>!i.catalogOnly);
   purchaseItems=applyDF(purchaseItems,invDF);
-  _sortEntries(purchaseItems);
+  purchaseItems.sort((a,b)=>_invSortOrder==='new'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
   syncDF('invDateBar');
   const tbody=$id('invTbody');if(!tbody)return;
   const totalCost=purchaseItems.reduce((s,i)=>s+(i.totalCost||0),0);
@@ -5056,7 +5090,7 @@ async function renderInventory(){
       <td style="color:var(--muted)">—</td>
       <td>${i.sellPrice>0?'<span class="amt-pos">₹'+fmt(i.sellPrice)+'</span>':'<span style="color:var(--muted)">—</span>'}</td>
       <td><span style="font-size:10px;color:var(--cyan)">Catalog</span></td>
-      <td style="white-space:nowrap;display:flex;gap:4px">
+      <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:nowrap;min-width:90px">
         <button class="btn btn-ghost btn-sm btn-icon" title="Edit" onclick="editInvCatalogItem('${i._id}')">✏️</button>
         <button class="btn btn-primary btn-sm btn-icon" title="Purchase" onclick="quickPurchaseItem('${i._id}')">🛒</button>
         <button class="btn btn-danger btn-sm btn-icon" onclick="delInventoryItem('${i._id}')">🗑️</button>
@@ -5084,9 +5118,39 @@ async function renderInventory(){
 }
 
 async function delInventoryItem(docId){
-  confirm2('Delete Stock Item?','Expense entry will remain in accounting.',async()=>{
-    await uCol('inventory').doc(docId).update({deleted:true});
-    toast('Item removed','i');renderInventory();
+  confirm2('Delete Stock Item?','Linked expense entry will also be deleted.',async()=>{
+    try{
+      const snap=await uCol('inventory').doc(docId).get();
+      if(!snap.exists){toast('Item not found','e');return;}
+      const item={...snap.data(),_id:docId};
+      // Mark inventory deleted — do NOT save inventory record to deleted_log (causes empty entries)
+      await uCol('inventory').doc(docId).update({deleted:true});
+      // Delete linked expense from admin_entries (MY Hisab)
+      if(item.folderId && item.totalCost>0 && item.name){
+        const aSnap=await uCol('admin_entries').where('folderId','==',item.folderId).where('category','==','📦 Stock Purchase').where('deleted','==',false).get();
+        for(const d of aSnap.docs){
+          const dd=d.data();
+          if(dd.amount===item.totalCost && (dd.description||'').includes(item.name)){
+            await uCol('deleted_log').add({...dd,_originalId:d.id,_collection:'admin_entries',deletedAt:new Date().toISOString(),deletedBy:currentUser?.name||'Admin'});
+            await d.ref.update({deleted:true});break;
+          }
+        }
+      }
+      // Delete linked expense from entries/private_entries (staff)
+      if(item.memberId && item.totalCost>0 && item.name){
+        const col=item.group==='A'?'entries':'private_entries';
+        const sSnap=await uCol(col).where('memberId','==',item.memberId).where('category','==','📦 Stock Purchase').where('deleted','==',false).get();
+        for(const d of sSnap.docs){
+          const dd=d.data();
+          if(dd.amount===item.totalCost && (dd.description||'').includes(item.name)){
+            await uCol('deleted_log').add({...dd,_originalId:d.id,_collection:col,deletedAt:new Date().toISOString(),deletedBy:currentUser?.name||'Admin'});
+            await d.ref.update({deleted:true});break;
+          }
+        }
+      }
+      toast('Deleted ✅','s');
+      renderInventory();
+    }catch(e){console.error(e);toast('Error deleting item','e');}
   });
 }
 
