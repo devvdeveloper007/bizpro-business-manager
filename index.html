@@ -57,7 +57,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 34px;width:100%;max-width:400px;box-shadow:var(--sh);position:relative;}
 .login-logo{text-align:center;margin-bottom:26px;}
 .login-logo .lico{width:60px;height:60px;background:linear-gradient(135deg,var(--primary),#818cf8);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:11px;box-shadow:0 8px 24px var(--pglow);}
-.login-logo h1{font-size:28px;font-weight:900;background:linear-gradient(to right,var(--text),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-logo h1{font-size:28px;font-weight:900;background:linear-gradient(to right,var(--text),#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .login-tabs{display:flex;gap:6px;margin-bottom:22px;}
 .ltab{flex:1;padding:9px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--rsm);font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--tr);color:var(--muted);}
 .ltab.active{background:var(--primary);border-color:var(--primary);color:#fff;}
@@ -264,6 +264,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   .sidebar.open{transform:translateX(0);}
   .content{margin-left:0;width:100%;min-width:0;}
   .hamburger{display:flex;}
+  .topbar-logout-btn{display:flex!important;}
+  .topbar-logout-txt{display:inline!important;}
   .app-layout{width:100%;overflow-x:hidden;}
 
   /* Topbar */
@@ -612,6 +614,19 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           <button type="button" onclick="const i=$id('memberPwIn');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁️':'🙈'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;padding:0;line-height:1">👁️</button>
         </div>
       </div>
+      <!-- Staff Passkey Login Button (shows after passkey registered) -->
+      <div id="mPasskeyLoginWrap" style="display:none;margin-bottom:10px">
+        <button class="btn btn-full" onclick="doMemberPasskeyLogin()" id="mPasskeyLoginBtn"
+          style="background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;padding:12px;border-radius:10px;border:none;width:100%;cursor:pointer">
+          <span style="font-size:20px">&#x1F4F1;</span>
+          <span>Login with Fingerprint / Face ID</span>
+        </button>
+        <div style="display:flex;align-items:center;gap:8px;margin:10px 0">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:11px;color:var(--muted)">or use password</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+      </div>
       <button class="btn btn-primary btn-full" id="memberLoginBtn" onclick="doMemberLogin()">&#x1F513; Login as Staff</button>
       <!-- Change Password section -->
       <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
@@ -626,6 +641,21 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <button class="btn btn-ghost btn-full" id="memberChangePwToggle" onclick="toggleMemberChangePw(true)" style="font-size:12px;margin-top:8px">&#x270F;&#xFE0F; Change My Password</button>
       </div>
+
+      <!-- Staff Passkey Setting -->
+      <div id="mPasskeySettingRow" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700">&#x1F511; Passkey / Biometric Login</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px" id="mPasskeyStatusText">Login quickly with Fingerprint or Face ID</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-primary btn-sm" id="mPasskeyRegisterBtn" onclick="registerMemberPasskey()" style="font-size:11px;padding:5px 10px">&#x1F4F1; Setup</button>
+            <button class="btn btn-danger btn-sm" id="mPasskeyRemoveBtn" style="display:none;font-size:11px;padding:5px 10px" onclick="removeMemberPasskey()">&#x1F5D1;&#xFE0F; Remove</button>
+          </div>
+        </div>
+      </div>
+
       <p style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">Or use your personal link shared by Admin</p>
       <!-- Hidden select kept for link-based login compatibility -->
       <select id="memberSelect" style="display:none" onchange="onMemberSelect()"><option value="">-- Select member --</option></select>
@@ -678,6 +708,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div style="display:flex;align-items:center;gap:6px">
       <div style="font-size:10px;color:var(--muted)" id="adminDate"></div>
       <div style="font-size:12px;font-weight:800;color:var(--primary)" id="liveTime">--:--</div>
+      <button onclick="doLogout()" class="topbar-logout-btn" style="display:none;align-items:center;gap:3px;padding:5px 10px;background:transparent;border:1.5px solid rgba(248,81,73,.4);border-radius:var(--rsm);color:var(--red);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">&#x1F6AA; <span class="topbar-logout-txt">Logout</span></button>
     </div>
   </div>
   <div class="pw">
@@ -822,23 +853,25 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <button class="btn btn-ghost btn-sm btn-icon" id="myaccRenameBtn" onclick="renameActiveFolder()" title="Rename folder" style="font-size:13px">✏️</button>
         <button class="btn btn-danger btn-sm btn-icon" id="myaccDeleteBtn" onclick="deleteActiveFolder()" title="Delete folder" style="font-size:13px">🗑️</button>
       </div>
-      <!-- Row 2: Folder tabs — horizontal scroll -->
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 10px;display:flex;gap:5px;flex-wrap:nowrap;scrollbar-width:none">
+      <!-- Row 2: Folder boxes — horizontal scroll -->
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 12px;display:flex;gap:8px;flex-wrap:nowrap;scrollbar-width:none">
         <div class="folder-tabs" id="folderTabsBar" style="display:contents"></div>
       </div>
     </div>
     <div id="myaccContent" style="display:none">
       <div class="cbox" style="margin:0 0 14px">
         <!-- Folder name + type buttons in one compact row -->
-        <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          <div style="display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center">
           <span style="font-size:12px;font-weight:800;color:var(--muted);flex-shrink:0">📁</span>
           <span style="font-size:13px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="activeFolderName">Select Folder</span>
-          <div style="display:flex;gap:4px;flex-shrink:0" id="myaccTypeTabs">
-            <button class="etab sel-income" onclick="selectMyaccType('income',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F4B0; Income</button>
-            <button class="etab" onclick="selectMyaccType('personal_expense',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F6CD;&#xFE0F; Personal Expanse ↓</button>
-            <button class="etab" onclick="selectMyaccType('home_expense',this)" style="padding:4px 9px;font-size:11px;margin:0">&#x1F3E0; Home/Biz Expanse ↓</button>
+          <div id="myaccTypeTabs" style="width:100%;display:flex;flex-direction:column;gap:4px;margin-top:6px">
+            <button class="etab sel-income" onclick="selectMyaccType('income',this)" style="width:100%;padding:7px;font-size:12px;margin:0;text-align:center">&#x1F4B0; Income</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+              <button class="etab" onclick="selectMyaccType('personal_expense',this)" style="padding:7px 4px;font-size:11px;margin:0;text-align:center">&#x1F6CD;&#xFE0F; Personal Expanse ↓</button>
+              <button class="etab" onclick="selectMyaccType('home_expense',this)" style="padding:7px 4px;font-size:11px;margin:0;text-align:center">&#x1F3E0; Home/Biz Expanse ↓</button>
+            </div>
           </div>
-        </div>
+          </div>
         <div class="cbox-body">
           <div class="inp-row">
             <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="myaccAmt" placeholder="0.00" min="0"></div>
@@ -1227,14 +1260,13 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <div class="inp-row">
           <div class="fg"><label>Purchase Price / Unit (&#x20B9;)</label><input type="number" id="invPrice" placeholder="0.00" min="0"></div>
-          <div class="fg"><label>Selling Price / Unit (&#x20B9;) (optional)</label><input type="number" id="invSellPrice" placeholder="0.00" min="0"></div>
         </div>
         <div id="invPurchaseFields">
           <div class="inp-row">
             <div class="fg"><label>Quantity</label><input type="number" id="invQty" placeholder="e.g. 10" min="1"></div>
             <div class="fg"><label>Purchase Date</label><input type="date" id="invDate"></div>
           </div>
-          <div class="inp-row">
+          <div class="inp-row" style="grid-template-columns:1fr">
             <div class="fg"><label>Target (expense will be recorded here)</label>
               <select id="invTarget">
                 <option value="grpb" selected>Staff (Home/Biz-Expense)</option>
@@ -1262,7 +1294,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       </div>
       <div class="df-bar" id="invDateBar"></div>
       <div class="tbl-wrap"><table class="dt" style="min-width:520px">
-        <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit</th><th>Buy ₹</th><th>Total</th><th>Sell ₹</th><th>Target</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Unit</th><th>Buy ₹</th><th>Total</th><th>Target</th><th></th></tr></thead>
         <tbody id="invTbody"></tbody>
       </table></div>
     </div>
@@ -1271,7 +1303,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
 <!-- INSTAGRAM-STYLE MOBILE BOTTOM NAV -->
 <div id="adminBottomNav">
-  <div class="abn-wrap">
+  <div class="abn-wrap" style="grid-template-columns:repeat(6,1fr)">
     <button class="abn-btn" id="abn-myacc" onclick="adminNav('myacc',document.getElementById('ni-myacc'));updateAdminBottomNav('myacc')">
       <span class="abn-ico">&#x1F510;</span><span class="abn-lbl">My Hisab</span>
     </button>
@@ -1302,9 +1334,9 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div><div style="font-size:14px;font-weight:800">BizPro</div><div style="font-size:10px;color:var(--muted)" id="mAppUserLabel">Staff</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:7px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:700" id="mAppName">--</div><div style="font-size:10px;color:var(--muted)" id="mAppGroup">--</div></div>
+      <div style="text-align:right;min-width:0;overflow:hidden"><div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px" id="mAppName">--</div><div style="font-size:10px;color:var(--muted)" id="mAppGroup">--</div></div>
       <button class="theme-btn" onclick="toggleTheme()" id="mThemeBtn">&#x1F319;</button>
-      <button class="logout-btn" style="width:auto;padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px" onclick="doLogout()">&#x1F6AA; Logout</button>
+      <button class="logout-btn" style="width:auto;padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;flex-shrink:0" onclick="doLogout()">&#x1F6AA; Logout</button>
     </div>
   </div>
   <!-- Hidden nav items (used by JS only, bottom nav is visible) -->
@@ -1317,22 +1349,22 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
   </div>
 
   <!-- STAFF MOBILE BOTTOM NAV (5 buttons) -->
-  <div id="memberBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--surface);border-top:1px solid var(--border);padding:5px 0 env(safe-area-inset-bottom,5px);box-shadow:0 -2px 12px rgba(0,0,0,.15)">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr)">
-      <button class="mbn-btn active" id="mbn-entries" onclick="memberNav('entries',document.getElementById('mni-entries'));updateMemberBottomNav('entries')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
-        <span style="font-size:18px">&#x1F4B0;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--primary)">Entries</span>
+  <div id="memberBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--surface);border-top:1px solid var(--border);padding:2px 0 env(safe-area-inset-bottom,2px);box-shadow:0 -2px 12px rgba(0,0,0,.15)">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);width:100%">
+      <button class="mbn-btn active" id="mbn-entries" onclick="memberNav('entries',document.getElementById('mni-entries'));updateMemberBottomNav('entries')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 0;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;width:100%">
+        <span style="font-size:15px">&#x1F4B0;</span><span class="mbn-lbl" style="font-size:8px;font-weight:700;color:var(--primary)">Entries</span>
       </button>
-      <button class="mbn-btn" id="mbn-mtodo" onclick="memberNav('mtodo',document.getElementById('mni-mtodo'));updateMemberBottomNav('mtodo')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
-        <span style="font-size:18px">&#x2705;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">To-Do</span>
+      <button class="mbn-btn" id="mbn-mtodo" onclick="memberNav('mtodo',document.getElementById('mni-mtodo'));updateMemberBottomNav('mtodo')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 0;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;width:100%">
+        <span style="font-size:15px">&#x2705;</span><span class="mbn-lbl" style="font-size:8px;font-weight:700;color:var(--muted)">To-Do</span>
       </button>
-      <button class="mbn-btn" id="mbn-mrem" onclick="memberNav('mrem',document.getElementById('mni-mrem'));updateMemberBottomNav('mrem')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
-        <span style="font-size:18px">&#x1F514;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Reminders</span>
+      <button class="mbn-btn" id="mbn-mrem" onclick="memberNav('mrem',document.getElementById('mni-mrem'));updateMemberBottomNav('mrem')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 0;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;width:100%">
+        <span style="font-size:15px">&#x1F514;</span><span class="mbn-lbl" style="font-size:8px;font-weight:700;color:var(--muted)">Reminders</span>
       </button>
-      <button class="mbn-btn" id="mbn-mnotes" onclick="memberNav('mnotes',document.getElementById('mni-mnotes'));updateMemberBottomNav('mnotes')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
-        <span style="font-size:18px">&#x1F4D3;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Notebook</span>
+      <button class="mbn-btn" id="mbn-mnotes" onclick="memberNav('mnotes',document.getElementById('mni-mnotes'));updateMemberBottomNav('mnotes')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 0;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;width:100%">
+        <span style="font-size:15px">&#x1F4D3;</span><span class="mbn-lbl" style="font-size:8px;font-weight:700;color:var(--muted)">Notebook</span>
       </button>
-      <button class="mbn-btn" id="mbn-matt" onclick="memberNav('matt',document.getElementById('mni-matt'));updateMemberBottomNav('matt')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif">
-        <span style="font-size:18px">&#x1F4CB;</span><span class="mbn-lbl" style="font-size:9px;font-weight:700;color:var(--muted)">Att.</span>
+      <button class="mbn-btn" id="mbn-matt" onclick="memberNav('matt',document.getElementById('mni-matt'));updateMemberBottomNav('matt')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 0;background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;width:100%">
+        <span style="font-size:15px">&#x1F4CB;</span><span class="mbn-lbl" style="font-size:8px;font-weight:700;color:var(--muted)">Att.</span>
       </button>
     </div>
   </div>
@@ -1349,12 +1381,15 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="cbox">
         <div class="cbox-hd">
           <div class="cbox-title">&#x1F4CB; Entries</div>
-          <select class="srch" id="mDashFilterType" onchange="renderMemberDash()" style="font-size:12px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-ghost btn-sm" id="mDashSortBtn" onclick="toggleLedgerSort()">&#x1F53D; New→Old</button>
+            <select class="srch" id="mDashFilterType" onchange="renderMemberDash()" style="font-size:12px">
             <option value="all">All Types</option>
             <option value="income">Income</option>
             <option value="personal_expense">Personal Expense</option>
             <option value="home_expense">Home/Biz-Expense</option>
           </select>
+          </div>
         </div>
         <div class="tbl-wrap"><table class="dt"><thead><tr><th class="col-date">Date</th><th>Type</th><th class="col-cat">Category</th><th class="col-desc">Description</th><th class="col-amt">Amount</th></tr></thead><tbody id="mRecentTbody"></tbody></table></div>
       </div>
@@ -1362,10 +1397,12 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div class="pg active" id="mpg-entries">
       <div class="cbox" style="margin-bottom:8px">
         <div class="cbox-body" style="padding:10px 12px">
-          <div class="etype-tabs" id="mEntryTypeTabs">
-            <button class="etab sel-income" id="metab-income" onclick="selectMemberType('income',this)">💰 Income</button>
-            <button class="etab" id="metab-pe" onclick="selectMemberType('personal_expense',this)">🛍️ Personal Expanse</button>
-            <button class="etab" id="metab-he" onclick="selectMemberType('home_expense',this)">🏠 Home/Biz Expanse</button>
+          <div id="mEntryTypeTabs" style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+            <button class="etab sel-income" id="metab-income" onclick="selectMemberType('income',this)" style="width:100%;padding:7px;font-size:12px;margin:0;text-align:center">💰 Income</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+              <button class="etab" id="metab-pe" onclick="selectMemberType('personal_expense',this)" style="padding:7px 4px;font-size:11px;margin:0;text-align:center">🛍️ Personal Expanse</button>
+              <button class="etab" id="metab-he" onclick="selectMemberType('home_expense',this)" style="padding:7px 4px;font-size:11px;margin:0;text-align:center">🏠 Home/Biz Expanse</button>
+            </div>
           </div>
           <div class="inp-row">
             <div class="fg"><label>Amount (&#x20B9;)</label><input type="number" id="mAmt" placeholder="0.00" min="0" inputmode="decimal"></div>
@@ -1396,7 +1433,7 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="stats-collapsible stat-grid" id="mLedgerStats" style="padding:10px 14px;border-bottom:1px solid var(--border);display:none"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border)">
           <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">&#x1F4CB; Entries</span>
-          <button class="stats-toggle-btn" onclick="toggleLedgerSection('mLedgerBody',this)" id="mLedgerBodyBtn">&#x25B2; Hide</button>
+          <button class="btn btn-ghost btn-sm" id="mLedgerSortBtn" onclick="toggleLedgerSort()">&#x1F53D; New→Old</button>
         </div>
         <div id="mLedgerBody">
           <div class="tbl-wrap"><table class="dt"><thead><tr><th class="col-date">Date</th><th>Type</th><th class="col-cat">Category</th><th class="col-desc">Description</th><th class="col-amt">Amount</th><th class="col-act"></th></tr></thead><tbody id="mLedgerTbody"></tbody></table></div>
@@ -1454,7 +1491,33 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <!-- MY ATTENDANCE PAGE (Read-only for staff) -->
     <div class="pg" id="mpg-matt">
       <h2 style="font-size:17px;font-weight:800;margin-bottom:2px">&#x1F4CB; My Attendance</h2>
-      <p style="font-size:11px;color:var(--muted);margin-bottom:12px">View-only — marked by your admin</p>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px">View-only — marked by your admin</p>
+
+      <!-- ══ Passkey Setup Card (Permanent — Attendance page top) ══ -->
+      <div id="mPasskeySetupBanner" style="display:none;position:relative;margin-bottom:14px;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(129,140,248,0.1));border:1.5px solid rgba(99,102,241,0.5);border-radius:12px;padding:13px 14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:28px;flex-shrink:0">📱</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:var(--primary)">Passkey / Biometric Setup</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Login quickly with Fingerprint or Face ID</div>
+          </div>
+        </div>
+        <button onclick="registerMemberPasskey()" style="margin-top:10px;width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span>📱</span><span>Setup Fingerprint / Face ID Login</span>
+        </button>
+      </div>
+
+      <!-- ══ Passkey Registered Card (dikhega jab registered ho) ══ -->
+      <div id="mPasskeyRegisteredCard" style="display:none;position:relative;margin-bottom:14px;background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(16,185,129,0.08));border:1.5px solid rgba(34,197,94,0.4);border-radius:12px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px;flex-shrink:0">✅</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:var(--green)">Passkey Active</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Fingerprint / Face ID login enabled hai</div>
+          </div>
+          <button onclick="removeMemberPasskey()" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Remove</button>
+        </div>
+      </div>
 
       <!-- Staff Info Card -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px">
@@ -1679,9 +1742,14 @@ let currentUser=null,membersCache=[],folderCache=[],activeFolderId=null;
 window._grpaEntries=null;window._adminPrivEntries=null;window._adminLedgerEntries=null;
 let activeGrpbMemberId=null,todoFilter='all',remFilter='all';
 let _ledgerSortOrder='new'; // 'new'=newest first, 'old'=oldest first
+function _sortKey(e){
+  // Use clientCreatedAt (ISO) for precise time, fallback to date string
+  const ts=e.clientCreatedAt||e.createdAt||(e.date?e.date+'T00:00:00':'');
+  return String(ts);
+}
 function _sortEntries(arr){
-  if(_ledgerSortOrder==='old') return arr.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  return arr.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(_ledgerSortOrder==='old') return arr.sort((a,b)=>_sortKey(a).localeCompare(_sortKey(b)));
+  return arr.sort((a,b)=>_sortKey(b).localeCompare(_sortKey(a)));
 }
 function toggleLedgerSort(){
   _ledgerSortOrder=_ledgerSortOrder==='new'?'old':'new';
@@ -1702,7 +1770,7 @@ function toggleLedgerSort(){
 }
 let memberTabFilter='all',currentMemberId=null,memberType='income',myaccType='income';
 let editNoteId=null,mEditNoteId=null,_confirmCb=null;
-let grpaDF={mode:'month'},myaccDF={mode:'all'},grpbDF={mode:'all'},mLedgerDF={mode:'all'},memberCardsDF={mode:'all'},mDashDF={mode:'all'};
+let grpaDF={mode:'today'},myaccDF={mode:'today'},grpbDF={mode:'today'},mLedgerDF={mode:'today'},memberCardsDF={mode:'today'},mDashDF={mode:'today'};
 const barFilters={};
 
 const DEF_INC=['💼 Salary','🏦 Bank Interest','💵 Cash','🏪 Business Sales','🏠 Rent Received','📈 Investment','🎁 Bonus','🔹 Other'];
@@ -1717,12 +1785,12 @@ function populateCatSelect(selId,type,defaultVal){const sel=$id(selId);if(!sel)r
 // ==================== INIT ====================
 // ── EMBEDDED FIREBASE CONFIG — No setup screen needed ──
 const BIZPRO_FB_CONFIG = {
-  apiKey: '1234',
+  apiKey: 'AIzaSyBAQgEfOYAbZQMVmYDXjtr0QLVCG7Z-4J8',
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '1234',
-  appId: '1234'
+  messagingSenderId: '936861585181',
+  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
 // Wait for Firebase SDK to load (handles slow networks)
@@ -1740,6 +1808,24 @@ function waitForFirebase(cb, attempts=0){
 let auth = null; // Firebase Auth instance
 let currentFirebaseUser = null;
 
+// ── IMMEDIATE staff-link detection (sync, before any Firebase) ──
+(function(){
+  const _isp = new URLSearchParams(window.location.search);
+  if(_isp.get("m") || _isp.get("staff")){
+    // Save flag so even after reload we know this is a staff session
+    try{sessionStorage.setItem('bp-staff-link','1');}catch(e){}
+    // Immediately hide admin tab & show staff form before Firebase loads
+    document.addEventListener('DOMContentLoaded',function(){
+      const ta=document.getElementById('ltab-admin'); if(ta)ta.style.display='none';
+      const tb=document.getElementById('loginTabsBar'); if(tb)tb.style.display='none';
+      const af=document.getElementById('adminLoginForm'); if(af)af.style.display='none';
+      const mf=document.getElementById('memberLoginForm'); if(mf)mf.style.display='block';
+      const ltm=document.getElementById('ltab-member'); if(ltm){ltm.classList.add('active');}
+      const lta=document.getElementById('ltab-admin'); if(lta){lta.classList.remove('active');}
+    });
+  }
+})();
+
 window.onload=function(){
   const t=localStorage.getItem('bp-theme')||'dark';
   document.documentElement.setAttribute('data-theme',t);updateThemeBtns();
@@ -1748,6 +1834,14 @@ window.onload=function(){
     if(!ok){
       const el=document.getElementById('appLoading');
       if(el){el.innerHTML='<div style="text-align:center;padding:20px"><p style="color:#f85149;font-size:14px;margin-bottom:12px">❌ Could not connect.<br>Check internet & reload.</p><button onclick="location.reload()" style="padding:10px 24px;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">🔄 Reload</button></div>';el.style.display='flex';}
+      return;
+    }
+
+    // ── Check for ?staff=1 (simple staff login page link) ──
+    const _spStaff = new URLSearchParams(window.location.search);
+    if(_spStaff.get('staff')){
+      hide('appLoading'); show('loginScreen');
+      switchLoginTab('member');
       return;
     }
 
@@ -1799,6 +1893,11 @@ window.onload=function(){
 
     // ── Firebase Auth state listener — handles auto-login on reload ──
     auth.onAuthStateChanged(async (user) => {
+      // If staff link URL or staff-link session flag — never auto-launch admin
+      const _spCheck = new URLSearchParams(window.location.search);
+      if(_spCheck.get("m") || _spCheck.get("staff") || sessionStorage.getItem("bp-staff-link")){
+        hide('appLoading'); show('loginScreen'); return;
+      }
       if(user){
         // User already signed in
         currentFirebaseUser = user;
@@ -2220,6 +2319,9 @@ async function initPasskeyUI(){
     const saved=localStorage.getItem('bp-passkey-id');
     const wrap=$id('passkeyLoginWrap');if(wrap)wrap.style.display=saved?'block':'none';
     updatePasskeySettingUI();
+    // Staff passkey login button bhi check karo
+    const mSaved=localStorage.getItem('bp-m-passkey-id');
+    const mWrap=$id('mPasskeyLoginWrap');if(mWrap)mWrap.style.display=mSaved?'block':'none';
   }catch(e){
     const row=$id('passkeySettingRow');if(row)row.style.display='none';
   }
@@ -2353,6 +2455,236 @@ async function removePasskey(){
   });
 }
 
+// ==================== STAFF PASSKEY (Member) ====================
+// Staff ke liye alag localStorage keys use karo (admin se conflict nahi)
+// Keys: bp-m-passkey-id, bp-m-passkey-uid, bp-m-passkey-memberid
+
+function initMemberPasskeyUI(){
+  isPasskeyAvailableAsync().then(available=>{
+    const row=$id('mPasskeySettingRow');
+    const banner=$id('mPasskeySetupBanner');
+    const regCard=$id('mPasskeyRegisteredCard');
+    if(!available){
+      if(row) row.style.display='none';
+      if(banner) banner.style.display='none';
+      if(regCard) regCard.style.display='none';
+      return;
+    }
+    if(row) row.style.display='block';
+    updateMemberPasskeySettingUI();
+    const saved=localStorage.getItem('bp-m-passkey-id');
+    // Login page passkey button
+    const wrap=$id('mPasskeyLoginWrap');
+    if(wrap) wrap.style.display=saved?'block':'none';
+    // Attendance page cards:
+    // Registered nahi → Setup banner dikhao
+    // Registered hai → Green "Active" card dikhao
+    if(banner) banner.style.display=saved?'none':'block';
+    if(regCard) regCard.style.display=saved?'block':'none';
+  }).catch(()=>{
+    const row=$id('mPasskeySettingRow');if(row)row.style.display='none';
+    const banner=$id('mPasskeySetupBanner');if(banner)banner.style.display='none';
+    const regCard=$id('mPasskeyRegisteredCard');if(regCard)regCard.style.display='none';
+  });
+}
+
+function updateMemberPasskeySettingUI(){
+  const saved=localStorage.getItem('bp-m-passkey-id');
+  const regBtn=$id('mPasskeyRegisterBtn');
+  const remBtn=$id('mPasskeyRemoveBtn');
+  const statusTxt=$id('mPasskeyStatusText');
+  if(!regBtn) return;
+  if(saved){
+    regBtn.style.display='none';
+    if(remBtn) remBtn.style.display='flex';
+    if(statusTxt) statusTxt.innerHTML='✅ Passkey registered! Login screen pe Fingerprint/Face ID button dikhega.';
+  }else{
+    regBtn.style.display='flex';
+    if(remBtn) remBtn.style.display='none';
+    if(statusTxt) statusTxt.textContent='Login quickly with Fingerprint or Face ID';
+  }
+}
+
+async function registerMemberPasskey(){
+  const available=await isPasskeyAvailableAsync();
+  if(!available){toast('Your device does not support Biometric login','w');return;}
+  // Member logged in hona chahiye
+  if(!currentUser||currentUser.type!=='member'){toast('Please login as Staff first','e');return;}
+  const memberId=currentMemberId||currentUser.id;
+  const memberName=currentUser.name||'Staff';
+  const adminUid=currentUid;
+  if(!memberId||!adminUid){toast('Session error. Please login again.','e');return;}
+
+  const btn=$id('mPasskeyRegisterBtn');
+  const origText=btn.innerHTML;
+  btn.innerHTML='⏳ Setting up...';btn.disabled=true;
+
+  try{
+    // Unique user ID: memberId + adminUid combination
+    const uniqueId=memberId+'_'+adminUid;
+    const challenge=randomB64(32);
+    const publicKeyOptions={
+      challenge:b64ToBuffer(challenge),
+      rp:{id:PASSKEY_RP_ID,name:PASSKEY_RP_NAME},
+      user:{
+        id:new TextEncoder().encode(uniqueId.substring(0,64)),
+        name:memberName+' (Staff)',
+        displayName:memberName
+      },
+      pubKeyCredParams:[
+        {type:'public-key',alg:-7},
+        {type:'public-key',alg:-257},
+        {type:'public-key',alg:-8},
+      ],
+      authenticatorSelection:{
+        userVerification:'preferred',
+        residentKey:'discouraged',
+        requireResidentKey:false,
+      },
+      timeout:120000,
+      attestation:'none',
+    };
+    const credential=await navigator.credentials.create({publicKey:publicKeyOptions});
+    const credId=bufToB64(credential.rawId);
+
+    // Staff ke liye alag localStorage keys
+    localStorage.setItem('bp-m-passkey-id',credId);
+    localStorage.setItem('bp-m-passkey-uid',adminUid);      // Admin ka UID (data fetch ke liye)
+    localStorage.setItem('bp-m-passkey-memberid',memberId);  // Member ka ID
+    localStorage.setItem('bp-m-passkey-name',memberName);
+
+    // Firestore mein bhi save karo (member ke apne folder mein)
+    try{
+      await uColDirect(adminUid,'members').doc(memberId).update({
+        passkeyId: credId,
+        passkeyRegisteredAt: firebase.firestore.FieldValue.serverTimestamp(),
+        passkeyDevice: navigator.userAgent.substring(0,120)
+      });
+    }catch(e){console.warn('Firestore passkey save:',e);}
+
+    toast('✅ Fingerprint/Face ID setup ho gaya! Ab login screen pe button dikhega.','s');
+    updateMemberPasskeySettingUI();
+    const wrap=$id('mPasskeyLoginWrap');if(wrap)wrap.style.display='block';
+    // Cards toggle: setup banner hide, registered card show
+    const banner=$id('mPasskeySetupBanner');if(banner)banner.style.display='none';
+    const regCard=$id('mPasskeyRegisteredCard');if(regCard)regCard.style.display='block';
+
+  }catch(e){
+    console.error('Member passkey register error:',e.name,e.message);
+    if(e.name==='NotAllowedError') toast('Biometric cancelled or timed out. Please try again.','w');
+    else if(e.name==='InvalidStateError') toast('Passkey already registered. Remove it first.','w');
+    else if(e.name==='NotSupportedError') toast('Your device does not support Passkey.','w');
+    else if(e.name==='SecurityError') toast('Security error: App must be on HTTPS.','e');
+    else toast('Passkey setup failed: '+e.message,'e');
+  }
+  btn.innerHTML=origText;btn.disabled=false;
+}
+
+async function doMemberPasskeyLogin(){
+  const available=await isPasskeyAvailableAsync();
+  if(!available){toast('Passkey not supported on this device','w');return;}
+
+  const savedCredId=localStorage.getItem('bp-m-passkey-id');
+  const savedAdminUid=localStorage.getItem('bp-m-passkey-uid');
+  const savedMemberId=localStorage.getItem('bp-m-passkey-memberid');
+  const savedName=localStorage.getItem('bp-m-passkey-name')||'Staff';
+
+  if(!savedCredId||!savedAdminUid||!savedMemberId){
+    toast('Please setup Passkey in Settings first','w');
+    // Login wrap hide karo
+    const wrap=$id('mPasskeyLoginWrap');if(wrap)wrap.style.display='none';
+    return;
+  }
+
+  const btn=$id('mPasskeyLoginBtn');
+  const origText=btn.innerHTML;
+  btn.innerHTML='<span>⏳</span><span>Verifying...</span>';btn.disabled=true;
+
+  try{
+    const challenge=randomB64(32);
+    const assertionOptions={
+      challenge:b64ToBuffer(challenge),
+      allowCredentials:[{
+        type:'public-key',
+        id:b64ToBuffer(savedCredId),
+        transports:['internal','hybrid'],
+      }],
+      userVerification:'preferred',
+      timeout:120000,
+    };
+    await navigator.credentials.get({publicKey:assertionOptions});
+
+    // Biometric verified! Ab member data load karo
+    currentUid=savedAdminUid;
+    localStorage.setItem('bp-admin-uid',savedAdminUid);
+
+    // Firestore se member data fetch karo
+    let memberData=null;
+    try{
+      const mDoc=await uColDirect(savedAdminUid,'members').doc(savedMemberId).get();
+      if(mDoc.exists) memberData={id:mDoc.id,...mDoc.data()};
+    }catch(e){console.warn('Member fetch error:',e);}
+
+    if(!memberData){
+      // Fallback: cache se try karo
+      try{await loadMembersForLogin();}catch(e){}
+      memberData=membersCache.find(x=>x.id===savedMemberId);
+    }
+
+    if(memberData){
+      currentUser={type:'member',id:memberData.id,name:memberData.name,group:memberData.group||'B'};
+      currentMemberId=memberData.id;
+      // Session save karo
+      try{
+        sessionStorage.setItem('bp-member-session',JSON.stringify({
+          id:memberData.id,name:memberData.name,group:memberData.group||'B',
+          userId:memberData.userId,adminUid:savedAdminUid,ts:Date.now()
+        }));
+      }catch(e){}
+      toast('✅ Biometric login successful!','s');
+      launchMember(memberData);
+    }else{
+      toast('Staff data not found. Please login normally.','w');
+      currentUid=null;
+    }
+
+  }catch(e){
+    console.error('Member passkey login error:',e.name,e.message);
+    if(e.name==='NotAllowedError') toast('Biometric cancelled. Please try again.','w');
+    else if(e.name==='SecurityError') toast('Security error: HTTPS required.','e');
+    else if(e.name==='InvalidStateError') toast('Passkey is invalid. Remove it in Settings and setup again.','w');
+    else toast('Biometric login failed. Please login normally.','e');
+  }
+  btn.innerHTML=origText;btn.disabled=false;
+}
+
+function removeMemberPasskey(){
+  confirm2('Remove Passkey?','Fingerprint/Face ID login will be disabled for Staff.',async()=>{
+    // Firestore se bhi hatao
+    const adminUid=localStorage.getItem('bp-m-passkey-uid');
+    const memberId=localStorage.getItem('bp-m-passkey-memberid');
+    if(adminUid&&memberId){
+      try{
+        await uColDirect(adminUid,'members').doc(memberId).update({
+          passkeyId: firebase.firestore.FieldValue.delete(),
+          passkeyRegisteredAt: firebase.firestore.FieldValue.delete(),
+          passkeyDevice: firebase.firestore.FieldValue.delete()
+        });
+      }catch(e){console.warn('Firestore passkey remove:',e);}
+    }
+    localStorage.removeItem('bp-m-passkey-id');
+    localStorage.removeItem('bp-m-passkey-uid');
+    localStorage.removeItem('bp-m-passkey-memberid');
+    localStorage.removeItem('bp-m-passkey-name');
+    const wrap=$id('mPasskeyLoginWrap');if(wrap)wrap.style.display='none';
+    updateMemberPasskeySettingUI();
+    // Remove ke baad: setup banner wapas dikhao, registered card hide karo
+    const banner=$id('mPasskeySetupBanner');if(banner)banner.style.display='block';
+    const regCard=$id('mPasskeyRegisteredCard');if(regCard)regCard.style.display='none';
+    toast('Staff Passkey removed successfully','i');
+  });
+}
+
 // ==================== SETUP ====================
 async function saveSetup(){
   // Config is embedded — this screen should not appear
@@ -2389,7 +2721,7 @@ async function loadMembersForLogin(){
 }
 function onMemberSelect(){const v=gv('memberSelect');$id('memberPwGroup').style.display=v?'block':'none';$id('memberLoginBtn').style.display=v?'flex':'none';}
 async function doMemberLogin(){
-  const userId=gv('memberUserIdIn').trim();
+  const userId=gv('memberUserIdIn').trim().toLowerCase();
   const pw=gv('memberPwIn');
   if(!userId){toast(t_('enter_userid')||'Enter User ID','e');return;}
   if(!pw){toast(t_('enter_password')||'Enter password','e');return;}
@@ -2403,7 +2735,7 @@ async function doMemberLogin(){
 
     // ── Step 1: Try local cache first (fast path — same device as admin) ──
     if(currentUid && membersCache.length){
-      m = membersCache.find(x=>x.userId===userId);
+      m = membersCache.find(x=>(x.userId||'').toLowerCase()===userId);
     }
 
     // ── Step 2: Try localStorage saved adminUid ──
@@ -2413,42 +2745,33 @@ async function doMemberLogin(){
         currentUid = savedUid;
         try{
           await loadMembersForLogin();
-          m = membersCache.find(x=>x.userId===userId);
+          m = membersCache.find(x=>(x.userId||'').toLowerCase()===userId);
         }catch(e){ console.error('loadMembers error:', e); }
       }
     }
 
-    // ── Step 3: GLOBAL SEARCH — Different device, no admin UID saved ──
-    // Search across ALL admins' members using collectionGroup
+    // ── Step 3: GLOBAL SEARCH — tries lowercase, uppercase, titlecase ──
     if(!m){
       try{
-        // collectionGroup searches 'members' subcollection across ALL users
-        const globalSnap = await db.collectionGroup('members')
-          .where('userId','==',userId)
-          .limit(1)
-          .get();
-
-        if(!globalSnap.empty){
-          const memberDoc = globalSnap.docs[0];
-          const memberData = memberDoc.data();
-          // Extract adminUid from path: users/{adminUid}/members/{memberId}
-          const pathParts = memberDoc.ref.path.split('/');
-          const adminUid = pathParts[1]; // users/[THIS]/members/[id]
-
-          // Set currentUid to this admin's UID
-          currentUid = adminUid;
-          localStorage.setItem('bp-admin-uid', adminUid);
-
-          // Build member object
-          m = { id: memberDoc.id, ...memberData };
-
-          // Reload full members cache for this admin
-          try{ await loadMembersForLogin(); }catch(e){}
+        const _tryUids=['==',userId,'==',userId.toUpperCase(),'==',userId.charAt(0).toUpperCase()+userId.slice(1)];
+        let globalSnap=null;
+        for(let i=0;i<_tryUids.length;i+=2){
+          const snap=await db.collectionGroup('members').where('userId',_tryUids[i],_tryUids[i+1]).limit(1).get();
+          if(!snap.empty){globalSnap=snap;break;}
+        }
+        if(globalSnap&&!globalSnap.empty){
+          const memberDoc=globalSnap.docs[0];
+          const memberData=memberDoc.data();
+          const pathParts=memberDoc.ref.path.split('/');
+          const adminUid=pathParts[1];
+          currentUid=adminUid;
+          localStorage.setItem('bp-admin-uid',adminUid);
+          m={id:memberDoc.id,...memberData};
+          try{await loadMembersForLogin();}catch(e){}
         }
       }catch(e){
-        console.error('Global member search error:', e);
-        // If collectionGroup fails (rules issue), show helpful message
-        if(e.code === 'permission-denied'){
+        console.error('Global member search error:',e);
+        if(e.code==='permission-denied'){
           toast('Staff login: Get the link from Admin or try on same device.','w');
           btn.innerHTML=origText;btn.disabled=false;return;
         }
@@ -2516,7 +2839,7 @@ async function doMemberChangePw(){
     else{toast(t_('admin_not_setup')||'Get a link from your Admin first.','w');return;}
   }
   if(!membersCache.length) await loadMembersForLogin();
-  const m=membersCache.find(x=>x.userId===userId);
+  const m=membersCache.find(x=>(x.userId||'').toLowerCase()===userId.toLowerCase());
   if(!m){toast('User ID galat hai','e');return;}
   if(oldPw!==m.password){toast(t_('current_pw_wrong'),'e');return;}
   // Save new password to Firestore (admin's namespace)
@@ -2549,14 +2872,14 @@ async function doLogout(){
   // Restore tabs for normal login
   const ta=$id('ltab-admin');if(ta)ta.style.display='';
   const tb=$id('loginTabsBar');if(tb)tb.style.display='';
-  const wasStaff=(currentUser&&currentUser.type==='member');
-  switchLoginTab(wasStaff?'member':'admin');
+  // Use _wasStaffLogout (captured BEFORE currentUser was nulled)
+  switchLoginTab(_wasStaffLogout?'member':'admin');
   // Firebase Auth sign out
   try{await auth.signOut();}catch(e){}
   currentUid=null;currentFirebaseUser=null;
   localStorage.removeItem('bp-admin-uid');
   localStorage.removeItem('bp-admin-userid');
-  try{sessionStorage.removeItem('bp-member-session');}catch(e){}
+  try{sessionStorage.removeItem('bp-member-session');sessionStorage.removeItem('bp-staff-link');}catch(e){}
   window._staffLinkMemberId=null;
   window._staffLinkUserId=null;
   show('loginScreen');toast(t_('logged_out'),'i');
@@ -2605,6 +2928,8 @@ async function launchMember(m){
   populateCatSelect('mCat','income');
   if(!membersCache||!membersCache.length){try{await loadMembersForLogin();}catch(e){}}
   loadMemberData(m.id);
+  // Passkey UI init (agar device support karta ho)
+  setTimeout(initMemberPasskeyUI, 400);
 }
 
 // ==================== ADMIN DATA ====================
@@ -2848,10 +3173,28 @@ async function addFolder(){
   }, 600);
 }
 
+const MYACC_FOLDER_COLORS=[
+  ['#6366f1','#4f46e5'],['#22c55e','#16a34a'],['#f59e0b','#d97706'],
+  ['#06b6d4','#0891b2'],['#a855f7','#9333ea'],['#f97316','#ea580c'],
+  ['#ec4899','#db2777'],['#14b8a6','#0d9488'],['#ef4444','#dc2626'],['#64748b','#475569']
+];
+
 function buildFolderTabs(){
   const bar=$id('folderTabsBar');
   let h='';
-  folderCache.forEach(f=>{h+=`<button class="ftab ${f.id===activeFolderId?'active':''}" onclick="selectFolder('${f.id}')">${f.name}</button>`;});
+  folderCache.forEach((f,i)=>{
+    const [c1,c2]=MYACC_FOLDER_COLORS[i%MYACC_FOLDER_COLORS.length];
+    const isActive=f.id===activeFolderId;
+    h+=`<button onclick="selectFolder('${f.id}')" style="
+      cursor:pointer;flex-shrink:0;
+      background:linear-gradient(135deg,${c1},${c2});
+      border-radius:var(--rsm);padding:5px 14px;
+      border:2px solid ${isActive?'#fff':'transparent'};
+      box-shadow:${isActive?'0 0 0 2px '+c1+'66':'none'};
+      font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;
+      color:#fff;white-space:nowrap;transition:all .15s;
+    ">${f.name}</button>`;
+  });
   bar.innerHTML=h;
 }
 
@@ -3125,7 +3468,7 @@ function viewAttHistory(mId,mNameEnc){
     if(listEl){
       if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
       listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px;font-weight:600">${(()=>{try{const d=new Date(a.date);return isNaN(d)?a.date:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return a.date;}})()}</span>
+        <span style="font-size:13px;font-weight:600">${fmtD(a.date)}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status}</span>
           <button onclick="deleteAttRecord('${mId}','${a.date}','${encodeURIComponent(mName)}')" style="background:rgba(248,81,73,.12);border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--red);font-weight:700;font-family:'Outfit',sans-serif">🗑️</button>
@@ -3140,7 +3483,7 @@ function viewAttHistory(mId,mNameEnc){
     ${m.role?`<div style="font-size:11px;color:var(--muted)">🎯 ${m.role}</div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;margin-top:3px">
       ${m.phone?`<span style="font-size:11px;color:var(--muted)">📞 ${m.phone}</span>`:''}
-      ${m.joinDate?`<span style="font-size:11px;color:var(--muted)">📅 Joined: ${(()=>{try{const d=new Date(m.joinDate);return isNaN(d)?m.joinDate:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return m.joinDate;}})()}</span>`:''}
+      ${m.joinDate?`<span style="font-size:11px;color:var(--muted)">📅 Joined: ${fmtD(m.joinDate)}</span>`:''}
     </div>
     <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
       <button id="ahtab-month" onclick="switchAttTab('month',this)" style="padding:4px 9px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Outfit',sans-serif">This Month</button>
@@ -3191,7 +3534,7 @@ function deleteAttRecord(mId,date,mNameEnc){
 }
 
 let _staffLedgerMemberId = null;
-let _staffLedgerDF = {mode:'all'};
+let _staffLedgerDF = {mode:'today'};
 
 async function viewStaffLedger(mId, name){
   _staffLedgerMemberId = mId;
@@ -3492,7 +3835,7 @@ async function loadReports(period,btn){
 }
 
 // ==================== EXPORT ====================
-let exportDF={mode:'all'};
+let exportDF={mode:'today'};
 function applyExportDateFilter(){
   const from=gv('exportFrom'),to=gv('exportTo');
   if(!from||!to){toast('Please select both From and To dates','w');return;}
@@ -3630,7 +3973,7 @@ async function downloadPDF(type,df){
     const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BizPro — ${typeLabel}</title><style>${pdfCSS}<\/style><\/head><body>
       <div class="header">
         <h1>📊 BizPro Financial Statement</h1>
-        <p>${adminName} &nbsp;|&nbsp; ${typeLabel} &nbsp;|&nbsp; Period: ${periodLabel} &nbsp;|&nbsp; Generated: ${now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</p>
+        <p>${adminName} &nbsp;|&nbsp; ${typeLabel} &nbsp;|&nbsp; Period: ${periodLabel} &nbsp;|&nbsp; Generated: ${fmtD(todayStr())}</p>
       </div>
       <div class="summary">
         <div class="sum-box" style="background:#dcfce7;border:1px solid #86efac"><div class="l">Total Income</div><div class="v" style="color:#16a34a">₹${fmt(inc)}</div></div>
@@ -3703,7 +4046,7 @@ async function genReport(){
   const rpt=
     'BizPro Summary Report'+nl+
     'Period: '+periodLabel+nl+
-    now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+nl+
+    (()=>{const n=new Date();const dd=String(n.getDate()).padStart(2,'0'),mm=String(n.getMonth()+1).padStart(2,'0'),yyyy=n.getFullYear();return dd+'-'+mm+'-'+yyyy;})()+'  ('+now.toLocaleDateString('en-IN',{weekday:'long'})+')'+nl+
     '='.repeat(40)+nl+
     'FINANCIAL SUMMARY'+nl+
     'Staff Income:    ₹'+fmt(inc)+nl+
@@ -4524,7 +4867,7 @@ async function resetInventory(){
 
 async function resetAllData(){
   confirm2('⚠️ RESET ALL DATA?','ALL data — entries, members, todos, reminders, notes, inventory, archive — PERMANENTLY DELETED. App will be factory reset!',async()=>{
-    const cols=['entries','private_entries','admin_entries','members','todos','reminders','notes','inventory','deleted_log','folders'];
+    const cols=['entries','private_entries','admin_entries','members','todos','reminders','notes','inventory','deleted_log','folders','nb_folders','nb_notebooks','nb_notes'];
     for(const col of cols){try{const snap=await uCol(col).get();const b=db.batch();snap.docs.forEach(d=>b.delete(d.ref));await b.commit();}catch(e){}}
     // Clear localStorage categories
     localStorage.removeItem('bp-cats-inc');localStorage.removeItem('bp-cats-pe');localStorage.removeItem('bp-cats-he');
@@ -4570,10 +4913,12 @@ function buildDateBar(barId,dfObj,onChangeFn){
   barFilters[barId]=barFilters[barId]||{...dfObj};const bf=barFilters[barId];
   bar.innerHTML=`<div class="df-bar-tabs"><button class="df-tab ${bf.mode==='today'?'active':''}" onclick="setDF('${barId}','today')">Today</button><button class="df-tab ${bf.mode==='week'?'active':''}" onclick="setDF('${barId}','week')">This Week</button><button class="df-tab ${bf.mode==='month'?'active':''}" onclick="setDF('${barId}','month')">This Month</button><button class="df-tab ${bf.mode==='all'?'active':''}" onclick="setDF('${barId}','all')">All Time</button><button class="df-tab ${bf.mode==='custom'?'active':''}" onclick="setDF('${barId}','custom')">&#x1F4C5; Custom</button></div><div class="df-date-wrap"><button class="df-arrow" onclick="shiftDF('${barId}',-1)">&#x25C0;</button><input type="date" class="df-inp" id="${barId}-from" value="${bf.from||todayStr()}" onchange="onDFChange('${barId}')"><span style="color:var(--muted);font-size:11px;flex-shrink:0">to</span><input type="date" class="df-inp" id="${barId}-to" value="${bf.to||todayStr()}" onchange="onDFChange('${barId}')"><button class="df-arrow" onclick="shiftDF('${barId}',1)">&#x25B6;</button></div>`;
   bar._cb=onChangeFn;
+  // Auto-apply initial filter so data matches the default mode on first load
+  setDF(barId, bf.mode||'today');
 }
 
 function setDF(barId,mode){
-  if(!barFilters[barId])barFilters[barId]={mode:'all'};const bf=barFilters[barId];bf.mode=mode;
+  if(!barFilters[barId])barFilters[barId]={mode:'today'};const bf=barFilters[barId];bf.mode=mode;
   const now=new Date(),ts=todayStr();
   if(mode==='today'){bf.from=ts;bf.to=ts;}else if(mode==='week'){bf.from=new Date(now-6*86400000).toISOString().split('T')[0];bf.to=ts;}else if(mode==='month'){bf.from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];bf.to=ts;}else if(mode==='all'){bf.from='2020-01-01';bf.to='2099-12-31';}
   const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe&&mode!=='custom')fe.value=bf.from||ts;if(te&&mode!=='custom')te.value=bf.to||ts;
@@ -4583,14 +4928,14 @@ function setDF(barId,mode){
 }
 function onDFChange(barId){if(!barFilters[barId])barFilters[barId]={mode:'custom'};barFilters[barId].mode='custom';barFilters[barId].from=$id(barId+'-from')?.value||todayStr();barFilters[barId].to=$id(barId+'-to')?.value||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();}
 function shiftDF(barId,dir){
-  const bf=barFilters[barId]||{mode:'all'};
+  const bf=barFilters[barId]||{mode:'today'};
   if(bf.mode==='today'||bf.mode==='all'||bf.mode==='custom'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir);const t=new Date(bf.to||todayStr());t.setDate(t.getDate()+dir);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];bf.mode='custom';}
   else if(bf.mode==='week'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir*7);const t=new Date(f);t.setDate(t.getDate()+6);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];}
   else if(bf.mode==='month'){const d=new Date(bf.from||todayStr());d.setMonth(d.getMonth()+dir);bf.from=new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0];bf.to=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split('T')[0];}
   barFilters[barId]=bf;const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe)fe.value=bf.from||todayStr();if(te)te.value=bf.to||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();
 }
-function syncDF(barId){const bf=barFilters[barId]||{mode:'all'};if(barId==='grpaDateBar')Object.assign(grpaDF,bf);else if(barId==='myaccDateBar')Object.assign(myaccDF,bf);else if(barId==='grpbDateBar')Object.assign(grpbDF,bf);else if(barId==='mLedgerDateBar')Object.assign(mLedgerDF,bf);else if(barId==='membersDateBar')Object.assign(memberCardsDF,bf);else if(barId==='invDateBar')Object.assign(invDF,bf);else if(barId==='mDashDateBar')Object.assign(mDashDF,bf);else if(barId==='exportDateBar')Object.assign(exportDF,bf);else if(barId==='staffLedgerDateBar')Object.assign(_staffLedgerDF,bf);}
-function applyDF(entries,dfObj){if(!dfObj||dfObj.mode==='all')return entries;const f=dfObj.from||'2020-01-01',t=dfObj.to||'2099-12-31';return entries.filter(e=>e.date&&e.date>=f&&e.date<=t);}
+function syncDF(barId){const bf=barFilters[barId]||{mode:'today'};if(barId==='grpaDateBar')Object.assign(grpaDF,bf);else if(barId==='myaccDateBar')Object.assign(myaccDF,bf);else if(barId==='grpbDateBar')Object.assign(grpbDF,bf);else if(barId==='mLedgerDateBar')Object.assign(mLedgerDF,bf);else if(barId==='membersDateBar')Object.assign(memberCardsDF,bf);else if(barId==='invDateBar')Object.assign(invDF,bf);else if(barId==='mDashDateBar')Object.assign(mDashDF,bf);else if(barId==='exportDateBar')Object.assign(exportDF,bf);else if(barId==='staffLedgerDateBar')Object.assign(_staffLedgerDF,bf);}
+function applyDF(entries,dfObj){if(!dfObj||dfObj.mode==='all')return entries;if(dfObj.mode==='today'){const ts=todayStr();return entries.filter(e=>e.date&&e.date===ts);}const f=dfObj.from||'2020-01-01',t=dfObj.to||'2099-12-31';return entries.filter(e=>e.date&&e.date>=f&&e.date<=t);}
 
 // ==================== NAVIGATION ====================
 function updateAdminBottomNav(page){
@@ -4744,7 +5089,7 @@ function renderMattContent(filter,fromDate,toDate){
   if(listEl){
     if(!data.length){listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">No records for this period</div>';return;}
     listEl.innerHTML=data.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;font-weight:600">${(()=>{try{const d=new Date(a.date);return isNaN(d)?a.date:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-');}catch(e){return a.date;}})()}</span>
+      <span style="font-size:13px;font-weight:600">${fmtD(a.date)}</span>
       <span style="font-size:12px;font-weight:800;color:${colors[a.status]||'var(--muted)'}">${icons[a.status]||''} ${a.status||'—'}</span>
     </div>`).join('');
   }
@@ -4780,7 +5125,7 @@ function confirm2(title,desc,cb){_confirmCb=cb;$id('confTitle').textContent=titl
 
 let _toastTmr;
 function toast(msg,type='i'){const el=$id('toast');el.className='t'+type;el.textContent=msg;el.style.display='flex';clearTimeout(_toastTmr);_toastTmr=setTimeout(()=>el.style.display='none',3200);}
-function startClock(){function tick(){const n=new Date();$id('liveTime').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});$id('adminDate').textContent=n.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}tick();setInterval(tick,1000);}
+function startClock(){function tick(){const n=new Date();$id('liveTime').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});const dd=String(n.getDate()).padStart(2,'0'),mm=String(n.getMonth()+1).padStart(2,'0'),yyyy=n.getFullYear();$id('adminDate').textContent=dd+'-'+mm+'-'+yyyy;}tick();setInterval(tick,1000);}
 
 // ==================== HELPERS ====================
 function $id(s){return typeof s==='string'?document.getElementById(s):s;}
@@ -4808,7 +5153,7 @@ function clearFields(arr){arr.forEach(s=>{const el=$id(s);if(el)el.value='';}); 
 function setToday(...ids){const t=todayStr();ids.forEach(s=>{const el=$id(s);if(el)el.value=t;});} // ← FIXED: always force today's date on every call
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmt(n){return(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});}
-function fmtD(d){if(!d)return '—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d;}}
+function fmtD(d){if(!d)return '—';try{const p=String(d).split('T')[0].split('-');if(p.length===3)return p[2]+'-'+p[1]+'-'+p[0];}catch(e){}return d;}
 function fmtDT(d, ts, clientTs){
   // d = date string 'YYYY-MM-DD', ts = Firestore timestamp, clientTs = ISO string
   let dateStr=fmtD(d);
@@ -4836,7 +5181,7 @@ function statCards(items){return items.map(i=>`<div class="sc ${i.cls||'b'}" ${i
 function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click();toast('CSV Downloaded!','s');}
 
 // ==================== INVENTORY ====================
-let invDF={mode:'all'};
+let invDF={mode:'today'};
 let _invSortOrder='new';
 function toggleInvSort(){
   _invSortOrder=_invSortOrder==='new'?'old':'new';
@@ -5077,7 +5422,7 @@ async function renderInventory(){
   let html='';
   // Catalog items header
   if(catalogItems.length>0){
-    html+=`<tr style="background:rgba(6,182,212,.06)"><td colspan="9" style="font-size:11px;font-weight:800;color:var(--cyan);padding:7px 13px;letter-spacing:.5px">📋 ITEM CATALOG (${catalogItems.length} items saved)</td></tr>`;
+    html+=`<tr style="background:rgba(6,182,212,.06)"><td colspan="8" style="font-size:11px;font-weight:800;color:var(--cyan);padding:7px 13px;letter-spacing:.5px">📋 ITEM CATALOG (${catalogItems.length} items saved)</td></tr>`;
     html+=catalogItems.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>`<tr style="opacity:.85">
       <td><span style="font-size:10px;background:rgba(6,182,212,.15);color:var(--cyan);padding:2px 7px;border-radius:10px">Catalog</span></td>
       <td style="font-weight:700">
@@ -5088,7 +5433,6 @@ async function renderInventory(){
       <td><small style="color:var(--muted)">${i.unit||''}</small></td>
       <td style="color:var(--primary)">₹${fmt(i.price||0)}</td>
       <td style="color:var(--muted)">—</td>
-      <td>${i.sellPrice>0?'<span class="amt-pos">₹'+fmt(i.sellPrice)+'</span>':'<span style="color:var(--muted)">—</span>'}</td>
       <td><span style="font-size:10px;color:var(--cyan)">Catalog</span></td>
       <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:nowrap;min-width:90px">
         <button class="btn btn-ghost btn-sm btn-icon" title="Edit" onclick="editInvCatalogItem('${i._id}')">✏️</button>
@@ -5099,7 +5443,7 @@ async function renderInventory(){
   }
   // Purchase items
   if(purchaseItems.length>0){
-    html+=`<tr style="background:rgba(99,102,241,.06)"><td colspan="9" style="font-size:11px;font-weight:800;color:var(--primary);padding:7px 13px;letter-spacing:.5px">🛒 PURCHASES (${purchaseItems.length} records)</td></tr>`;
+    html+=`<tr style="background:rgba(99,102,241,.06)"><td colspan="8" style="font-size:11px;font-weight:800;color:var(--primary);padding:7px 13px;letter-spacing:.5px">🛒 PURCHASES (${purchaseItems.length} records)</td></tr>`;
     html+=purchaseItems.map(i=>`<tr>
       <td style="white-space:nowrap">${fmtDT(i.date, i.createdAt, i.clientCreatedAt)}</td>
       <td style="font-weight:700">${i.name||'—'}</td>
@@ -5107,13 +5451,12 @@ async function renderInventory(){
       <td><small style="color:var(--muted)">${i.unit||''}</small></td>
       <td>₹${fmt(i.price||0)}</td>
       <td class="amt-neg">₹${fmt(i.totalCost||0)}</td>
-      <td>${i.sellPrice>0?'<span class="amt-pos">₹'+fmt(i.sellPrice)+'</span>':'<span style="color:var(--muted)">—</span>'}</td>
       <td><small style="color:var(--muted)">${i.targetLabel||'—'}</small></td>
       <td><button class="btn btn-danger btn-sm btn-icon" onclick="delInventoryItem('${i._id}')">🗑️</button></td>
     </tr>`).join('');
-    html+=`<tr style="background:var(--s2)"><td colspan="5" style="font-weight:800">TOTAL PURCHASE COST</td><td class="amt-neg" style="font-weight:800">₹${fmt(totalCost)}</td><td colspan="3"></td></tr>`;
+    html+=`<tr style="background:var(--s2)"><td colspan="4" style="font-weight:800">TOTAL PURCHASE COST</td><td class="amt-neg" style="font-weight:800" colspan="2">₹${fmt(totalCost)}</td><td colspan="2"></td></tr>`;
   }
-  if(!html){tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="ei">📦</div><h3>No items yet</h3><p>Add items above — start with Catalog Mode!</p></div></td></tr>';return;}
+  if(!html){tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">📦</div><h3>No items yet</h3><p>Add items above — start with Catalog Mode!</p></div></td></tr>';return;}
   tbody.innerHTML=html;
 }
 

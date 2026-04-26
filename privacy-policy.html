@@ -212,7 +212,7 @@
     </div>
     <h1>Privacy Policy</h1>
     <div class="badge-row">
-      <span class="badge green">Last Updated: March 2026</span>
+      <span class="badge green">Last Updated: April 2026</span>
       <span class="badge blue">Version 3.0</span>
     </div>
   </div>
@@ -267,6 +267,8 @@
       <ul>
         <li><strong>Google Firestore:</strong> All your app data (entries, staff, settings, folders, inventory) is stored in Firestore — a NoSQL database hosted on Google Cloud Platform (GCP)</li>
         <li><strong>Firebase Authentication:</strong> Admin passwords are encrypted and managed by Google Firebase Auth — we do not see or store plaintext Admin passwords</li>
+                <li><strong>Firebase App Check:</strong> We use Firebase App Check to verify that requests to our backend come only from our genuine app — preventing unauthorized access and bot abuse</li>
+                <li><strong>Password Hashing:</strong> Staff passwords are hashed using SHA-256 before storage — we never store plaintext passwords for any user type</li>
         <li><strong>Staff passwords:</strong> Stored as plain text in Firestore accessible only to the Admin within their private namespace. We recommend strong, unique passwords</li>
         <li><strong>Offline data:</strong> Static app files (HTML, icons) are cached by the Service Worker on your device for offline access — no personal data is cached offline</li>
         <li><strong>Timestamps:</strong> <span class="new-tag">NEW</span> All entries now store a server-side Firebase timestamp and a client-side ISO timestamp for accurate time tracking</li>

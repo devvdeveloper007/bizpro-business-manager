@@ -1,6 +1,6 @@
 {
   "id": "com.bizpro.businessmanager",
-  "name": "BizPro — Smart Business & Home Manager",
+  "name": "BizPro \u2014 Smart Business & Home Manager",
   "short_name": "BizPro",
   "description": "Manage business, home, and student accounts in one place. Staff management, income/expense tracking, inventory, reports, and much more.",
   "start_url": "/",
@@ -9,7 +9,11 @@
   "theme_color": "#6366f1",
   "orientation": "portrait",
   "lang": "en",
-  "categories": ["finance", "business", "productivity"],
+  "categories": [
+    "finance",
+    "business",
+    "productivity"
+  ],
   "scope": "/",
   "prefer_related_applications": false,
   "related_applications": [
@@ -52,7 +56,26 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "BizPro Dashboard"
+      "label": "BizPro \u2014 Dashboard"
+    }
+  ],
+  "privacy_policy_url": "https://bizpro-business-manager.web.app/privacy-policy.html",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Entry",
+      "short_name": "Add Entry",
+      "description": "Quickly add a new income or expense entry",
+      "url": "/?action=add",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

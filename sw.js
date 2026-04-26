@@ -1,6 +1,6 @@
-// BizPro Service Worker v1
-const CACHE_NAME = 'bizpro-v1';
-const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+// BizPro Service Worker v2
+const CACHE_NAME = 'bizpro-v2';
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png', '/privacy-policy.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
