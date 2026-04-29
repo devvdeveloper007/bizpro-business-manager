@@ -15,6 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-check-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d1117;--surface:#161b22;--s2:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--primary:#6366f1;--pglow:rgba(99,102,241,.22);--green:#3fb950;--red:#f85149;--orange:#e8734a;--blue:#58a6ff;--gold:#f4a261;--purple:#bc8cff;--cyan:#06b6d4;--yellow:#f59e0b;--r:10px;--rsm:7px;--sh:0 8px 32px rgba(0,0,0,.4);--tr:.18s ease;}
@@ -1785,12 +1786,12 @@ function populateCatSelect(selId,type,defaultVal){const sel=$id(selId);if(!sel)r
 // ==================== INIT ====================
 // ── EMBEDDED FIREBASE CONFIG — No setup screen needed ──
 const BIZPRO_FB_CONFIG = {
-  apiKey: 'AIzaSyBAQgEfOYAbZQMVmYDXjtr0QLVCG7Z-4J8',
+  apiKey: '1234',
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '936861585181',
-  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
+  messagingSenderId: '1234',
+  appId: '1234'
 };
 
 // Wait for Firebase SDK to load (handles slow networks)
@@ -1953,6 +1954,17 @@ async function initFB(cfg){
   try{
     if(!firebase.apps.length) fbApp=firebase.initializeApp(cfg);
     else fbApp=firebase.apps[0];
+
+    // ── App Check (reCAPTCHA v3) — ENFORCED ──
+    // Ye line App Check activate karti hai — bina iske Enforced mode mein login fail hoga
+    try{
+      const appCheck = firebase.appCheck();
+      appCheck.activate(
+        new firebase.appCheck.ReCaptchaV3Provider('6Lf0bsssAAAAAGogHhVFCGm5-1nRoGq5Ca_2nFSM'),
+        true // auto-refresh token
+      );
+    }catch(e){ console.warn('App Check init warning:', e); }
+
     db=firebase.firestore();
     auth=firebase.auth();
     // LOCAL persistence: Admin stays logged in across tabs/windows
