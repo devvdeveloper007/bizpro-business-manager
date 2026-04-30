@@ -2080,6 +2080,14 @@ async function doAdminRegister(){
         toast(t_('userid_taken'),'e');
         btn.textContent='🚀 Create Account';btn.disabled=false;return;
       }
+      if(authErr.code === 'auth/network-request-failed' || authErr.code === 'auth/internal-error'){
+        toast('Network error. Please check internet connection and try again.','e');
+        btn.textContent='🚀 Create Account';btn.disabled=false;return;
+      }
+      if(authErr.message && authErr.message.includes('400')){
+        toast('App verification failed. Please refresh the page and try again.','e');
+        btn.textContent='🚀 Create Account';btn.disabled=false;return;
+      }
       throw authErr;
     }
 
@@ -2087,21 +2095,20 @@ async function doAdminRegister(){
     currentUid = cred.user.uid;
 
     // Save userId mapping in adminAccounts collection
+    // NOTE: adminPassword aur recoveryPassword NAHI store hoti — security!
     await db.collection('adminAccounts').doc(currentUid).set({
       userId: userId,
       adminName: name,
-      adminPassword: pw,
-      recoveryPassword: recovPw,
       hiddenEmail: hiddenEmail,
       type: 'admin',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Save full config in user's private namespace
+    // Save full config in user's private namespace (password hashed)
+    const recovHash = await hashPassword(recovPw);
     await uCol('settings').doc('config').set({
       adminName: name,
-      adminPassword: pw,
-      recoveryPassword: recovPw,
+      recoveryPassword: recovHash,
       userId: userId,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
