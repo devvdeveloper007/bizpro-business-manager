@@ -1786,12 +1786,12 @@ function populateCatSelect(selId,type,defaultVal){const sel=$id(selId);if(!sel)r
 // ==================== INIT ====================
 // ── EMBEDDED FIREBASE CONFIG — No setup screen needed ──
 const BIZPRO_FB_CONFIG = {
-  apiKey: '1234',
+  apiKey: 'AIzaSyBAQgEfOYAbZQMVmYDXjtr0QLVCG7Z-4J8',
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '1234',
-  appId: '1234'
+  messagingSenderId: '936861585181',
+  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
 // Wait for Firebase SDK to load (handles slow networks)
@@ -1956,14 +1956,17 @@ async function initFB(cfg){
     else fbApp=firebase.apps[0];
 
     // ── App Check (reCAPTCHA v3) — ENFORCED ──
-    // Ye line App Check activate karti hai — bina iske Enforced mode mein login fail hoga
+    // Site Key: 6Lf0bsssAAAAAGogHhVFCGm5-1nRoGq5Ca_2nFSM
     try{
-      const appCheck = firebase.appCheck();
-      appCheck.activate(
-        new firebase.appCheck.ReCaptchaV3Provider('6Lf0bsssAAAAAGogHhVFCGm5-1nRoGq5Ca_2nFSM'),
-        true // auto-refresh token
-      );
-    }catch(e){ console.warn('App Check init warning:', e); }
+      if(typeof firebase.appCheck === 'function'){
+        const appCheck = firebase.appCheck();
+        appCheck.activate(
+          new firebase.appCheck.ReCaptchaV3Provider('6Lf0bsssAAAAAGogHhVFCGm5-1nRoGq5Ca_2nFSM'),
+          true // auto-refresh token
+        );
+        console.log('App Check activated successfully');
+      }
+    }catch(e){ console.warn('App Check init warning:', e.message); }
 
     db=firebase.firestore();
     auth=firebase.auth();
