@@ -1794,7 +1794,7 @@ const BIZPRO_FB_CONFIG = {
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '936861585181',
+  messagingSenderId: '93686158518',
   appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
@@ -1914,9 +1914,7 @@ window.onload=function(){
         currentFirebaseUser = user;
 
         // ⚠️ Anonymous user = staff session — admin nahi!
-        // Anonymous auth staff ke liye hai — admin login nahi karna
         if(user.isAnonymous){
-          // Staff member session check karo
           const _mSess = sessionStorage.getItem('bp-member-session');
           if(_mSess){
             try{
@@ -1937,12 +1935,17 @@ window.onload=function(){
               }
             }catch(e){}
           }
-          // No valid staff session — show login
           hide('appLoading'); show('loginScreen');
           return;
         }
 
-        // Real admin user (non-anonymous)
+        // Real admin user (non-anonymous) — ye tab fire hota hai jab admin login hai
+        // Agar admin app already visible hai to dobara launch mat karo
+        if(currentUser && currentUser.type === 'admin' && document.getElementById('adminApp').style.display !== 'none'){
+          hide('appLoading');
+          return; // Admin already active — logout mat karo!
+        }
+
         currentUid = user.uid;
         localStorage.setItem('bp-admin-uid', currentUid);
         try{
@@ -1954,7 +1957,14 @@ window.onload=function(){
             launchAdmin(data);
             return;
           }
-        }catch(e){ console.error('Config load error:', e); }
+        }catch(e){
+          console.error('Config load error:', e);
+          // Config load fail — agar admin app already open hai to band mat karo
+          if(currentUser && currentUser.type === 'admin'){
+            hide('appLoading');
+            return;
+          }
+        }
         hide('appLoading');
         show('loginScreen');
       } else {
@@ -3034,18 +3044,33 @@ async function doLogout(){
   const _wasStaffLogout = (currentUser && currentUser.type === 'member');
   currentUser=null;currentMemberId=null;currentFirebaseUser=null;currentUid=null;
   // Clear real-time listeners and cache
-  if(window._memberEntriesUnsub){window._memberEntriesUnsub();window._memberEntriesUnsub=null;}
+  // Saare snapshot listeners unsubscribe karo — permission errors band honge
+  if(window._memberEntriesUnsub){try{window._memberEntriesUnsub();}catch(e){}window._memberEntriesUnsub=null;}
+  if(window._adminEntriesUnsub){try{window._adminEntriesUnsub();}catch(e){}window._adminEntriesUnsub=null;}
+  if(window._adminPrivUnsub){try{window._adminPrivUnsub();}catch(e){}window._adminPrivUnsub=null;}
+  if(window._membersUnsub){try{window._membersUnsub();}catch(e){}window._membersUnsub=null;}
+  if(window._todosUnsub){try{window._todosUnsub();}catch(e){}window._todosUnsub=null;}
+  if(window._remindersUnsub){try{window._remindersUnsub();}catch(e){}window._remindersUnsub=null;}
   window._memberEntriesCache=null;window._adminPrivEntries=null;window._adminLedgerEntries=null;window._adminInventory=null;window._grpaEntries=null;
   hide('adminApp');hide('memberApp');
   $id('adminPwIn').value='';$id('memberPwIn').value='';const mui=$id('memberUserIdIn');if(mui)mui.value='';toggleMemberChangePw&&toggleMemberChangePw(false);
   // Reset login UI
   const sel=$id('memberSelect');if(sel)sel.style.display='';
   const nl=$id('memberNameLabel');if(nl)nl.textContent='';
-  // Restore tabs for normal login
-  const ta=$id('ltab-admin');if(ta)ta.style.display='';
-  const tb=$id('loginTabsBar');if(tb)tb.style.display='';
-  // Use _wasStaffLogout (captured BEFORE currentUser was nulled)
-  switchLoginTab(_wasStaffLogout?'member':'admin');
+  // Staff logout: sirf staff login dikhe, admin tab hide
+  if(_wasStaffLogout){
+    // Staff tha — admin tab + register/forgot hide karo
+    const ta=$id('ltab-admin');if(ta)ta.style.display='none';
+    const tb=$id('loginTabsBar');if(tb)tb.style.display='none';
+    // Admin/Register/Forgot buttons hide
+    const adminForm=$id('adminLoginForm');if(adminForm)adminForm.style.display='none';
+    switchLoginTab('member');
+  } else {
+    // Admin tha — normal login page
+    const ta=$id('ltab-admin');if(ta)ta.style.display='';
+    const tb=$id('loginTabsBar');if(tb)tb.style.display='';
+    switchLoginTab('admin');
+  }
   // Firebase Auth sign out
   try{await auth.signOut();}catch(e){}
   currentUid=null;currentFirebaseUser=null;
@@ -3054,7 +3079,22 @@ async function doLogout(){
   try{sessionStorage.removeItem('bp-member-session');sessionStorage.removeItem('bp-staff-link');}catch(e){}
   window._staffLinkMemberId=null;
   window._staffLinkUserId=null;
-  show('loginScreen');toast(t_('logged_out'),'i');
+  // Clean login page show karo
+  show('loginScreen');
+
+  // Agar staff tha — sirf staff login dikhao, admin panel ka koi trace nahi
+  if(_wasStaffLogout){
+    const ta=$id('ltab-admin');if(ta)ta.style.display='none';
+    const tb=$id('loginTabsBar');if(tb)tb.style.display='none';
+    const af=$id('adminLoginForm');if(af)af.style.display='none';
+    const mf=$id('memberLoginForm');if(mf)mf.style.display='block';
+  } else {
+    // Admin tha — normal clean login
+    const ta=$id('ltab-admin');if(ta)ta.style.display='';
+    const tb=$id('loginTabsBar');if(tb)tb.style.display='';
+    switchLoginTab('admin');
+  }
+  toast(t_('logged_out')||'Logged out','i');
 }
 function switchLoginTab(tab){$id('adminLoginForm').style.display=tab==='admin'?'block':'none';$id('memberLoginForm').style.display=tab==='member'?'block':'none';$id('ltab-admin').classList.toggle('active',tab==='admin');$id('ltab-member').classList.toggle('active',tab==='member');}
 
@@ -3115,7 +3155,7 @@ function loadAdminData(){
   buildDateBar('myaccDateBar',myaccDF,renderMyacc);
   buildDateBar('membersDateBar',memberCardsDF,renderMemberCards);
   // ── Auto-refresh: entries onSnapshot (Admin) — user-scoped ──
-  uCol('private_entries').where('deleted','==',false).onSnapshot(snap=>{
+  window._adminPrivUnsub = uCol('private_entries').where('deleted','==',false).onSnapshot(snap=>{
     window._adminPrivEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     renderDashStats();
     renderGrpbCards();
@@ -3126,7 +3166,7 @@ function loadAdminData(){
     // Auto-refresh report if visible
     const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
   });
-  uCol('entries').where('deleted','==',false).onSnapshot(snap=>{
+  window._adminEntriesUnsub = uCol('entries').where('deleted','==',false).onSnapshot(snap=>{
     window._grpaEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     renderDashStats();
     loadDashRecent(_dashDF&&_dashDF.mode?_dashDF.mode:'today');
