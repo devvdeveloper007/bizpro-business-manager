@@ -212,7 +212,7 @@
     </div>
     <h1>Privacy Policy</h1>
     <div class="badge-row">
-      <span class="badge green">Last Updated: April 2026</span>
+      <span class="badge green">Last Updated: March 2026</span>
       <span class="badge blue">Version 3.0</span>
     </div>
   </div>
@@ -247,7 +247,7 @@
     </div>
     <div class="section-body">
       <ul>
-        <li><strong>Authentication:</strong> Verify your identity via Firebase Auth (Admin) or custom User ID system (Staff)</li>
+        <li><strong>Authentication:</strong> Verify your identity via Firebase Auth (Admin) or User ID + password system (Staff). Staff login uses Firebase Anonymous Authentication temporarily to securely access data — no personal information is stored in this anonymous session</li>
         <li><strong>Data sync:</strong> Store and sync all your business entries, staff data, and settings in real time across devices using Google Firestore</li>
         <li><strong>Multi-user isolation:</strong> Ensure Admin and Staff data are properly isolated — Staff cannot see each other's entries or the Admin's private ledger</li>
         <li><strong>Password recovery:</strong> Use your recovery password to reset your main Firebase Auth password if forgotten</li>
@@ -267,8 +267,7 @@
       <ul>
         <li><strong>Google Firestore:</strong> All your app data (entries, staff, settings, folders, inventory) is stored in Firestore — a NoSQL database hosted on Google Cloud Platform (GCP)</li>
         <li><strong>Firebase Authentication:</strong> Admin passwords are encrypted and managed by Google Firebase Auth — we do not see or store plaintext Admin passwords</li>
-                <li><strong>Firebase App Check:</strong> We use Firebase App Check to verify that requests to our backend come only from our genuine app — preventing unauthorized access and bot abuse</li>
-                <li><strong>Password Hashing:</strong> Staff passwords are hashed using SHA-256 before storage — we never store plaintext passwords for any user type</li>
+                <li><strong>Firebase Anonymous Authentication:</strong> Staff login uses a temporary anonymous Firebase session to securely access their data. This session contains no personal information and is cleared on logout</li>
         <li><strong>Staff passwords:</strong> Stored as plain text in Firestore accessible only to the Admin within their private namespace. We recommend strong, unique passwords</li>
         <li><strong>Offline data:</strong> Static app files (HTML, icons) are cached by the Service Worker on your device for offline access — no personal data is cached offline</li>
         <li><strong>Timestamps:</strong> <span class="new-tag">NEW</span> All entries now store a server-side Firebase timestamp and a client-side ISO timestamp for accurate time tracking</li>
@@ -401,6 +400,7 @@
         <strong style="color:#94a3b8">Version history:</strong><br>
         v3.0 (March 2026) — Firebase Hosting migration, timestamp on all entries, password min 6 chars, Gujarati + Tamil added, EDIT feature for To-Do/Reminders/Notes, Old→New sort in ledger<br>
         v2.0 (March 2026) — Firebase Authentication, User ID login, Passkey/Biometric, staff isolation, per-user data namespacing<br>
+        v2.1 (April 2026) — App Check, Anonymous Auth for Staff, SHA-256 password hashing, Firestore Rules v2.3<br>
         v1.0 (March 2026) — Initial policy
       </p>
     </div>

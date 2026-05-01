@@ -2063,6 +2063,14 @@ async function doAdminRegister(){
   const hiddenEmail = userId + '@bizpro-internal.app';
 
   try{
+    // Agar anonymous user logged in hai to sign out karo pehle
+    try{
+      if(auth.currentUser && auth.currentUser.isAnonymous){
+        await auth.signOut();
+        await new Promise(r=>setTimeout(r,500)); // wait 500ms
+      }
+    }catch(e){ console.warn('Pre-register signout:', e); }
+
     // Check if User ID already taken (Firestore lookup — fast)
     const exists = await db.collection('adminAccounts').where('userId','==',userId).limit(1).get();
     if(!exists.empty){
@@ -2806,9 +2814,30 @@ async function doMemberLogin(){
       btn.innerHTML=origText;btn.disabled=false;return;
     }
 
-    if(pw!==m.password){
+    // Password verify karo — hash ya plain text dono support
+    const pwMatch = await verifyMemberPassword(pw, m.password);
+    if(!pwMatch){
       toast(t_('member_wrong_pw')||'Wrong password!','e');
       btn.innerHTML=origText;btn.disabled=false;return;
+    }
+
+    // Auto-migrate: agar plain text tha to hash karke save karo
+    if(m.password && !/^[0-9a-f]{64}$/.test(m.password)){
+      try{
+        const hashed = await hashPassword(pw);
+        await uColDirect(currentUid,'members').doc(m.id).update({password: hashed});
+        m.password = hashed;
+      }catch(e){ console.warn('Password migration:', e); }
+    }
+
+    // Firebase Anonymous Auth sign in — App Check ke liye zaroori
+    // Ye Staff ko Firestore access deta hai bina real email ke
+    try{
+      await auth.signInAnonymously();
+      console.log('Staff anonymous auth success');
+    }catch(authErr){
+      console.warn('Anonymous auth warning:', authErr.code);
+      // Continue anyway — rules mein fallback hai
     }
 
     currentUser={type:'member',id:m.id,name:m.name,group:m.group};
