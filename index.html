@@ -1860,6 +1860,12 @@ window.onload=function(){
       if(_adminUid){
         currentUid = _adminUid;
         localStorage.setItem('bp-admin-uid', _adminUid); // Save for this session
+        // Dusre device pe: pehle anonymous auth karo taaki Firestore read ho sake
+        try{
+          if(!auth.currentUser){
+            await auth.signInAnonymously();
+          }
+        }catch(e){ console.warn('Pre-link anonymous auth:', e.code); }
         try{
           await loadMembersForLogin();
         }catch(e){ console.error('loadMembersForLogin error:', e); }
@@ -1906,6 +1912,37 @@ window.onload=function(){
       if(user){
         // User already signed in
         currentFirebaseUser = user;
+
+        // ⚠️ Anonymous user = staff session — admin nahi!
+        // Anonymous auth staff ke liye hai — admin login nahi karna
+        if(user.isAnonymous){
+          // Staff member session check karo
+          const _mSess = sessionStorage.getItem('bp-member-session');
+          if(_mSess){
+            try{
+              const ms = JSON.parse(_mSess);
+              if(ms && ms.adminUid && (Date.now()-ms.ts) < 3600000){
+                currentUid = ms.adminUid;
+                currentUser={type:'member',id:ms.id,name:ms.name,group:ms.group};
+                currentMemberId=ms.id;
+                await loadMembersForLogin();
+                const mObj = membersCache.find(x=>x.id===ms.id);
+                if(mObj){
+                  ms.ts=Date.now();
+                  sessionStorage.setItem('bp-member-session',JSON.stringify(ms));
+                  hide('appLoading');
+                  launchMember(mObj);
+                  return;
+                }
+              }
+            }catch(e){}
+          }
+          // No valid staff session — show login
+          hide('appLoading'); show('loginScreen');
+          return;
+        }
+
+        // Real admin user (non-anonymous)
         currentUid = user.uid;
         localStorage.setItem('bp-admin-uid', currentUid);
         try{
@@ -2987,6 +3024,12 @@ async function doMemberChangePw(){
   btn.textContent='🔑 Change Password';btn.disabled=false;
 }
 async function doLogout(){
+  // Anonymous session bhi clear karo
+  try{
+    if(auth.currentUser && auth.currentUser.isAnonymous){
+      await auth.signOut();
+    }
+  }catch(e){ console.warn('Logout anon clear:', e); }
   window.onbeforeunload = null;
   const _wasStaffLogout = (currentUser && currentUser.type === 'member');
   currentUser=null;currentMemberId=null;currentFirebaseUser=null;currentUid=null;
