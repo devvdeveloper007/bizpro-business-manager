@@ -709,6 +709,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div style="display:flex;align-items:center;gap:6px">
       <div style="font-size:10px;color:var(--muted)" id="adminDate"></div>
       <div style="font-size:12px;font-weight:800;color:var(--primary)" id="liveTime">--:--</div>
+      <!-- Firebase Connection Status Dot -->
+      <div id="fbStatusDot" title="Firebase: Connecting..." style="width:9px;height:9px;border-radius:50%;background:#888;flex-shrink:0;transition:background 0.4s;box-shadow:0 0 0 2px rgba(0,0,0,0.15)"></div>
       <button onclick="doLogout()" class="topbar-logout-btn" style="display:none;align-items:center;gap:3px;padding:5px 10px;background:transparent;border:1.5px solid rgba(248,81,73,.4);border-radius:var(--rsm);color:var(--red);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">&#x1F6AA; <span class="topbar-logout-txt">Logout</span></button>
     </div>
   </div>
@@ -1336,6 +1338,8 @@ input[list]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     </div>
     <div style="display:flex;align-items:center;gap:7px">
       <div style="text-align:right;min-width:0;overflow:hidden"><div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px" id="mAppName">--</div><div style="font-size:10px;color:var(--muted)" id="mAppGroup">--</div></div>
+      <!-- Firebase Connection Status Dot -->
+      <div id="fbStatusDotStaff" title="Firebase: Connecting..." style="width:9px;height:9px;border-radius:50%;background:#888;flex-shrink:0;transition:background 0.4s;box-shadow:0 0 0 2px rgba(0,0,0,0.15)"></div>
       <button class="theme-btn" onclick="toggleTheme()" id="mThemeBtn">&#x1F319;</button>
       <button class="logout-btn" style="width:auto;padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;flex-shrink:0" onclick="doLogout()">&#x1F6AA; Logout</button>
     </div>
@@ -2863,6 +2867,80 @@ async function doMemberLogin(){
   }
 }
 
+// ── Firebase Connection Status Monitor ──
+function initFirebaseStatusMonitor(){
+  // Firestore connection status track karo
+  const updateDots = (connected) => {
+    const color = connected ? '#22c55e' : '#ef4444'; // green ya red
+    const title = connected ? 'Firebase: Connected ✅' : 'Firebase: Disconnected ❌';
+    const shadow = connected
+      ? '0 0 0 2px rgba(34,197,94,0.3)'
+      : '0 0 0 2px rgba(239,68,68,0.3)';
+    ['fbStatusDot','fbStatusDotStaff'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el){
+        el.style.background = color;
+        el.title = title;
+        el.style.boxShadow = shadow;
+      }
+    });
+  };
+
+  // Firestore .info/connected jaisa nahi hota — network online/offline use karo
+  // Plus ek Firestore ping bhi karte hain
+  const checkConnection = async () => {
+    if(!navigator.onLine){
+      updateDots(false);
+      return;
+    }
+    try{
+      // Firestore ko ping karo — ek simple read
+      await db.collection('adminAccounts').limit(1).get();
+      updateDots(true);
+    }catch(e){
+      // Permission denied = connected (rules block kar raha hai — Firebase toh hai!)
+      if(e.code === 'permission-denied' || e.code === 'permission_denied'){
+        updateDots(true);
+      } else {
+        updateDots(false);
+      }
+    }
+  };
+
+  // Pehle check
+  checkConnection();
+
+  // Har 30 second mein check
+  setInterval(checkConnection, 30000);
+
+  // Browser online/offline events
+  window.addEventListener('online', ()=>{ updateDots(true); checkConnection(); });
+  window.addEventListener('offline', ()=>{ updateDots(false); });
+}
+
+// ── Password Hashing Utility (SHA-256 via Web Crypto) ──
+async function hashPassword(pw){
+  if(!pw) return '';
+  // Agar already hashed hai (64 char hex) to wapas return karo
+  if(/^[0-9a-f]{64}$/.test(pw)) return pw;
+  const msgBuffer = new TextEncoder().encode(pw);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Check karo password match karta hai ya nahi (plain text ya hashed dono support)
+async function verifyMemberPassword(inputPw, storedPw){
+  if(!storedPw) return false;
+  // Agar stored hash hai (64 char hex)
+  if(/^[0-9a-f]{64}$/.test(storedPw)){
+    const inputHash = await hashPassword(inputPw);
+    return inputHash === storedPw;
+  }
+  // Legacy: plain text compare (pehle wale users ke liye)
+  return inputPw === storedPw;
+}
+
 // ── Staff: Toggle Change Password section ──
 function toggleMemberChangePw(show){
   $id('memberChangePwSection').style.display=show?'block':'none';
@@ -2942,6 +3020,8 @@ function launchAdmin(s){
   hide('loginScreen');show('adminApp');const name=s.adminName||'Admin';
   // Save login to history
   saveLoginHistory();
+  // Firebase status monitor start karo
+  setTimeout(initFirebaseStatusMonitor, 1000);
   // Set currentUid from auth if not already set
   // Save adminUid so member login can use it
   if(currentUid) localStorage.setItem('bp-admin-uid', currentUid);
@@ -2981,6 +3061,8 @@ async function launchMember(m){
   loadMemberData(m.id);
   // Passkey UI init (agar device support karta ho)
   setTimeout(initMemberPasskeyUI, 400);
+  // Firebase status monitor
+  setTimeout(initFirebaseStatusMonitor, 1000);
 }
 
 // ==================== ADMIN DATA ====================
