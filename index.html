@@ -1794,7 +1794,7 @@ const BIZPRO_FB_CONFIG = {
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '93686158518',
+  messagingSenderId: '936861585181',
   appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
@@ -1903,7 +1903,10 @@ window.onload=function(){
     }
 
     // ── Firebase Auth state listener — handles auto-login on reload ──
+    let _adminLaunched = false; // Admin ek baar launch hone ke baad dobara trigger nahi hoga
     auth.onAuthStateChanged(async (user) => {
+      // Agar admin already launched hai to skip karo
+      if(_adminLaunched && currentUser && currentUser.type==='admin') return;
       // If staff link URL or staff-link session flag — never auto-launch admin
       const _spCheck = new URLSearchParams(window.location.search);
       if(_spCheck.get("m") || _spCheck.get("staff") || sessionStorage.getItem("bp-staff-link")){
@@ -1919,7 +1922,7 @@ window.onload=function(){
           if(_mSess){
             try{
               const ms = JSON.parse(_mSess);
-              if(ms && ms.adminUid && (Date.now()-ms.ts) < 3600000){
+              if(ms && ms.adminUid && (Date.now()-ms.ts) < 86400000){ // 24 hours
                 currentUid = ms.adminUid;
                 currentUser={type:'member',id:ms.id,name:ms.name,group:ms.group};
                 currentMemberId=ms.id;
@@ -1953,7 +1956,7 @@ window.onload=function(){
           if(cfgDoc.exists){
             const data = cfgDoc.data();
             currentUser = {type:'admin', name: data.adminName||'Admin'};
-            hide('appLoading');
+            _adminLaunched = true; hide('appLoading');
             launchAdmin(data);
             return;
           }
@@ -1974,7 +1977,7 @@ window.onload=function(){
           try{
             const ms = JSON.parse(_mSess);
             // Valid for 1 hour
-            if(ms && ms.adminUid && (Date.now()-ms.ts) < 3600000){
+            if(ms && ms.adminUid && (Date.now()-ms.ts) < 86400000){ // 24 hours
               currentUid = ms.adminUid;
               localStorage.setItem('bp-admin-uid', ms.adminUid);
               currentUser={type:'member',id:ms.id,name:ms.name,group:ms.group};
@@ -2837,7 +2840,7 @@ async function doMemberLogin(){
         const _tryUids=['==',userId,'==',userId.toUpperCase(),'==',userId.charAt(0).toUpperCase()+userId.slice(1)];
         let globalSnap=null;
         for(let i=0;i<_tryUids.length;i+=2){
-          const snap=await db.collectionGroup('members').where('userId',_tryUids[i],_tryUids[i+1]).limit(1).get();
+          const snap=await db.collectionGroup('members').where('userId','==',_tryUids[i]).limit(1).get();
           if(!snap.empty){globalSnap=snap;break;}
         }
         if(globalSnap&&!globalSnap.empty){
@@ -2896,12 +2899,14 @@ async function doMemberLogin(){
     window._staffLinkMemberId=null;
     window._staffLinkUserId=null;
 
-    // Save member session
+    // Save member session (24 hour valid)
+    const _mSessionData = {
+      id:m.id, name:m.name, group:m.group, userId:m.userId,
+      adminUid:currentUid, ts:Date.now()
+    };
     try{
-      sessionStorage.setItem('bp-member-session', JSON.stringify({
-        id:m.id, name:m.name, group:m.group, userId:m.userId,
-        adminUid:currentUid, ts:Date.now()
-      }));
+      sessionStorage.setItem('bp-member-session', JSON.stringify(_mSessionData));
+      localStorage.setItem('bp-member-session-bk', JSON.stringify(_mSessionData)); // backup
     }catch(e){}
 
     btn.innerHTML=origText;btn.disabled=false;
@@ -3082,19 +3087,30 @@ async function doLogout(){
   // Clean login page show karo
   show('loginScreen');
 
-  // Agar staff tha — sirf staff login dikhao, admin panel ka koi trace nahi
   if(_wasStaffLogout){
-    const ta=$id('ltab-admin');if(ta)ta.style.display='none';
-    const tb=$id('loginTabsBar');if(tb)tb.style.display='none';
-    const af=$id('adminLoginForm');if(af)af.style.display='none';
-    const mf=$id('memberLoginForm');if(mf)mf.style.display='block';
+    // ── Staff logout: SIRF staff login dikhao ──
+    // Admin tab, register, forgot — sab hide karo
+    const ltBar=$id('loginTabsBar');if(ltBar)ltBar.style.display='none';
+    const adminTab=$id('ltab-admin');if(adminTab)adminTab.style.display='none';
+    const adminLoginSubs=$id('adminAuthLogin');if(adminLoginSubs)adminLoginSubs.style.display='none';
+    const adminLoginReg=$id('adminAuthRegister');if(adminLoginReg)adminLoginReg.style.display='none';
+    const adminLoginForg=$id('adminAuthForgot');if(adminLoginForg)adminLoginForg.style.display='none';
+    const adminForm=$id('adminLoginForm');if(adminForm)adminForm.style.display='none';
+    // Staff login form dikhao
+    const memberForm=$id('memberLoginForm');if(memberForm)memberForm.style.display='block';
+    // Staff tab active karo
+    const memberTab=$id('ltab-member');
+    if(memberTab){memberTab.classList.add('active');}
+    switchLoginTab('member');
   } else {
-    // Admin tha — normal clean login
-    const ta=$id('ltab-admin');if(ta)ta.style.display='';
-    const tb=$id('loginTabsBar');if(tb)tb.style.display='';
+    // ── Admin logout: Normal login page ──
+    const ltBar=$id('loginTabsBar');if(ltBar)ltBar.style.display='';
+    const adminTab=$id('ltab-admin');if(adminTab)adminTab.style.display='';
+    // Flag reset karo taaki admin dobara login kar sake
+    if(typeof _adminLaunched !== 'undefined') _adminLaunched = false;
     switchLoginTab('admin');
   }
-  toast(t_('logged_out')||'Logged out','i');
+  toast(t_('logged_out')||'Logged out successfully','i');
 }
 function switchLoginTab(tab){$id('adminLoginForm').style.display=tab==='admin'?'block':'none';$id('memberLoginForm').style.display=tab==='member'?'block':'none';$id('ltab-admin').classList.toggle('active',tab==='admin');$id('ltab-member').classList.toggle('active',tab==='member');}
 
@@ -3864,7 +3880,7 @@ async function renderMemberCards(){
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;font-size:12px">
         <div style="background:rgba(63,185,80,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Income</div><div class="amt-pos" style="font-size:12px">₹${fmt(inc)}</div></div>
         <div style="background:rgba(248,81,73,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Expense</div><div class="amt-neg" style="font-size:12px">₹${fmt(pe+he)}</div></div>
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">🔑 Pass</div><div style="font-size:11px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password||'—'}</div></div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">🔑 Pass</div><div style="font-size:11px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password?(/^[0-9a-f]{64}$/.test(m.password)?'🔒 Set':'✏️ Set'):'—'}</div></div>
       </div>
       <!-- Action Buttons: 2x2 grid -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
@@ -3900,7 +3916,7 @@ function openEditMember(mId,ne,group){
   const m=membersCache.find(x=>x.id===mId);
   if(m){
     if($id('emUserId'))$id('emUserId').value=m.userId||'';
-    if($id('emCurrentPwDisplay'))$id('emCurrentPwDisplay').textContent=m.password||'—';
+    if($id('emCurrentPwDisplay'))$id('emCurrentPwDisplay').textContent=m.password?(/^[0-9a-f]{64}$/.test(m.password)?'🔒 Secured (Hashed)':'✏️ Plain (Not Hashed)'):'—';
     if($id('emPhone'))$id('emPhone').value=m.phone||'';
     if($id('emJoinDate'))$id('emJoinDate').value=m.joinDate||'';
     if($id('emSalary'))$id('emSalary').value=m.salary||'';
@@ -6636,7 +6652,7 @@ if('serviceWorker' in navigator){
 // ═══════════════════════════════════════════════
 // AUTO-LOGOUT: 1 hour inactivity
 // ═══════════════════════════════════════════════
-const INACTIVITY_LIMIT = 60*60*1000; // 1 hour
+const INACTIVITY_LIMIT = 4*60*60*1000; // 4 hours (extended for better UX)
 let _inactTimer=null, _inactActive=false;
 function _resetInact(){
   if(!_inactActive) return;
