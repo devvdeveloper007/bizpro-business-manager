@@ -1753,19 +1753,33 @@ function _sortKey(e){
   return String(ts);
 }
 function _sortEntries(arr){
-  if(_ledgerSortOrder==='old') return arr.sort((a,b)=>_sortKey(a).localeCompare(_sortKey(b)));
-  return arr.sort((a,b)=>_sortKey(b).localeCompare(_sortKey(a)));
+  // In-place sort — date+time ke hisaab se
+  if(_ledgerSortOrder==='old'){
+    arr.sort((a,b)=>{
+      const ka=_sortKey(a), kb=_sortKey(b);
+      return ka.localeCompare(kb);
+    });
+  } else {
+    arr.sort((a,b)=>{
+      const ka=_sortKey(a), kb=_sortKey(b);
+      return kb.localeCompare(ka); // newest first
+    });
+  }
+  return arr;
 }
 function toggleLedgerSort(){
   _ledgerSortOrder=_ledgerSortOrder==='new'?'old':'new';
   const lbl=_ledgerSortOrder==='new'?'&#x1F53D; New→Old':'&#x1F53C; Old→New';
+  // All sort buttons update karo
   document.querySelectorAll('[id$="SortBtn"]').forEach(b=>{ b.innerHTML=lbl; });
-  // Re-render all active ledgers
+  // Re-render all active views
   try{renderGrpaEntries();}catch(e){}
   try{renderMyacc();}catch(e){}
   try{renderStaffLedger();}catch(e){}
   try{renderMemberDash();}catch(e){}
   try{renderMemberLedger();}catch(e){}
+  try{renderDashStats();}catch(e){}
+  try{renderGrpbCards();}catch(e){}
   try{renderTodos();}catch(e){}
   try{renderReminders();}catch(e){}
   try{renderNotes();}catch(e){}
@@ -3286,19 +3300,31 @@ async function saveGrpaEntry(){
   const col=m.group==='B'?'private_entries':'entries';
   const geTypeVal=$id('geType')?.value||'home_expense';
   const geCatVal=$id('geCat')?.value||'General';
-  await uCol(col).add({memberId:mId,memberName:m.name,group:m.group,type:geTypeVal,amount:amt,category:geCatVal,description:gv('geDesc'),date:gv('geDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('mGrpaEntry');clearFields(['geAmt','geDesc']);setToday('geDate');toast('Entry saved!','s');renderGrpaEntries();
+  try{
+    await uCol(col).add({memberId:mId,memberName:m.name,group:m.group,type:geTypeVal,amount:amt,category:geCatVal,description:gv('geDesc'),date:gv('geDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    closeM('mGrpaEntry');clearFields(['geAmt','geDesc']);setToday('geDate');toast('Entry saved! ✅','s');renderGrpaEntries();
+  }catch(e){console.error('saveGrpaEntry:',e);toast('Save failed: '+e.message,'e');}
 }
 
 async function saveMemberEntry(){
-  if(!currentUid){toast('Session error. Re-login.','e');return;}
+  // currentUid = adminUid (staff ke liye bhi) — ensure it's set
+  if(!currentUid){
+    const saved=localStorage.getItem('bp-admin-uid');
+    if(saved) currentUid=saved;
+    else{toast('Session error. Please re-login.','e');return;}
+  }
   const amt=parseFloat(gv('mAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
   let m=membersCache.find(x=>x.id===currentMemberId);
   if(!m){try{await loadMembersForLogin();m=membersCache.find(x=>x.id===currentMemberId);}catch(e){}}
   if(!m){toast('Member not found. Re-login.','e');return;}
   const col=m.group==='A'?'entries':'private_entries';
-  await uCol(col).add({memberId:currentMemberId,memberName:m.name,group:m.group,type:memberType,amount:amt,category:gv('mCat'),description:gv('mDesc'),date:gv('mDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  clearFields(['mAmt','mDesc']);toast('Entry saved!','s');renderMemberDash();renderMemberLedger();
+  try{
+    await uCol(col).add({memberId:currentMemberId,memberName:m.name,group:m.group,type:memberType,amount:amt,category:gv('mCat'),description:gv('mDesc'),date:gv('mDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    clearFields(['mAmt','mDesc']);toast('Entry saved! ✅','s');renderMemberDash();renderMemberLedger();
+  }catch(e){
+    console.error('saveMemberEntry error:',e);
+    toast('Save failed: '+e.message,'e');
+  }
 }
 
 async function delEntry(col,docId){
@@ -3468,8 +3494,13 @@ async function saveMyaccEntry(){
   if(!activeFolderId){toast('Select a folder first','e');return;}
   const amt=parseFloat(gv('myaccAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
   const entryDate = gv('myaccDate') || todayStr();
-  await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:entryDate,deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  clearFields(['myaccAmt','myaccDesc']);toast('Entry saved!','s');renderMyacc();
+  try{
+    await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:entryDate,deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    clearFields(['myaccAmt','myaccDesc']);toast('Entry saved! ✅','s');renderMyacc();
+  }catch(e){
+    console.error('saveMyaccEntry error:',e);
+    toast('Save failed: '+e.message,'e');
+  }
 }
 
 async function renderMyacc(){
