@@ -1808,7 +1808,7 @@ const BIZPRO_FB_CONFIG = {
   authDomain: 'bizpro-business-manager.firebaseapp.com',
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
-  messagingSenderId: '936861585181',
+  messagingSenderId: '93686158518',
   appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
@@ -3071,7 +3071,8 @@ async function doLogout(){
   const _allUnsubs = [
     '_memberEntriesUnsub','_adminEntriesUnsub','_adminEntriesUnsub2','_adminPrivUnsub',
     '_membersUnsub','_foldersUnsub','_inventoryUnsub','_todosUnsub','_remindersUnsub',
-    '_notesUnsub','_deletedLogUnsub','_nbFoldersUnsub','_nbNotebooksUnsub','_nbNotesUnsub'
+    '_notesUnsub','_deletedLogUnsub','_nbFoldersUnsub','_nbNotebooksUnsub','_nbNotesUnsub',
+    '_mTodosUnsub','_mRemsUnsub','_mNotesUnsub'
   ];
   _allUnsubs.forEach(k=>{
     if(window[k]){try{window[k]();}catch(e){}window[k]=null;}
@@ -3202,9 +3203,12 @@ function loadAdminData(){
     // Auto-refresh report if visible
     const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
   });
+  // Real-time: entries changes turant admin ko dikhai dein
   window._adminEntriesUnsub = uCol('entries').where('deleted','==',false).onSnapshot(snap=>{
     window._grpaEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     renderDashStats();
+    renderGrpbCards(); // Staff cards turant update hon
+    const _mpgM=$id('pg-members');if(_mpgM&&_mpgM.style.display!=='none')renderMemberCards();
     loadDashRecent(_dashDF&&_dashDF.mode?_dashDF.mode:'today');
     const mpg2=$id('pg-members');if(mpg2&&mpg2.style.display!=='none')renderMemberCards();
     if($id('staffLedgerInline')&&$id('staffLedgerInline').style.display!=='none')renderStaffLedger();
@@ -4635,9 +4639,9 @@ function renderReminders(){
   el.innerHTML=list.map(r=>{
     const isOvd=!r.done&&r.dueDate&&r.dueDate<ts;
     return `<div class="rem-item ${isOvd?'rem-overdue':''}">
-      <div style="font-size:20px;cursor:pointer;flex-shrink:0" onclick="toggleReminder('${r._id}',${r.done})">${r.done?'✅':isOvd?'⏰':(emo[r.type]||'🔔')}</div>
+      <div style="font-size:16px;cursor:pointer;flex-shrink:0;width:24px;text-align:center" onclick="toggleReminder('${r._id}',${r.done})">${r.done?'✅':isOvd?'⏰':(emo[r.type]||'🔔')}</div>
       <div style="flex:1">
-        <div style="font-weight:700;font-size:14px;${r.done?'text-decoration:line-through;opacity:.5;':''}">${r.title}${r.amount>0?` <span style="color:var(--gold)">₹${fmt(r.amount)}</span>`:''}</div>
+        <div style="font-weight:600;font-size:13px;line-height:1.3;${r.done?'text-decoration:line-through;opacity:.5;':''}">${r.title}${r.amount>0?` <span style="color:var(--gold)">₹${fmt(r.amount)}</span>`:''}</div>
         <div class="rem-dt">📅 ${r.dueDate?fmtD(r.dueDate):'—'} · ⏰ ${fmtRemTime(r.alertTime)} · 🔄 ${r.repeat||'once'}${isOvd?' · <span style="color:var(--red)">⚠️ OVERDUE</span>':''} ${(()=>{let ct=r.clientCreatedAt||r.createdAt;let ts='';try{if(ct&&typeof ct==='object'&&ct.toDate)ts=ct.toDate().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});else if(ct&&typeof ct==='object'&&ct.seconds)ts=new Date(ct.seconds*1000).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});else if(typeof ct==='string')ts=new Date(ct).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});}catch(e){}return ts?`🕐 ${ts}`:'';})()}</div>
         ${r.note?`<div style="font-size:11px;color:var(--muted)">${r.note}</div>`:''}
       </div>
@@ -4675,9 +4679,9 @@ function renderMemberReminders(){
   el.innerHTML=rems.map(r=>{
     const isOvd=!r.done&&r.dueDate&&r.dueDate<ts;
     return `<div class="rem-item ${isOvd?'rem-overdue':''}">
-      <div style="font-size:20px;cursor:pointer" onclick="toggleReminder('${r._id}',${r.done})">${r.done?'✅':isOvd?'⏰':'🔔'}</div>
+      <div style="font-size:16px;cursor:pointer;width:24px;text-align:center" onclick="toggleReminder('${r._id}',${r.done})">${r.done?'✅':isOvd?'⏰':'🔔'}</div>
       <div style="flex:1">
-        <div style="font-weight:700;font-size:14px;${r.done?'text-decoration:line-through;opacity:.5;':''}">${r.title}</div>
+        <div style="font-weight:600;font-size:13px;line-height:1.3;${r.done?'text-decoration:line-through;opacity:.5;':''}">${r.title}</div>
         <div class="rem-dt">📅 ${r.dueDate?fmtD(r.dueDate):'—'}${isOvd?' ⚠️ Overdue':''}</div>
         ${r.note?`<div style="font-size:11px;color:var(--muted)">${r.note}</div>`:''}
       </div>
@@ -5039,9 +5043,12 @@ function loadMemberData(mId){
       console.error('Member entries listener error:', err);
     });
 
-  uCol('todos').where('userId','==',mId).onSnapshot(snap=>{window._memberTodos=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberTodos();});
-  uCol('reminders').where('userId','==',mId).onSnapshot(snap=>{window._memberRems=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberReminders();});
-  uCol('notes').where('userId','==',mId).onSnapshot(snap=>{window._memberNotes=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberNotes();});
+  if(window._mTodosUnsub){try{window._mTodosUnsub();}catch(e){}}
+  window._mTodosUnsub = uCol('todos').where('userId','==',mId).onSnapshot(snap=>{window._memberTodos=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberTodos();}, err=>{console.warn('mTodos:',err.code);});
+  if(window._mRemsUnsub){try{window._mRemsUnsub();}catch(e){}}
+  window._mRemsUnsub = uCol('reminders').where('userId','==',mId).onSnapshot(snap=>{window._memberRems=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberReminders();}, err=>{console.warn('mRems:',err.code);});
+  if(window._mNotesUnsub){try{window._mNotesUnsub();}catch(e){}}
+  window._mNotesUnsub = uCol('notes').where('userId','==',mId).onSnapshot(snap=>{window._memberNotes=snap.docs.map(d=>({_id:d.id,...d.data()}));renderMemberNotes();}, err=>{console.warn('mNotes:',err.code);});
   buildDateBar('mLedgerDateBar',mLedgerDF,renderMemberLedger);
   buildDateBar('mDashDateBar',mDashDF,renderMemberDash);
 }
