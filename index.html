@@ -1920,10 +1920,9 @@ window.onload=function(){
     }
 
     // ── Firebase Auth state listener — handles auto-login on reload ──
-    let _adminLaunched = false; // Admin ek baar launch hone ke baad dobara trigger nahi hoga
     auth.onAuthStateChanged(async (user) => {
       // Agar admin already launched hai to skip karo
-      if(_adminLaunched && currentUser && currentUser.type==='admin') return;
+      if(window._adminLaunched && currentUser && currentUser.type==='admin') return;
       // If staff link URL or staff-link session flag — never auto-launch admin
       const _spCheck = new URLSearchParams(window.location.search);
       if(_spCheck.get("m") || _spCheck.get("staff") || sessionStorage.getItem("bp-staff-link")){
@@ -1973,7 +1972,7 @@ window.onload=function(){
           if(cfgDoc.exists){
             const data = cfgDoc.data();
             currentUser = {type:'admin', name: data.adminName||'Admin'};
-            _adminLaunched = true; hide('appLoading');
+            window._adminLaunched = true; hide('appLoading');
             launchAdmin(data);
             return;
           }
@@ -3131,7 +3130,7 @@ async function doLogout(){
     const ltBar=$id('loginTabsBar');if(ltBar)ltBar.style.display='';
     const adminTab=$id('ltab-admin');if(adminTab)adminTab.style.display='';
     // Flag reset karo taaki admin dobara login kar sake
-    if(typeof _adminLaunched !== 'undefined') _adminLaunched = false;
+    window._adminLaunched = false;
     switchLoginTab('admin');
   }
   toast(t_('logged_out')||'Logged out successfully','i');
@@ -3314,7 +3313,6 @@ async function saveGrpaEntry(){
 }
 
 async function saveMemberEntry(){
-  // currentUid = adminUid (staff ke liye bhi) — ensure it's set
   if(!currentUid){
     const saved=localStorage.getItem('bp-admin-uid');
     if(saved) currentUid=saved;
@@ -3327,10 +3325,17 @@ async function saveMemberEntry(){
   const col=m.group==='A'?'entries':'private_entries';
   try{
     await uCol(col).add({memberId:currentMemberId,memberName:m.name,group:m.group,type:memberType,amount:amt,category:gv('mCat'),description:gv('mDesc'),date:gv('mDate')||todayStr(),deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    clearFields(['mAmt','mDesc']);toast('Entry saved! ✅','s');renderMemberDash();renderMemberLedger();
+    // Amount aur description clear karo — date reset karo
+    if($id('mAmt')) $id('mAmt').value='';
+    if($id('mDesc')) $id('mDesc').value='';
+    setToday('mDate');
+    toast('Entry saved! ✅','s');
+    renderMemberDash();
+    renderMemberLedger();
   }catch(e){
-    console.error('saveMemberEntry error:',e);
-    toast('Save failed: '+e.message,'e');
+    console.error('saveMemberEntry error:',e.code||e.message);
+    if(e.code==='permission-denied') toast('Permission denied — Please re-login','e');
+    else toast('Save failed: '+e.message,'e');
   }
 }
 
@@ -3499,14 +3504,24 @@ function selectMyaccType(type,btn){
 
 async function saveMyaccEntry(){
   if(!activeFolderId){toast('Select a folder first','e');return;}
+  // currentUid rescue — agar null ho gaya
+  if(!currentUid){
+    const saved=localStorage.getItem('bp-admin-uid');
+    if(saved) currentUid=saved;
+    else{toast('Session expired. Please login again.','e');return;}
+  }
   const amt=parseFloat(gv('myaccAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
   const entryDate = gv('myaccDate') || todayStr();
   try{
     await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:entryDate,deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    clearFields(['myaccAmt','myaccDesc']);toast('Entry saved! ✅','s');renderMyacc();
+    clearFields(['myaccAmt','myaccDesc']);
+    setToday('myaccDate'); // Date bhi reset karo
+    toast('Entry saved! ✅','s');
+    renderMyacc();
   }catch(e){
-    console.error('saveMyaccEntry error:',e);
-    toast('Save failed: '+e.message,'e');
+    console.error('saveMyaccEntry error:',e.code||e.message);
+    if(e.code==='permission-denied') toast('Permission denied — Please re-login','e');
+    else toast('Save failed: '+e.message,'e');
   }
 }
 
