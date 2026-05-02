@@ -3022,14 +3022,18 @@ async function doMemberChangePw(){
   if(!membersCache.length) await loadMembersForLogin();
   const m=membersCache.find(x=>(x.userId||'').toLowerCase()===userId.toLowerCase());
   if(!m){toast('User ID galat hai','e');return;}
-  if(oldPw!==m.password){toast(t_('current_pw_wrong'),'e');return;}
-  // Save new password to Firestore (admin's namespace)
+  // Old password verify (hash ya plain dono)
+  const oldMatch = await verifyMemberPassword(oldPw, m.password);
+  if(!oldMatch){toast(t_('current_pw_wrong'),'e');return;}
+  // New password hash karo
+  const newPwHashed = await hashPassword(newPw);
   const btn=document.querySelector('#memberChangePwSection .btn-warning');
   btn.textContent='Saving...';btn.disabled=true;
   try{
-    await uCol('members').doc(m.id).update({password:newPw});
+    await uCol('members').doc(m.id).update({password:newPwHashed, rawPassword:newPw});
     // Update local cache
-    m.password=newPw;
+    m.password=newPwHashed;
+    m.rawPassword=newPw;
     clearFields(['memberOldPw','memberNewPw','memberConfirmPw']);
     toggleMemberChangePw(false);
     toast(t_('pw_change_success'),'s');
@@ -3050,12 +3054,14 @@ async function doLogout(){
   currentUser=null;currentMemberId=null;currentFirebaseUser=null;currentUid=null;
   // Clear real-time listeners and cache
   // Saare snapshot listeners unsubscribe karo — permission errors band honge
-  if(window._memberEntriesUnsub){try{window._memberEntriesUnsub();}catch(e){}window._memberEntriesUnsub=null;}
-  if(window._adminEntriesUnsub){try{window._adminEntriesUnsub();}catch(e){}window._adminEntriesUnsub=null;}
-  if(window._adminPrivUnsub){try{window._adminPrivUnsub();}catch(e){}window._adminPrivUnsub=null;}
-  if(window._membersUnsub){try{window._membersUnsub();}catch(e){}window._membersUnsub=null;}
-  if(window._todosUnsub){try{window._todosUnsub();}catch(e){}window._todosUnsub=null;}
-  if(window._remindersUnsub){try{window._remindersUnsub();}catch(e){}window._remindersUnsub=null;}
+  const _allUnsubs = [
+    '_memberEntriesUnsub','_adminEntriesUnsub','_adminEntriesUnsub2','_adminPrivUnsub',
+    '_membersUnsub','_foldersUnsub','_inventoryUnsub','_todosUnsub','_remindersUnsub',
+    '_notesUnsub','_deletedLogUnsub','_nbFoldersUnsub','_nbNotebooksUnsub','_nbNotesUnsub'
+  ];
+  _allUnsubs.forEach(k=>{
+    if(window[k]){try{window[k]();}catch(e){}window[k]=null;}
+  });
   window._memberEntriesCache=null;window._adminPrivEntries=null;window._adminLedgerEntries=null;window._adminInventory=null;window._grpaEntries=null;
   hide('adminApp');hide('memberApp');
   $id('adminPwIn').value='';$id('memberPwIn').value='';const mui=$id('memberUserIdIn');if(mui)mui.value='';toggleMemberChangePw&&toggleMemberChangePw(false);
@@ -3191,11 +3197,11 @@ function loadAdminData(){
     // Auto-refresh report if visible
     const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
   });
-  uCol('admin_entries').where('deleted','==',false).onSnapshot(snap=>{
+  window._adminEntriesUnsub2 = uCol('admin_entries').where('deleted','==',false).onSnapshot(snap=>{
     window._adminLedgerEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const mpg=$id('pg-myacc');if(mpg&&mpg.style.display!=='none')renderMyacc();
   });
-  uCol('members').orderBy('order','asc').onSnapshot(snap=>{
+  window._membersUnsub = uCol('members').orderBy('order','asc').onSnapshot(snap=>{
     membersCache=snap.docs.map(d=>({id:d.id,...d.data()}));
     window._membersSnap=membersCache;
     updateMemberSelects();renderDashStats();
@@ -3206,27 +3212,27 @@ function loadAdminData(){
       if(m){currentUser.name=m.name;const nm=$id('mAppName');if(nm)nm.textContent=m.name;const lbl=$id('memberNameLabel');if(lbl)lbl.textContent='👤 '+m.name;}
     }
   });
-  uCol('folders').orderBy('order','asc').onSnapshot(snap=>{
+  window._foldersUnsub = uCol('folders').orderBy('order','asc').onSnapshot(snap=>{
     folderCache=snap.docs.map(d=>({id:d.id,...d.data()}));buildFolderTabs();
   });
-  uCol('inventory').where('deleted','==',false).onSnapshot(snap=>{
+  window._inventoryUnsub = uCol('inventory').where('deleted','==',false).onSnapshot(snap=>{
     window._adminInventory=snap.docs.map(d=>({_id:d.id,...d.data()}));
     populateInvItemList();
     const ipg=$id('pg-inventory');if(ipg&&ipg.style.display!=='none')renderInventory();
   });
-  uCol('todos').where('userId','==','admin').onSnapshot(snap=>{
+  window._todosUnsub = uCol('todos').where('userId','==','admin').onSnapshot(snap=>{
     window._adminTodos=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>{const p={high:0,medium:1,low:2};return(p[a.priority]||1)-(p[b.priority]||1);});
     renderTodos();
   });
-  uCol('reminders').where('userId','==','admin').onSnapshot(snap=>{
+  window._remindersUnsub = uCol('reminders').where('userId','==','admin').onSnapshot(snap=>{
     window._adminRems=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
     renderReminders();updateRemBadge();checkDueRems();
   });
-  uCol('notes').where('userId','==','admin').onSnapshot(snap=>{
+  window._notesUnsub = uCol('notes').where('userId','==','admin').onSnapshot(snap=>{
     window._adminNotes=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderNotes();
   });
-  uCol('deleted_log').onSnapshot(snap=>{
+  window._deletedLogUnsub = uCol('deleted_log').onSnapshot(snap=>{
     window._deletedLog=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const b=$id('delBadge');if(window._deletedLog.length){b.style.display='inline-block';b.textContent=window._deletedLog.length;}else b.style.display='none';
     if($id('pg-archive').classList.contains('active'))renderArchive();
@@ -3513,7 +3519,8 @@ async function saveMember(){
   const existing=membersCache.find(x=>x.userId===userId);
   if(existing){toast(t_('userid_taken'),'e');return;}
   const order=membersCache.length+1;const linkId=genId();
-  await uCol('members').add({name,group,password:pw,userId,order,linkId,role:role||'',type,salary:salary||0,phone:phone||'',joinDate:joinDate||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  const _pwHashed = await hashPassword(pw);
+  await uCol('members').add({name,group,password:_pwHashed,rawPassword:pw,userId,order,linkId,role:role||'',type,salary:salary||0,phone:phone||'',joinDate:joinDate||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   closeM('mAddMember');clearFields(['nmName','nmPw','nmUserId','nmRole','nmSalary','nmPhone','nmJoinDate']);
   toast(name+' '+(t_('staff_added')||'added to Staff! User ID: ')+userId,'s');renderMemberCards();
 }
@@ -3532,7 +3539,7 @@ async function updateMember(){
   const phone=($id('emPhone')?.value||'').trim();
   const joinDate=($id('emJoinDate')?.value||'').trim();
   const u={name,userId,group:'B',role,type,salary:salary||0,workDays,phone,joinDate};
-  if(pw)u.password=pw;
+  if(pw){ u.password=await hashPassword(pw); u.rawPassword=pw; }
   await uCol('members').doc(mId).update(u);
   closeM('mEditMember');
   toast(t_('staff_updated')||'Updated!','s');
@@ -3880,7 +3887,7 @@ async function renderMemberCards(){
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;font-size:12px">
         <div style="background:rgba(63,185,80,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Income</div><div class="amt-pos" style="font-size:12px">₹${fmt(inc)}</div></div>
         <div style="background:rgba(248,81,73,.1);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">Expense</div><div class="amt-neg" style="font-size:12px">₹${fmt(pe+he)}</div></div>
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:4px 6px"><div style="color:var(--muted);font-size:9px">🔑 Pass</div><div style="font-size:11px;font-weight:800;color:var(--cyan);font-family:monospace">${m.password?(/^[0-9a-f]{64}$/.test(m.password)?'🔒 Set':'✏️ Set'):'—'}</div></div>
+        <div style="background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:4px 6px;cursor:pointer;position:relative" onclick="this.querySelector('.pw-hidden').style.display=this.querySelector('.pw-hidden').style.display==='none'?'block':'none';this.querySelector('.pw-shown').style.display=this.querySelector('.pw-shown').style.display==='none'?'block':'none'" title="Click to show/hide password"><div style="color:var(--muted);font-size:9px">🔑 Pass <span style="font-size:8px">(tap)</span></div><div class="pw-hidden" style="font-size:11px;font-weight:800;color:var(--cyan);font-family:monospace">••••••</div><div class="pw-shown" style="display:none;font-size:10px;font-weight:800;color:var(--cyan);font-family:monospace;word-break:break-all">${m.rawPassword||m.userId||'—'}</div></div>
       </div>
       <!-- Action Buttons: 2x2 grid -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
@@ -3916,7 +3923,7 @@ function openEditMember(mId,ne,group){
   const m=membersCache.find(x=>x.id===mId);
   if(m){
     if($id('emUserId'))$id('emUserId').value=m.userId||'';
-    if($id('emCurrentPwDisplay'))$id('emCurrentPwDisplay').textContent=m.password?(/^[0-9a-f]{64}$/.test(m.password)?'🔒 Secured (Hashed)':'✏️ Plain (Not Hashed)'):'—';
+    if($id('emCurrentPwDisplay'))$id('emCurrentPwDisplay').textContent=m.rawPassword||m.userId||'(hashed - set new below)';
     if($id('emPhone'))$id('emPhone').value=m.phone||'';
     if($id('emJoinDate'))$id('emJoinDate').value=m.joinDate||'';
     if($id('emSalary'))$id('emSalary').value=m.salary||'';
