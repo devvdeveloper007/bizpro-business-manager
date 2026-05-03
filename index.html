@@ -2044,6 +2044,11 @@ async function initFB(cfg){
     try{
       await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     }catch(e){ console.warn('Persistence set failed:', e); }
+    // currentUid restore karo localStorage se (page reload ke liye)
+    if(!currentUid){
+      const saved=localStorage.getItem('bp-admin-uid');
+      if(saved) currentUid=saved;
+    }
     auth.settings = auth.settings || {};
     return true;
   }catch(e){console.error(e);return false;}
@@ -3189,6 +3194,12 @@ async function launchMember(m){
 
 // ==================== ADMIN DATA ====================
 function loadAdminData(){
+  // currentUid rescue — ensure set hai
+  if(!currentUid){
+    const saved=localStorage.getItem('bp-admin-uid');
+    if(saved) currentUid=saved;
+    else{ console.warn('loadAdminData: no currentUid'); return; }
+  }
   setToday('myaccDate','geDate','todoDue','remDue');
   buildDateBar('grpaDateBar',grpaDF,renderGrpaEntries);
   buildDateBar('myaccDateBar',myaccDF,renderMyacc);
