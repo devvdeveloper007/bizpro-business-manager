@@ -3204,7 +3204,7 @@ function loadAdminData(){
     if($id('staffLedgerInline')&&$id('staffLedgerInline').style.display!=='none')renderStaffLedger();
     // Auto-refresh report if visible
     const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('privEntries',err.code);});
   // Real-time: entries changes turant admin ko dikhai dein
   window._adminEntriesUnsub = uCol('entries').where('deleted','==',false).onSnapshot(snap=>{
     window._grpaEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
@@ -3220,7 +3220,7 @@ function loadAdminData(){
   window._adminEntriesUnsub2 = uCol('admin_entries').where('deleted','==',false).onSnapshot(snap=>{
     window._adminLedgerEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const mpg=$id('pg-myacc');if(mpg&&mpg.style.display!=='none')renderMyacc();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('adminEntries',err.code);});
   window._membersUnsub = uCol('members').orderBy('order','asc').onSnapshot(snap=>{
     membersCache=snap.docs.map(d=>({id:d.id,...d.data()}));
     window._membersSnap=membersCache;
@@ -3231,27 +3231,27 @@ function loadAdminData(){
       const m=membersCache.find(x=>x.id===currentUser.memberId);
       if(m){currentUser.name=m.name;const nm=$id('mAppName');if(nm)nm.textContent=m.name;const lbl=$id('memberNameLabel');if(lbl)lbl.textContent='👤 '+m.name;}
     }
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('members',err.code);});
   window._foldersUnsub = uCol('folders').orderBy('order','asc').onSnapshot(snap=>{
     folderCache=snap.docs.map(d=>({id:d.id,...d.data()}));buildFolderTabs();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('folders',err.code);});
   window._inventoryUnsub = uCol('inventory').where('deleted','==',false).onSnapshot(snap=>{
     window._adminInventory=snap.docs.map(d=>({_id:d.id,...d.data()}));
     populateInvItemList();
     const ipg=$id('pg-inventory');if(ipg&&ipg.style.display!=='none')renderInventory();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('inventory',err.code);});
   window._todosUnsub = uCol('todos').where('userId','==','admin').onSnapshot(snap=>{
     window._adminTodos=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>{const p={high:0,medium:1,low:2};return(p[a.priority]||1)-(p[b.priority]||1);});
     renderTodos();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('todos',err.code);});
   window._remindersUnsub = uCol('reminders').where('userId','==','admin').onSnapshot(snap=>{
     window._adminRems=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
     renderReminders();updateRemBadge();checkDueRems();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('reminders',err.code);});
   window._notesUnsub = uCol('notes').where('userId','==','admin').onSnapshot(snap=>{
     window._adminNotes=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderNotes();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('notes',err.code);});
   window._deletedLogUnsub = uCol('deleted_log').onSnapshot(snap=>{
     window._deletedLog=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const b=$id('delBadge');if(window._deletedLog.length){b.style.display='inline-block';b.textContent=window._deletedLog.length;}else b.style.display='none';
@@ -3628,7 +3628,7 @@ async function syncAttendanceFromFirestore(){
 
 function markAttendance(mId,mNameEnc){
   const mName=decodeURIComponent(mNameEnc);
-  const today=new Date().toISOString().split('T')[0];
+  const today=todayStr(); // device local date
 
   const statuses=['Full Day','Half Day','Absent','Leave','Holiday'];
   const colors={'Full Day':'var(--green)','Half Day':'var(--orange)','Absent':'var(--red)','Leave':'var(--blue)','Holiday':'var(--cyan)'};
@@ -3720,7 +3720,7 @@ function viewAttHistory(mId,mNameEnc){
   const workDays=m.workDays||26;
   const dailyRate=salary>0?(salary/workDays):0;
   const now=new Date();
-  const thisMonth=now.toISOString().substring(0,7);
+  const thisMonth=todayStr().substring(0,7);
   const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
 
   const existingMov=$id('mAttHistory');if(existingMov)existingMov.remove();
@@ -3895,7 +3895,7 @@ async function renderMemberCards(){
     const total=entries.length;
     // Get attendance summary from localStorage (synced from Firestore)
     const attData=getAttData(m.id);
-    const todayStr2=new Date().toISOString().split('T')[0];
+    const todayStr2=todayStr(); // device local date
     const todayAtt=attData.find(a=>a.date===todayStr2);
     // Also check lastAttStatus from member data for today
     const todayLabel=todayAtt?todayAtt.status:(m.lastAttDate===todayStr2?m.lastAttStatus:'Not Marked');
@@ -4024,8 +4024,8 @@ async function renderDashStats(){
   const df=_dashDF||{mode:'today'};
   const ts=todayStr();const now=new Date();
   if(df.mode==='today')entries=entries.filter(e=>e.date===ts);
-  else if(df.mode==='week'){const w=new Date(now-7*86400000).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=w);}
-  else if(df.mode==='month'){const m=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=m);}
+  else if(df.mode==='week'){const _w=new Date(now-7*86400000);const w=_w.getFullYear()+'-'+String(_w.getMonth()+1).padStart(2,'0')+'-'+String(_w.getDate()).padStart(2,'0');entries=entries.filter(e=>e.date>=w);}
+  else if(df.mode==='month'){const _ms=new Date(now.getFullYear(),now.getMonth(),1);const m=_ms.getFullYear()+'-'+String(_ms.getMonth()+1).padStart(2,'0')+'-01';entries=entries.filter(e=>e.date>=m);}
   else if(df.mode==='custom'&&df.from&&df.to)entries=entries.filter(e=>e.date>=df.from&&e.date<=df.to);
   const inc=sum(entries,'income');
   const exp=sum(entries,'personal_expense')+sum(entries,'home_expense');
@@ -4067,8 +4067,8 @@ async function loadDashRecent(period,btn){
   }
   const ts=todayStr(),now=new Date();
   if(period==='today')entries=entries.filter(e=>e.date===ts);
-  else if(period==='week'){const w=new Date(now-7*86400000).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=w);}
-  else if(period==='month'){const m=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];entries=entries.filter(e=>e.date>=m);}
+  else if(period==='week'){const _w=new Date(now-7*86400000);const w=_w.getFullYear()+'-'+String(_w.getMonth()+1).padStart(2,'0')+'-'+String(_w.getDate()).padStart(2,'0');entries=entries.filter(e=>e.date>=w);}
+  else if(period==='month'){const _ms=new Date(now.getFullYear(),now.getMonth(),1);const m=_ms.getFullYear()+'-'+String(_ms.getMonth()+1).padStart(2,'0')+'-01';entries=entries.filter(e=>e.date>=m);}
   _sortEntries(entries);
   const tbody=$id('recentTbody');
   if(!entries.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty" style="padding:28px"><div class="ei">📋</div><h3>No entries for this period</h3></div></td></tr>';return;}
@@ -4087,9 +4087,9 @@ async function loadReports(period,btn){
   if(btn){document.querySelectorAll('#pg-reports .df-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
   const cb=$id('repCustomBar');if(period==='custom'){if(cb)cb.style.display='flex';}else{if(cb)cb.style.display='none';}
   let cutoff=null,cutoffTo=null;const now=new Date();
-  if(period==='weekly'){cutoff=new Date(now-7*86400000).toISOString().split('T')[0];}
-  else if(period==='monthly'){cutoff=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];}
-  else if(period==='yearly'){cutoff=new Date(now.getFullYear(),0,1).toISOString().split('T')[0];}
+  if(period==='weekly'){const _wc=new Date(now-7*86400000);cutoff=_wc.getFullYear()+'-'+String(_wc.getMonth()+1).padStart(2,'0')+'-'+String(_wc.getDate()).padStart(2,'0');}
+  else if(period==='monthly'){cutoff=localDateStr(new Date(now.getFullYear(),now.getMonth(),1));}
+  else if(period==='yearly'){cutoff=localDateStr(new Date(now.getFullYear(),0,1));}
   else if(period==='custom'){cutoff=gv('repFrom')||'2020-01-01';cutoffTo=gv('repTo')||todayStr();}
   const ff=e=>{if(!cutoff)return true;if(cutoffTo)return e.date>=cutoff&&e.date<=cutoffTo;return e.date>=cutoff;};
   // Load ALL staff entries from both collections
@@ -4148,16 +4148,16 @@ function setExportPeriod(mode,btn){
   const cb=$id('expCustomBar');if(cb)cb.style.display=mode==='custom'?'flex':'none';
   const lbl=$id('exportFilterLabel');
   if(mode==='today'){exportDF={mode,from:ts,to:ts};if(lbl)lbl.textContent='📅 Today: '+ts;}
-  else if(mode==='week'){const w=new Date(now-7*86400000).toISOString().split('T')[0];exportDF={mode,from:w,to:ts};if(lbl)lbl.textContent='📅 This Week: '+w+' → '+ts;}
-  else if(mode==='month'){const m=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];exportDF={mode,from:m,to:ts};if(lbl)lbl.textContent='📅 This Month: '+m+' → '+ts;}
-  else if(mode==='year'){const y=new Date(now.getFullYear(),0,1).toISOString().split('T')[0];exportDF={mode,from:y,to:ts};if(lbl)lbl.textContent='📅 This Year: '+y+' → '+ts;}
+  else if(mode==='week'){const _w=new Date(now-7*86400000);const w=_w.getFullYear()+'-'+String(_w.getMonth()+1).padStart(2,'0')+'-'+String(_w.getDate()).padStart(2,'0');exportDF={mode,from:w,to:ts};if(lbl)lbl.textContent='📅 This Week: '+w+' → '+ts;}
+  else if(mode==='month'){const _ms=new Date(now.getFullYear(),now.getMonth(),1);const m=_ms.getFullYear()+'-'+String(_ms.getMonth()+1).padStart(2,'0')+'-01';exportDF={mode,from:m,to:ts};if(lbl)lbl.textContent='📅 This Month: '+m+' → '+ts;}
+  else if(mode==='year'){const y=localDateStr(new Date(now.getFullYear(),0,1));exportDF={mode,from:y,to:ts};if(lbl)lbl.textContent='📅 This Year: '+y+' → '+ts;}
   else if(mode==='all'){exportDF={mode:'all',from:'',to:''};if(lbl)lbl.textContent='📅 All Time';}
 }
 
 function initExportPage(){
   setToday('exportTo');
   const now=new Date();
-  const firstDay=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  const firstDay=localDateStr(new Date(now.getFullYear(),now.getMonth(),1));
   const ef=$id('exportFrom');if(ef)ef.value=firstDay;
   // Set default to This Month
   setExportPeriod('month',$id('expTab-month'));
@@ -5215,7 +5215,7 @@ function buildDateBar(barId,dfObj,onChangeFn){
 function setDF(barId,mode){
   if(!barFilters[barId])barFilters[barId]={mode:'today'};const bf=barFilters[barId];bf.mode=mode;
   const now=new Date(),ts=todayStr();
-  if(mode==='today'){bf.from=ts;bf.to=ts;}else if(mode==='week'){bf.from=new Date(now-6*86400000).toISOString().split('T')[0];bf.to=ts;}else if(mode==='month'){bf.from=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];bf.to=ts;}else if(mode==='all'){bf.from='2020-01-01';bf.to='2099-12-31';}
+  if(mode==='today'){bf.from=ts;bf.to=ts;}else if(mode==='week'){bf.from=localDateStr(new Date(now-6*86400000));bf.to=ts;}else if(mode==='month'){bf.from=localDateStr(new Date(now.getFullYear(),now.getMonth(),1));bf.to=ts;}else if(mode==='all'){bf.from='2020-01-01';bf.to='2099-12-31';}
   const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe&&mode!=='custom')fe.value=bf.from||ts;if(te&&mode!=='custom')te.value=bf.to||ts;
   // Fix: update active button classes
   const bar=$id(barId);if(bar){const modes=['today','week','month','all','custom'];bar.querySelectorAll('.df-tab').forEach((b,i)=>{b.classList.toggle('active',modes[i]===mode);});}
@@ -5224,9 +5224,9 @@ function setDF(barId,mode){
 function onDFChange(barId){if(!barFilters[barId])barFilters[barId]={mode:'custom'};barFilters[barId].mode='custom';barFilters[barId].from=$id(barId+'-from')?.value||todayStr();barFilters[barId].to=$id(barId+'-to')?.value||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();}
 function shiftDF(barId,dir){
   const bf=barFilters[barId]||{mode:'today'};
-  if(bf.mode==='today'||bf.mode==='all'||bf.mode==='custom'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir);const t=new Date(bf.to||todayStr());t.setDate(t.getDate()+dir);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];bf.mode='custom';}
-  else if(bf.mode==='week'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir*7);const t=new Date(f);t.setDate(t.getDate()+6);bf.from=f.toISOString().split('T')[0];bf.to=t.toISOString().split('T')[0];}
-  else if(bf.mode==='month'){const d=new Date(bf.from||todayStr());d.setMonth(d.getMonth()+dir);bf.from=new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0];bf.to=new Date(d.getFullYear(),d.getMonth()+1,0).toISOString().split('T')[0];}
+  if(bf.mode==='today'||bf.mode==='all'||bf.mode==='custom'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir);const t=new Date(bf.to||todayStr());t.setDate(t.getDate()+dir);bf.from=localDateStr(f);bf.to=localDateStr(t);bf.mode='custom';}
+  else if(bf.mode==='week'){const f=new Date(bf.from||todayStr());f.setDate(f.getDate()+dir*7);const t=new Date(f);t.setDate(t.getDate()+6);bf.from=localDateStr(f);bf.to=localDateStr(t);}
+  else if(bf.mode==='month'){const d=new Date(bf.from||todayStr());d.setMonth(d.getMonth()+dir);bf.from=localDateStr(new Date(d.getFullYear(),d.getMonth(),1));bf.to=localDateStr(new Date(d.getFullYear(),d.getMonth()+1,0));}
   barFilters[barId]=bf;const fe=$id(barId+'-from'),te=$id(barId+'-to');if(fe)fe.value=bf.from||todayStr();if(te)te.value=bf.to||todayStr();syncDF(barId);const bar=$id(barId);if(bar&&bar._cb)bar._cb();
 }
 function syncDF(barId){const bf=barFilters[barId]||{mode:'today'};if(barId==='grpaDateBar')Object.assign(grpaDF,bf);else if(barId==='myaccDateBar')Object.assign(myaccDF,bf);else if(barId==='grpbDateBar')Object.assign(grpbDF,bf);else if(barId==='mLedgerDateBar')Object.assign(mLedgerDF,bf);else if(barId==='membersDateBar')Object.assign(memberCardsDF,bf);else if(barId==='invDateBar')Object.assign(invDF,bf);else if(barId==='mDashDateBar')Object.assign(mDashDF,bf);else if(barId==='exportDateBar')Object.assign(exportDF,bf);else if(barId==='staffLedgerDateBar')Object.assign(_staffLedgerDF,bf);}
@@ -5290,9 +5290,9 @@ async function renderStaffAttendance(){
   const mId=currentMemberId;const adminUid=currentUid;
   if(!mId||!adminUid)return;
   const m=membersCache.find(x=>x.id===mId)||{};
-  const today=new Date().toISOString().split('T')[0];
+  const today=todayStr(); // device local date
   const now=new Date();
-  const thisMonth=now.toISOString().substring(0,7);
+  const thisMonth=todayStr().substring(0,7);
   const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
   let mData=m;
   try{
@@ -5338,9 +5338,9 @@ async function renderStaffAttendance(){
 
 function renderMattContent(filter,fromDate,toDate){
   const allData=window._mattAllData||[];
-  const today=new Date().toISOString().split('T')[0];
+  const today=todayStr(); // device local date
   const now=new Date();
-  const thisMonth=now.toISOString().substring(0,7);
+  const thisMonth=todayStr().substring(0,7);
   const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().substring(0,7);
   const dailyRate=window._mattDailyRate||0;
   const salary=window._mattSalary||0;
@@ -5446,7 +5446,14 @@ function hide(s){const el=$id(s);if(el)el.style.display='none';}
 function show(s){const el=$id(s);if(el)el.style.display='block';}
 function clearFields(arr){arr.forEach(s=>{const el=$id(s);if(el)el.value='';}); }
 function setToday(...ids){const t=todayStr();ids.forEach(s=>{const el=$id(s);if(el)el.value=t;});} // ← FIXED: always force today's date on every call
-function todayStr(){return new Date().toISOString().split('T')[0];}
+function todayStr(){
+  // Device ka LOCAL date use karo — UTC nahi (IST/GMT sahi rahega)
+  return localDateStr(new Date());
+}
+function localDateStr(d){
+  // Any Date object ko local YYYY-MM-DD string mein convert karo
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function fmt(n){return(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});}
 function fmtD(d){if(!d)return '—';try{const p=String(d).split('T')[0].split('-');if(p.length===3)return p[2]+'-'+p[1]+'-'+p[0];}catch(e){}return d;}
 function fmtDT(d, ts, clientTs){
