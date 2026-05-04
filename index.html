@@ -3079,7 +3079,8 @@ async function doLogout(){
     '_memberEntriesUnsub','_adminEntriesUnsub','_adminEntriesUnsub2','_adminPrivUnsub',
     '_membersUnsub','_foldersUnsub','_inventoryUnsub','_todosUnsub','_remindersUnsub',
     '_notesUnsub','_deletedLogUnsub','_nbFoldersUnsub','_nbNotebooksUnsub','_nbNotesUnsub',
-    '_mTodosUnsub','_mRemsUnsub','_mNotesUnsub'
+    '_mTodosUnsub','_mRemsUnsub','_mNotesUnsub',
+    '_nbFoldersUnsub','_nbNotebooksUnsub','_nbNotesUnsub'
   ];
   _allUnsubs.forEach(k=>{
     if(window[k]){try{window[k]();}catch(e){}window[k]=null;}
@@ -3227,7 +3228,7 @@ function loadAdminData(){
     if($id('staffLedgerInline')&&$id('staffLedgerInline').style.display!=='none')renderStaffLedger();
     // Auto-refresh report if visible
     const ro=$id('reportOut');if(ro&&ro.style.display!=='none')genReport();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('entries:',err.code);});
   window._adminEntriesUnsub2 = uCol('admin_entries').where('deleted','==',false).onSnapshot(snap=>{
     window._adminLedgerEntries=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const mpg=$id('pg-myacc');if(mpg&&mpg.style.display!=='none')renderMyacc();
@@ -3267,7 +3268,7 @@ function loadAdminData(){
     window._deletedLog=snap.docs.map(d=>({_id:d.id,...d.data()}));
     const b=$id('delBadge');if(window._deletedLog.length){b.style.display='inline-block';b.textContent=window._deletedLog.length;}else b.style.display='none';
     if($id('pg-archive').classList.contains('active'))renderArchive();
-  });
+  }, err=>{if(err.code!=='permission-denied')console.warn('deletedLog:',err.code);});
   renderDashStats();loadDashRecent('today');renderCatChips();
   nbSetupListeners();
 }
@@ -4774,20 +4775,26 @@ async function nbLoadAll(){
 
 function nbSetupListeners(){
   if(!currentUid)return;
-  uCol('nb_folders').orderBy('order','asc').onSnapshot(snap=>{
+  // Purane listeners hatao
+  if(window._nbFoldersUnsub){try{window._nbFoldersUnsub();}catch(e){}}
+  if(window._nbNotebooksUnsub){try{window._nbNotebooksUnsub();}catch(e){}}
+  if(window._nbNotesUnsub){try{window._nbNotesUnsub();}catch(e){}}
+
+  window._nbFoldersUnsub = uCol('nb_folders').orderBy('order','asc').onSnapshot(snap=>{
     _nbFolders=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(_nbCurrentFolder) nbRenderNotes();
     else nbRenderFolders();
-  });
-  // Keep nb_notebooks listener for backward compat (old notes may have notebookId)
-  uCol('nb_notebooks').orderBy('order','asc').onSnapshot(snap=>{
+  }, err=>{ if(err.code!=='permission-denied') console.warn('nb_folders:',err.code); });
+
+  window._nbNotebooksUnsub = uCol('nb_notebooks').orderBy('order','asc').onSnapshot(snap=>{
     _nbNotebooks=snap.docs.map(d=>({id:d.id,...d.data()}));
-  });
-  uCol('nb_notes').orderBy('order','asc').onSnapshot(snap=>{
+  }, err=>{ if(err.code!=='permission-denied') console.warn('nb_notebooks:',err.code); });
+
+  window._nbNotesUnsub = uCol('nb_notes').orderBy('order','asc').onSnapshot(snap=>{
     _nbNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(_nbCurrentFolder) nbRenderNotes();
-    else nbRenderFolders(); // update note counts on cards
-  });
+    else nbRenderFolders();
+  }, err=>{ if(err.code!=='permission-denied') console.warn('nb_notes:',err.code); });
 }
 
 // Back to folder list
@@ -5069,7 +5076,7 @@ function loadMemberData(mId){
       renderMemberDash();
       renderMemberLedger();
     }, err=>{
-      console.error('Member entries listener error:', err);
+      if(err.code!=='permission-denied') console.warn('memberEntries:',err.code);
     });
 
   if(window._mTodosUnsub){try{window._mTodosUnsub();}catch(e){}}
