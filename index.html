@@ -1958,11 +1958,14 @@ window.onload=function(){
           return;
         }
 
-        // Real admin user (non-anonymous) — ye tab fire hota hai jab admin login hai
-        // Agar admin app already visible hai to dobara launch mat karo
-        if(currentUser && currentUser.type === 'admin' && document.getElementById('adminApp').style.display !== 'none'){
+        // Real admin user (non-anonymous)
+        // Strong guard: agar admin already launched + same UID = skip (listeners re-trigger nahi honge)
+        if(window._adminLaunched && currentUser && currentUser.type === 'admin' &&
+           currentUid === user.uid &&
+           document.getElementById('adminApp') &&
+           document.getElementById('adminApp').style.display !== 'none'){
           hide('appLoading');
-          return; // Admin already active — logout mat karo!
+          return; // Already active — listeners re-start nahi karenge!
         }
 
         currentUid = user.uid;
@@ -2024,6 +2027,26 @@ async function initFB(cfg){
   try{
     if(!firebase.apps.length) fbApp=firebase.initializeApp(cfg);
     else fbApp=firebase.apps[0];
+
+    // ── Firebase SDK logging suppress karo (permission-denied errors console mein nahi aayen) ──
+    try{
+      if(firebase.firestore && firebase.firestore.setLogLevel){
+        firebase.firestore.setLogLevel('silent');
+      }
+    }catch(e){}
+
+    // ── Console error filter — Firebase permission-denied errors hide karo ──
+    const _origConsoleError = console.error.bind(console);
+    console.error = function(...args){
+      // Firebase permission-denied errors silently ignore karo
+      const msg = args.join(' ');
+      if(msg.includes('permission-denied') ||
+         msg.includes('Missing or insufficient permissions') ||
+         msg.includes('PERMISSION_DENIED')){
+        return; // Silently ignore
+      }
+      _origConsoleError(...args);
+    };
 
     // ── App Check (reCAPTCHA v3) — ENFORCED ──
     // Site Key: 6Lf0bsssAAAAAGogHhVFCGm5-1nRoGq5Ca_2nFSM
@@ -3146,6 +3169,11 @@ function switchLoginTab(tab){$id('adminLoginForm').style.display=tab==='admin'?'
 // ==================== LAUNCH ====================
 function launchAdmin(s){
   hide('loginScreen');show('adminApp');const name=s.adminName||'Admin';
+  // currentUid MUST be set before loadAdminData
+  if(!currentUid && auth.currentUser && !auth.currentUser.isAnonymous){
+    currentUid = auth.currentUser.uid;
+    localStorage.setItem('bp-admin-uid', currentUid);
+  }
   // Save login to history
   saveLoginHistory();
   // Firebase status monitor start karo
