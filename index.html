@@ -1812,7 +1812,7 @@ const BIZPRO_FB_CONFIG = {
   projectId: 'bizpro-business-manager',
   storageBucket: 'bizpro-business-manager.firebasestorage.app',
   messagingSenderId: '936861585181',
-  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4 '
+  appId: '1:936861585181:web:dbfc9bd9a091a136d29bf4'
 };
 
 // Wait for Firebase SDK to load (handles slow networks)
@@ -1881,8 +1881,15 @@ window.onload=function(){
         try{
           if(!auth.currentUser){
             await auth.signInAnonymously();
+          } else if(auth.currentUser.isAnonymous){
+            // Already anonymous — no need to sign in again
+            console.log('Already anonymous, reusing session');
           }
-        }catch(e){ console.warn('Pre-link anonymous auth:', e.code); }
+        }catch(e){
+          if(e.code !== 'auth/firebase-app-check-token-is-invalid'){
+            console.warn('Pre-link anonymous auth:', e.code);
+          }
+        }
         try{
           await loadMembersForLogin();
         }catch(e){ console.error('loadMembersForLogin error:', e); }
@@ -2042,7 +2049,10 @@ async function initFB(cfg){
       const msg = args.join(' ');
       if(msg.includes('permission-denied') ||
          msg.includes('Missing or insufficient permissions') ||
-         msg.includes('PERMISSION_DENIED')){
+         msg.includes('PERMISSION_DENIED') ||
+         msg.includes('firebase-app-check-token-is-invalid') ||
+         msg.includes('appCheck/throttled') ||
+         msg.includes('AppCheck: Requests throttled')){
         return; // Silently ignore
       }
       _origConsoleError(...args);
@@ -2928,14 +2938,15 @@ async function doMemberLogin(){
       }catch(e){ console.warn('Password migration:', e); }
     }
 
-    // Firebase Anonymous Auth sign in — App Check ke liye zaroori
-    // Ye Staff ko Firestore access deta hai bina real email ke
+    // Firebase Anonymous Auth — App Check ke liye
     try{
-      await auth.signInAnonymously();
-      console.log('Staff anonymous auth success');
+      if(!auth.currentUser || !auth.currentUser.isAnonymous){
+        await auth.signInAnonymously();
+        console.log('Staff anonymous auth success');
+      }
     }catch(authErr){
-      console.warn('Anonymous auth warning:', authErr.code);
-      // Continue anyway — rules mein fallback hai
+      // App Check token invalid — silently continue (rules still allow isLoggedIn)
+      console.warn('Anonymous auth:', authErr.code);
     }
 
     currentUser={type:'member',id:m.id,name:m.name,group:m.group};
@@ -3544,30 +3555,49 @@ function selectMyaccType(type,btn){
 
 async function saveMyaccEntry(){
   if(!activeFolderId){toast('Select a folder first','e');return;}
-  // currentUid rescue — agar null ho gaya
-  if(!currentUid){
-    const saved=localStorage.getItem('bp-admin-uid');
-    if(saved) currentUid=saved;
-    else{toast('Session expired. Please login again.','e');return;}
+  // Auth check: admin properly logged in hona chahiye (anonymous nahi)
+  const _cu = auth.currentUser;
+  if(!_cu || _cu.isAnonymous){
+    // Anonymous ya null — admin re-auth karni hogi
+    toast('Session expired. Please logout and login again.','e');
+    return;
   }
+  // currentUid always Firebase Auth se lo — localStorage nahi
+  currentUid = _cu.uid;
+  localStorage.setItem('bp-admin-uid', currentUid);
+
   const amt=parseFloat(gv('myaccAmt'));if(!amt||amt<=0){toast('Enter amount','e');return;}
   const entryDate = gv('myaccDate') || todayStr();
   try{
     await uCol('admin_entries').add({folderId:activeFolderId,type:myaccType,amount:amt,category:gv('myaccCat'),description:gv('myaccDesc'),date:entryDate,deleted:false,clientCreatedAt:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     clearFields(['myaccAmt','myaccDesc']);
-    setToday('myaccDate'); // Date bhi reset karo
+    setToday('myaccDate');
     toast('Entry saved! ✅','s');
     renderMyacc();
   }catch(e){
-    console.error('saveMyaccEntry error:',e.code||e.message);
-    if(e.code==='permission-denied') toast('Permission denied — Please re-login','e');
-    else toast('Save failed: '+e.message,'e');
+    if(e.code==='permission-denied'){
+      toast('Session issue. Please logout and login again.','e');
+    } else {
+      toast('Save failed: '+e.message,'e');
+    }
   }
 }
 
 async function renderMyacc(){
   if(!activeFolderId)return;
-  const snap=await uCol('admin_entries').where('folderId','==',activeFolderId).where('deleted','==',false).get();
+  // Ensure currentUid from real Firebase Auth
+  if(auth.currentUser && !auth.currentUser.isAnonymous){
+    currentUid = auth.currentUser.uid;
+  }
+  if(!currentUid){ currentUid=localStorage.getItem('bp-admin-uid')||''; }
+  if(!currentUid) return;
+  let snap;
+  try{
+    snap=await uCol('admin_entries').where('folderId','==',activeFolderId).where('deleted','==',false).get();
+  }catch(e){
+    if(e.code!=='permission-denied') console.warn('renderMyacc err:',e.code);
+    return;
+  }
   let entries=snap.docs.map(d=>({_id:d.id,...d.data()}));
   const filt=gv('myaccFilter')||'all';if(filt!=='all')entries=entries.filter(e=>e.type===filt);
   entries=applyDF(entries,myaccDF);_sortEntries(entries);
@@ -3602,6 +3632,13 @@ async function exportFolderCSV(){
 
 // ==================== MEMBERS ====================
 async function saveMember(){
+  // Admin auth check — anonymous user staff add nahi kar sakta
+  const _authUser = auth.currentUser;
+  if(!_authUser || _authUser.isAnonymous){
+    toast('Admin login required. Please re-login.','e');return;
+  }
+  currentUid = _authUser.uid; // Always sync from Firebase Auth
+
   const name=gv('nmName'),group='B',pw=gv('nmPw'),userId=gv('nmUserId').trim();
   const role=gv('nmRole'),type=$id('nmType')?.value||'Full Time';
   const salary=parseFloat($id('nmSalary')?.value||0);
@@ -3613,9 +3650,14 @@ async function saveMember(){
   if(existing){toast(t_('userid_taken'),'e');return;}
   const order=membersCache.length+1;const linkId=genId();
   const _pwHashed = await hashPassword(pw);
-  await uCol('members').add({name,group,password:_pwHashed,rawPassword:pw,userId,order,linkId,role:role||'',type,salary:salary||0,phone:phone||'',joinDate:joinDate||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('mAddMember');clearFields(['nmName','nmPw','nmUserId','nmRole','nmSalary','nmPhone','nmJoinDate']);
-  toast(name+' '+(t_('staff_added')||'added to Staff! User ID: ')+userId,'s');renderMemberCards();
+  try{
+    await uCol('members').add({name,group,password:_pwHashed,rawPassword:pw,userId,order,linkId,role:role||'',type,salary:salary||0,phone:phone||'',joinDate:joinDate||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    closeM('mAddMember');clearFields(['nmName','nmPw','nmUserId','nmRole','nmSalary','nmPhone','nmJoinDate']);
+    toast(name+' '+(t_('staff_added')||'added to Staff! User ID: ')+userId,'s');renderMemberCards();
+  }catch(e){
+    if(e.code==='permission-denied') toast('Permission denied. Please re-login as Admin.','e');
+    else toast('Error: '+e.message,'e');
+  }
 }
 
 async function updateMember(){
@@ -3640,7 +3682,19 @@ async function updateMember(){
 
 async function deleteMember(mId,name){
   confirm2('Remove Member?',`"${name}" will be removed. Their entries remain in archive.`,async()=>{
-    await uCol('members').doc(mId).delete();toast(name+' removed','i');
+    // Admin auth check
+    const _authUser = auth.currentUser;
+    if(!_authUser || _authUser.isAnonymous){
+      toast('Admin login required. Please re-login.','e');return;
+    }
+    currentUid = _authUser.uid;
+    try{
+      await uCol('members').doc(mId).delete();
+      toast(name+' removed','i');
+    }catch(e){
+      if(e.code==='permission-denied') toast('Permission denied. Please re-login as Admin.','e');
+      else toast('Delete failed: '+e.message,'e');
+    }
   });
 }
 
